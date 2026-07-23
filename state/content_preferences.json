@@ -1,0 +1,15 @@
+{
+  "updated_at": "2026-07-23T11:47:33.072252+00:00",
+  "hook_weights": {
+    "morning": {},
+    "afternoon": {}
+  },
+  "grounded_post_interval_days": 4,
+  "sample_counts": {
+    "hooks": {},
+    "grounded_vs_plain": {
+      "grounded": 0,
+      "plain": 0
+    }
+  }
+}
