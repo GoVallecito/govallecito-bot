@@ -1,0 +1,10 @@
+{
+  "posted_alert_ids": [],
+  "manual_override": {
+    "last_posted_fingerprint": null
+  },
+  "fire_escalation": {
+    "last_posted_stage": null,
+    "last_posted_nearby_count": null
+  }
+}

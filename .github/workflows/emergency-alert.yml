@@ -1,0 +1,132 @@
+name: Emergency Alert Check
+
+# Checks for active flood/fire/evacuation/disaster conditions and posts
+# immediately if anything new is found -- see scripts/check_emergency.py for
+# the full detection logic and the honest version of what "immediately"
+# means here. Two trigger paths, deliberately different speeds:
+#
+# 1. schedule: polls the NWS active-alerts feed every 10 minutes, all day,
+#    every day (same "GitHub disables scheduled workflows after 60 days of
+#    repo inactivity" gotcha as daily-post.yml -- check the Actions tab for
+#    a re-enable banner if this silently stops for a couple of quiet months).
+# 2. push (paths filter): the moment David edits config/fire_status.json or
+#    config/emergency_override.json and pushes that change to `main`
+#    (including an edit + commit straight from GitHub's own web UI -- that
+#    counts as a push too), this runs within seconds instead of waiting for
+#    the next poll. This is the "instant" half of "posted immediately" --
+#    it only watches those two files so routine code changes never trigger it.
+#
+# COST NOTE, worth knowing before you pick "public" or "private" for this
+# repo: every-10-minutes is ~144 runs/day. Public repos get UNLIMITED GitHub
+# Actions minutes; PRIVATE repos are metered (2,000 free minutes/month on
+# GitHub Free), and this schedule alone can approach or exceed that on a
+# private repo even though most runs are a few seconds of no-op. Nothing in
+# this repo is sensitive (the Facebook token lives in encrypted Secrets, not
+# in the repo itself), so a public repo is the recommended choice -- see the
+# README.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - "config/fire_status.json"
+      - "config/emergency_override.json"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run? (true = render + save only, do not post to Facebook)"
+        type: choice
+        options:
+          - "true"
+          - "false"
+        default: "true"
+
+# Same shared group as daily-post.yml/engagement-check.yml -- this workflow
+# also reads/writes state/post_history.json (and now
+# state/emergency_alert_state.json), so it must never run at the same time
+# as either of the other two.
+#
+# Real tradeoff, stated plainly rather than glossed over: if daily-post.yml
+# or engagement-check.yml happens to be mid-run when an emergency is
+# detected, this run queues behind it instead of posting instantly --
+# bounded by that other workflow's own 15-minute timeout, worst case.
+# Judged the better default versus the alternative (two workflows racing to
+# write the same JSON file), but it IS a real, if rare, added delay worth
+# knowing about -- see the README.
+concurrency:
+  group: govallecito-post-and-history
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  check-emergency:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Same reasoning as daily-post.yml's identical step -- render_card.py
+      # draws with Liberation Sans, and this workflow renders cards too.
+      - name: Install fonts
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-liberation
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check for emergencies and post if needed
+        env:
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+          # Same DRY_RUN switch as daily-post.yml -- deliberately not a
+          # separate toggle. Flipping vars.DRY_RUN to "false" makes BOTH the
+          # scheduled daily posts AND emergency alerts go live; there's no
+          # way to enable one without the other, and that's intentional
+          # (see check_emergency.py's module docstring for why).
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || vars.DRY_RUN }}
+        run: python scripts/check_emergency.py
+
+      # So a dry run's rendered alert card(s) -- or a failed live run's
+      # output -- can actually be looked at from the Actions tab.
+      - name: Upload rendered output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emergency-output-${{ github.run_id }}
+          path: output/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      # Only changes on a run that (a) posted something real (non-dry-run),
+      # which touches state/post_history.json, or (b) saw NWS alert ids
+      # appear/expire, or a fire-status baseline get recorded, which
+      # touches state/emergency_alert_state.json -- a no-op run (the common
+      # case, ~144x/day) leaves both untouched and this step exits early.
+      - name: Commit updated state, if any
+        run: |
+          git config user.name "govallecito-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/post_history.json state/emergency_alert_state.json
+          if git diff --staged --quiet; then
+            echo "No change to tracked state this run -- nothing to commit."
+            exit 0
+          fi
+          git commit -m "Emergency alert check: update state"
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt/5) -- likely a concurrent run updated the same file. Fetching latest and rebasing before retrying..."
+            git fetch origin "${GITHUB_REF_NAME}"
+            git rebase "origin/${GITHUB_REF_NAME}"
+            sleep $((attempt * 5))
+          done
+          echo "::error::Could not push updated state after 5 attempts. A live emergency alert post from this run may now have NO record in post_history.json, and/or its dedup state may not be saved (risking a duplicate re-post next run) -- check the Page directly and consider manually reconciling state/post_history.json and state/emergency_alert_state.json."
+          exit 1

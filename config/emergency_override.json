@@ -1,0 +1,11 @@
+{
+  "_comment": "Manual escalation path for emergencies scripts/check_emergency.py's automated NWS feed cannot see on its own -- most importantly, a county-issued evacuation order relayed only through a local CodeRED/Everbridge system, which has no public API and will never show up in the NWS alerts feed. Set active to true and fill in category/headline/details/source to force an immediate, review-free emergency post: within about 10-15 minutes on the next scheduled check, or within seconds if you push this file's change to GitHub directly (see .github/workflows/emergency-alert.yml's path trigger). category must be exactly one of: flood, fire, evacuation, disaster. Set active back to false once the situation is resolved -- that stops future posts about it, but does NOT automatically post an 'all clear' message; post that yourself if you want one out. Editing headline/details/source while active stays true (e.g. updating an evacuation order's details) is treated as new information and posts again.",
+  "active": false,
+  "category": "evacuation",
+  "headline": "",
+  "details": "",
+  "source": "",
+  "source_url": "",
+  "last_updated_by": "David",
+  "last_updated_at": "2026-07-22"
+}

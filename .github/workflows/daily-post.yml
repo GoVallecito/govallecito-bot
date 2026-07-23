@@ -1,0 +1,132 @@
+name: Daily Vallecito Conditions Post
+
+# Runs every hour, every day. That's intentional, not a typo -- see the long
+# comment at the top of scripts/main.py for why an hourly run beats a
+# hardcoded "13:30 and 20:00 UTC" cron (short version: Mountain Time's DST
+# switch would silently desync a fixed-UTC schedule twice a year). The
+# script itself checks the real local time and only posts during the 7am and
+# 2pm America/Denver hours -- the other ~22 runs/day exit in a couple
+# seconds without doing anything.
+#
+# GOTCHA WORTH KNOWING: GitHub automatically disables scheduled workflows
+# after 60 days of no repo activity. If posts silently stop for no reason
+# after a couple of quiet months, check the Actions tab for a banner about
+# the workflow being disabled and click re-enable.
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      force_slot:
+        description: "Force a slot regardless of current time (for testing)"
+        type: choice
+        options:
+          - ""
+          - morning
+          - afternoon
+        default: ""
+      dry_run:
+        description: "Dry run? (true = render + save only, do not post to Facebook)"
+        type: choice
+        options:
+          - "true"
+          - "false"
+        default: "true"
+
+# Serializes every run of THIS workflow, AND every run of engagement-check.yml
+# (same group name, see that file), against each other. Without this, a
+# manual workflow_dispatch run that overlaps the hourly schedule -- or two
+# manual dispatches close together, or a daily-post run overlapping an
+# engagement-check run -- could both call the live Graph API and both post,
+# or both try to commit+push state/post_history.json at once. Not cancelling
+# in-progress runs (cancel-in-progress: false) is deliberate: a run that has
+# already posted live to Facebook but hasn't yet committed its history record
+# must be allowed to finish, not get killed mid-way and lose that record.
+concurrency:
+  group: govallecito-post-and-history
+  cancel-in-progress: false
+
+# Needed so the built-in GITHUB_TOKEN can push state/post_history.json back
+# to this same repo after a real (non-dry-run) post -- that file is the
+# memory the engagement-check workflow and the learning loop run on.
+permissions:
+  contents: write
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    # Bounds how long a hung run can occupy the concurrency queue above and
+    # block the next scheduled run -- normal execution (fetch, render, post,
+    # commit) takes well under this.
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Liberation Sans is what render_card.py draws with (matches the
+      # site's Arial/Helvetica fallback). Most ubuntu-latest images already
+      # have it, but installing explicitly means this workflow doesn't
+      # silently break if a future runner image drops it.
+      - name: Install fonts
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-liberation
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run daily post
+        env:
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || vars.DRY_RUN }}
+          FORCE_SLOT: ${{ github.event.inputs.force_slot }}
+        run: python scripts/main.py
+
+      # So a dry run's rendered card + caption (or a failed live run's
+      # output) can actually be looked at from the Actions tab, not just
+      # trusted blindly.
+      - name: Upload rendered output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-output-${{ github.run_id }}
+          path: output/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      # Only state/post_history.json ever changes here (main.py only writes
+      # to it after a real, non-dry-run post) -- this step is a no-op the
+      # other ~22 hourly runs a day and on every dry run.
+      #
+      # The concurrency block above is the primary defense against two runs
+      # touching this file at once, but it only serializes runs of these two
+      # workflows against EACH OTHER -- it doesn't cover every possible race
+      # (e.g. a manual commit landing between checkout and push). If the
+      # push is rejected (non-fast-forward), retry a few times against the
+      # latest remote state before giving up -- without this, a rejected
+      # push would silently lose that run's record of a real, already-live
+      # Facebook post with no automatic recovery.
+      - name: Commit updated post history, if any
+        run: |
+          git config user.name "govallecito-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/post_history.json
+          if git diff --staged --quiet; then
+            echo "No change to post_history.json this run -- nothing to commit."
+            exit 0
+          fi
+          git commit -m "Log post to history"
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt/5) -- likely a concurrent run updated the same file. Fetching latest and rebasing before retrying..."
+            git fetch origin "${GITHUB_REF_NAME}"
+            git rebase "origin/${GITHUB_REF_NAME}"
+            sleep $((attempt * 5))
+          done
+          echo "::error::Could not push state/post_history.json after 5 attempts. A live Facebook post from this run may now have NO record in post_history.json -- check the Page directly and consider manually reconciling the file."
+          exit 1

@@ -1,0 +1,70 @@
+name: Check Post Engagement
+
+# Runs once a day. Looks at every post in state/post_history.json that's at
+# least 48 hours old and hasn't been checked yet, pulls its current
+# like/comment/share counts from the Graph API, and recomputes
+# state/content_preferences.json -- the (gently, gated on sample size)
+# learned weights generate_post_text.py uses. See scripts/check_engagement.py
+# for the full explanation, including why "learning" won't mean much for the
+# first few months on a brand new page.
+on:
+  schedule:
+    - cron: "0 10 * * *"
+  workflow_dispatch: {}
+
+# Same concurrency group as daily-post.yml (see that file's comment) -- both
+# workflows read/write state/post_history.json, so a run of this workflow
+# and a run of daily-post.yml must never execute at the same time either.
+concurrency:
+  group: govallecito-post-and-history
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  check-engagement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check engagement and recompute preferences
+        env:
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+        run: python scripts/check_engagement.py
+
+      # Same reasoning as daily-post.yml's equivalent step: the concurrency
+      # block above is the primary defense, but if a push is ever rejected
+      # anyway, retry against the latest remote state a few times rather
+      # than silently losing this run's engagement data and learned
+      # preferences with no automatic recovery.
+      - name: Commit updated state, if any
+        run: |
+          git config user.name "govallecito-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/post_history.json state/content_preferences.json
+          if git diff --staged --quiet; then
+            echo "No new engagement data this run -- nothing to commit."
+            exit 0
+          fi
+          git commit -m "Update engagement data and content preferences"
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt/5) -- likely a concurrent run updated the same file. Fetching latest and rebasing before retrying..."
+            git fetch origin "${GITHUB_REF_NAME}"
+            git rebase "origin/${GITHUB_REF_NAME}"
+            sleep $((attempt * 5))
+          done
+          echo "::error::Could not push updated engagement data after 5 attempts. This run's engagement checks and preference updates were NOT saved -- they should get picked up again on the next scheduled run, since check_engagement.py re-checks anything not marked as checked, so nothing here is permanently lost, just delayed."
+          exit 1

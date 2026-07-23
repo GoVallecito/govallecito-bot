@@ -1,0 +1,49 @@
+{
+  "_comment": "A small, deliberately short list of well-sourced seasonal facts. Quality over quantity -- each entry below was researched against a named, checkable source, not generated. That leaves real gaps in the calendar (nothing for spring wildflowers, spring runoff as its own topic, winter beyond the eagle entry, etc.) -- better to have a short list you trust than a long one padded with guesses. Add more entries the same way: find a real source, quote/cite it, don't invent a 'fun fact' from nothing.",
+
+  "entries": [
+    {
+      "id": "hummingbird_migration",
+      "date_start": "07-10",
+      "date_end": "08-31",
+      "headline": "The hummingbirds are moving through.",
+      "fact": "Rufous hummingbirds pass through the San Juans in July and August on their southbound migration -- one of the longest migrations relative to body size of any bird. Broad-tailed hummingbirds, Colorado's common high-country breeder, are still around too.",
+      "source_name": "Cornell Lab of Ornithology / Rove.me regional migration guide",
+      "source_url": "https://rove.me/to/colorado/hummingbird-migration",
+      "confidence_note": "Timing corroborated across sources; the 'longest migration relative to body size' claim is well-established in ornithology literature generally, not tied to one single citation.",
+      "commons_category": "Category:Selasphorus rufus"
+    },
+    {
+      "id": "elk_rut",
+      "date_start": "09-01",
+      "date_end": "10-15",
+      "headline": "It's elk rut season.",
+      "fact": "Bull elk spar for dominance over harems of cows this time of year, with mating wrapped up by mid-October. Bugling -- a long, eerie whistle-scream echoing off the ridgelines at dawn or dusk -- is the sound most associated with the rut in Colorado's high country.",
+      "source_name": "Colorado Parks & Wildlife",
+      "source_url": "https://cpw.state.co.us/species/elk",
+      "confidence_note": "The cited CPW page confirms sparring for dominance and mating ending by mid-October, but doesn't itself describe bugling or a specific September start -- the bugling description is common, widely-documented elk behavior in Colorado rather than a direct quote from this source.",
+      "commons_category": "Category:Cervus canadensis"
+    },
+    {
+      "id": "aspen_color",
+      "date_start": "09-20",
+      "date_end": "10-10",
+      "headline": "Fall color is turning.",
+      "fact": "Aspens -- about 20% of Colorado's forest cover -- usually peak in the San Juans from late September into early October, running roughly from Silverton (mid-September) down through Pagosa Springs and Durango (early-to-mid October).",
+      "source_name": "San Juan National Forest fall colors report, USDA Forest Service",
+      "source_url": "https://www.fs.usda.gov/r02/sanjuan/conditions/sjnf-fall-colors-report",
+      "confidence_note": "USFS report doesn't call out Vallecito specifically; it sits geographically between the Silverton and Durango/Pagosa timing windows cited.",
+      "commons_category": "Category:Populus tremuloides"
+    },
+    {
+      "id": "bald_eagle_winter",
+      "date_start": "12-01",
+      "date_end": "02-28",
+      "headline": "Eagle season at the lake.",
+      "fact": "Bald eagles are in Colorado year-round, but winter is prime viewing near reservoirs and open tailwaters below dams, where they gather -- sometimes communally roosting in large trees for warmth -- as other water freezes over.",
+      "source_name": "Colorado Parks & Wildlife",
+      "source_url": "https://cpw.state.co.us/species/bald-eagle",
+      "commons_category": "Category:Haliaeetus leucocephalus"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "_comment": "Manually maintained -- there is no public API for fire restriction stage (InciWeb and the Forest Service publish this as text/press releases, not structured data). Update this file whenever La Plata County / San Juan National Forest changes the stage. Check: https://www.fs.usda.gov/main/sanjuan/alerts-notices and the La Plata County Sheriff's Office Facebook page. This is the ONE file in this repo you should expect to hand-edit regularly.",
+
+  "stage": 2,
+  "stage_label": "Stage 2 fire restrictions",
+  "restrictions_summary": "no campfires or charcoal, anywhere",
+  "effective_date": "2026-07-20",
+  "source": "San Juan National Forest / La Plata County",
+  "source_url": "https://www.fs.usda.gov/main/sanjuan/alerts-notices",
+
+  "nearby_wildfires": {
+    "_comment": "Optional. Set count to 0 to omit the situational line entirely. If you set a count > 0, write the whole 'note' sentence yourself -- the bot posts it verbatim, it does not calculate distances.",
+    "count": 0,
+    "note": ""
+  },
+
+  "last_updated_by": "David",
+  "last_updated_at": "2026-07-20"
+}
