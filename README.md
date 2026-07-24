@@ -26,9 +26,16 @@ real runs are also the first real test.
 Every hour, a free GitHub Actions job wakes up, checks the time in Colorado,
 and does nothing unless it's ~7am or ~2pm local time. When it is, it:
 
-1. Pulls current weather from the National Weather Service, streamflow from
-   USGS, lake storage from Colorado's Division of Water Resources, and fire
-   restriction status from a file in this repo that you update by hand.
+1. Pulls current weather, lake storage, streamflow, and fire-restriction /
+   nearby-wildfire status from **govallecito.com's own live-conditions
+   backend** (the same Cloudflare Worker the website's own pages read from)
+   -- so the bot and the site report identical numbers instead of computing
+   their own similar-but-slightly-different versions. Weather, lake, and
+   streamflow each automatically fall back to their original independent
+   government sources (NWS, Colorado DWR, USGS) if that backend is ever
+   unreachable; fire status has no such fallback (there's no independent
+   live source for it) and honestly reports "delayed" instead on the rare
+   occasion the Worker is down. See "Where the data comes from" below.
 2. On roughly 1-2 days a week (see "Images and the seasonal almanac" below),
    also checks whether today matches a researched seasonal topic, and if so
    tries to pull a real public-domain photo to go with it.
@@ -52,6 +59,43 @@ and does nothing unless it's ~7am or ~2pm local time. When it is, it:
    detected -- no waiting for the 7am/2pm schedule, no approval step. See
    "Emergency alerts" below; this is the one part of the system that doesn't
    wait for anything.
+
+## Where the data comes from
+
+Weather, lake level, streamflow, and fire-restriction/wildfire status all
+come primarily from **govallecito.com's own live-conditions Worker**
+(`govallecito-conditions.dkontje.workers.dev/data/conditions.json`) -- the
+same backend the website's own pages already read from. This was a
+deliberate change (2026-07-24): using the site's own numbers is the most
+direct way to guarantee the bot and the website always agree, instead of
+each independently computing a similar-but-not-always-identical figure from
+raw government APIs.
+
+That single-upstream design trades away some redundancy, so three of the
+four sections have an automatic fallback if the Worker is ever unreachable
+or returns stale/malformed data for that section:
+
+- **Weather** falls back to a direct National Weather Service call.
+- **Streamflow** falls back to the single USGS Vallecito Creek gauge (the
+  Worker's own figure combines Pine River + Vallecito Creek, which is why
+  the post says "combined inflow" normally but "(Vallecito Creek)" only
+  during a fallback -- the wording changes along with what's actually being
+  measured, never mismatched).
+- **Lake level** falls back to a direct Colorado DWR query.
+- **Fire restriction status / nearby wildfires** has **no fallback** --
+  there's no independent live source for it (that's exactly why
+  `config/fire_status.json` existed before this change). If the Worker is
+  down, fire status honestly reports "data delayed" that cycle rather than
+  silently serving old information from an unmaintained file. If this
+  tradeoff turns out to be wrong in practice, restoring a file-based
+  fallback is a one-line change -- ask Claude.
+
+**`config/fire_status.json` is no longer read by the bot.** It's kept in
+the repo as a historical record, but hand-editing it no longer changes any
+post, and no longer triggers the emergency-alert workflow (see "Emergency
+alerts" below). You don't need to maintain it anymore -- fire stage and
+wildfire proximity are now automatic, sourced the same place the website's
+own fire-status display gets them.
 
 ## Images and the seasonal almanac
 
@@ -136,7 +180,7 @@ exactly how far along each hook is.
 
 A third workflow, independent of the two scheduled daily posts, watches for
 genuinely urgent conditions and posts about them immediately -- no waiting
-for 7am/2pm, no manual approval step. It looks at three sources every time
+for 7am/2pm, no manual approval step. It looks at four sources every time
 it runs:
 
 1. **The National Weather Service's public active-alerts feed**, filtered to
@@ -144,35 +188,69 @@ it runs:
    or disaster (`fetch_conditions.ALERT_EVENT_CATEGORIES`) -- deliberately
    not "anything Severe," which would also fire on routine winter-storm or
    thunderstorm warnings that aren't what this feature is for.
-2. **`config/emergency_override.json`** -- a manual flag you set by hand for
-   anything the NWS feed can't see (see the coverage gap below). Set
-   `active: true`, fill in `category`/`headline`/`details`/`source`, save.
-3. **`config/fire_status.json`** -- the same file you already hand-edit for
-   routine fire-stage updates. If you bump the stage up, or add a nearby
-   wildfire, this workflow treats that as alert-worthy on its own and posts
-   about it immediately, even though nothing about how you edit that file
-   changes. A stage or wildfire-count *decrease* is deliberately not
-   alert-worthy -- that's good news, not an emergency, and it already shows
-   up in the next scheduled post same as always.
+2. **`config/emergency_override.json`** -- a manual flag you set by hand,
+   right here in this repo, for anything the NWS feed can't see (see the
+   coverage gap below). Set `active: true`, fill in
+   `category`/`headline`/`details`/`source`, save.
+3. **`restriction.override` on your own govallecito-conditions Worker** -- a
+   SECOND, independent manual flag, this one living in your Worker's own
+   code rather than this repo (see "A second manual override lives in your
+   Worker now" below). Set it `true` there and this workflow picks it up on
+   its next poll.
+4. **An escalation in the fire-restriction stage or nearby-wildfire count**
+   that `fetch_conditions.fetch_fire_status()` reads from that same Worker
+   (see "Where the data comes from" above) -- fully automatic now. You don't
+   have to do anything for this one; if La Plata County / San Juan National
+   Forest raises the restriction stage, or a new wildfire shows up nearby,
+   and your Worker picks that up, this workflow posts about it on its own.
+   A stage or wildfire-count *decrease* is deliberately not alert-worthy --
+   that's good news, not an emergency, and it already shows up in the next
+   scheduled post same as always.
 
 **Two response speeds, and it's worth knowing which applies:**
 
-- Editing `config/fire_status.json` or `config/emergency_override.json` and
-  pushing that change to GitHub (including editing the file directly on
-  github.com, which counts as a push) triggers this workflow within
-  **seconds**.
-- The NWS feed is polled on a schedule, every **10 minutes**, so a
-  genuinely new NWS-issued alert can take up to that long to be noticed and
-  posted -- not truly instant, but close.
+- Editing `config/emergency_override.json` and pushing that change to
+  GitHub (including editing the file directly on github.com, which counts
+  as a push) triggers this workflow within **seconds**.
+- Everything else -- the NWS feed, the automatic fire/wildfire escalation
+  check, and your Worker's `restriction.override` flag -- is only checked on
+  the **10-minute poll**, so any of those three can take up to that long to
+  be noticed and posted. `restriction.override` in particular does NOT get
+  the instant-push speed above, even though it's also "a flag you set by
+  hand" -- it lives in your Worker's own code, outside this repo, so GitHub
+  has no way to know the moment you deploy a change to it.
 
 **A gap worth knowing about, not glossed over:** the NWS feed only carries
-what NWS itself (or another agency relaying through IPAWS) has published.
-A county sheriff's evacuation order issued only through a local
-CodeRED/Everbridge-type system, with no IPAWS/WEA relay, will not appear
-there -- there is no free public API for that. `config/emergency_override.json`
-exists specifically as the manual backstop for that case: if you hear about
-an evacuation order through any channel this bot can't see, that file is how
-you get it posted immediately anyway.
+what NWS itself (or another agency relaying through IPAWS) has published. A
+county sheriff's evacuation order issued only through La Plata County's own
+resident notification system -- **LPC Alerts**, the system that replaced
+CodeRED -- will not appear there; as of this system too, there is no free
+public API or feed for it (confirmed 2026-07-24). Two manual backstops exist
+for exactly that gap: `config/emergency_override.json` (edit a file in this
+repo) and your Worker's `restriction.override` (edit code you already
+maintain). Use whichever's easier to reach in the moment -- they don't
+conflict, and either one gets an evacuation notice posted immediately even
+though nothing in this bot can see LPC Alerts directly.
+
+**A second manual override lives in your Worker now.** You mentioned wanting
+to connect this directly to the county's evacuation system, and that isn't
+possible today -- LPC Alerts has no public feed. `restriction.override` is
+the closest practical substitute: a flag on the same `restriction` object
+your Worker already returns in `conditions.json`. Set `override: true` in
+your Worker's own source and this workflow treats it exactly like
+`config/emergency_override.json`. Optional companion fields, read
+defensively (missing ones just fall back to generic alert text, so flipping
+`override` alone is enough to produce a real post):
+   - `overrideCategory` -- one of `flood` / `fire` / `evacuation` / `disaster`
+   - `overrideHeadline` -- short headline
+   - `overrideDetails` -- longer description
+   - `overrideSource` -- attribution shown in the post
+   - `overrideSourceUrl` -- link included in the post if present
+
+This lives entirely in your Worker's own code, which Claude has no access to
+or visibility into -- you'd need to add these fields yourself (or paste the
+Worker's source into a future session for help) whenever you want to use
+this path.
 
 **Same `DRY_RUN` switch as everything else.** This is deliberate: David
 asked for alerts to post "without review," meaning no person has to approve
@@ -183,9 +261,9 @@ up in step 4 below; there's no separate switch to remember.
 
 **It won't re-post the same thing every 10 minutes.** A state file
 (`state/emergency_alert_state.json`) remembers what's already been posted
-about -- a still-active NWS alert, an unchanged manual override, an
-unchanged fire stage -- so only genuinely new information triggers another
-post. On this repo's very first-ever run, an already-elevated fire stage is
+about -- a still-active NWS alert, an unchanged manual override (either
+kind), an unchanged fire stage -- so only genuinely new information
+triggers another post. On this repo's very first-ever run, an already-elevated fire stage is
 recorded as the starting baseline rather than treated as a brand new
 emergency the moment this feature goes live; only increases from that point
 on count.
@@ -323,28 +401,37 @@ setting is almost certainly why.
 
 ## Keeping it running
 
-- **Fire status is manual.** There's no public API for restriction stage --
-  edit `config/fire_status.json` whenever La Plata County / San Juan
-  National Forest changes it. This is the one file you should expect to
-  touch regularly. Everything else is fully automatic.
+- **Fire status is now automatic.** As of 2026-07-24, fire-restriction stage
+  and nearby-wildfire data come from govallecito.com's own Worker, the same
+  backend the website itself uses -- there's nothing to hand-edit here
+  anymore for that. `config/fire_status.json` still exists but is no longer
+  read; if you want to go back to hand-maintaining it instead of trusting
+  the Worker, that's a one-line code change in
+  `fetch_conditions.fetch_fire_status()` -- ask Claude.
 - **GitHub disables scheduled workflows after 60 days of repo inactivity.**
-  If posts silently stop with no error, check the Actions tab for a banner
-  saying the workflow was disabled, and click to re-enable it. (Committing
-  the occasional fire-status update resets this clock as a side effect.)
+  Now that `DRY_RUN` is off, every successful scheduled post commits
+  `state/post_history.json` back to the repo, which resets this clock
+  automatically, twice a day -- more reliable than the old fire-status-edit
+  side effect ever was, since that depended on the county actually changing
+  something. Worth knowing anyway: if posts ever silently stop for an
+  unrelated reason, check the Actions tab for a banner saying the workflow
+  was disabled, and click to re-enable it.
 - If a run fails, GitHub emails the address on your GitHub account
   automatically -- no extra setup needed. The failed run's log will say
   which step broke.
 
 ## Known limitations, honestly
 
-- **Lake level parsing is the least-tested part of this.** The Colorado DWR
-  endpoint it calls is real and confirmed to exist, but the exact field
-  names in `fetch_conditions.fetch_lake_level()` were written from API
-  documentation, not a live response -- the sandbox that built this couldn't
-  reach dwr.state.co.us to check. Run `scripts/test_data_sources.py` (or a
-  `workflow_dispatch` test run) and look at the "raw response" section it
-  prints; if lake level comes back empty, the field names likely need a
-  small adjustment there.
+- **Lake level's direct-DWR fallback path was fixed and confirmed live on
+  its first real run.** Lake level is now primarily read from
+  govallecito.com's own Worker (see "Where the data comes from" above); the
+  original direct Colorado DWR query only runs as a fallback if the Worker
+  is unreachable. That fallback path did hit a real 400 error on its first
+  production run (2026-07-24) -- root-caused and fixed the same day (wrong
+  field names and an unsupported date-range parameter; see the detailed
+  comment on `_fetch_lake_level_from_dwr()`). If it ever breaks again, run
+  `scripts/test_data_sources.py` (or a `workflow_dispatch` test run) and look
+  at the "raw response" section it prints.
 - **USGS's own reservoir gage (09353000) is not used.** It stopped reporting
   in 2012. Lake level comes from Colorado's state system instead, which is
   also closer to the source govallecito.com itself already credits
@@ -385,25 +472,33 @@ setting is almost certainly why.
   just who reacted) needs an additional permission and a bigger API surface
   -- skipped for now to keep the permissions ask in step 2 unchanged from
   what's already documented.
-- **No automated wildfire-proximity check.** The "X wildfires nearby" line is
-  manually written into `config/fire_status.json`, same as the fire stage
-  itself -- not pulled from NIFC or InciWeb live. (There's a real NIFC ArcGIS
-  API that could do this later; skipped for now to keep the number of live
-  dependencies small while this is new.)
+- **Wildfire-proximity checking is now automated** (added 2026-07-24) --
+  sourced from govallecito.com's own Worker, which itself blends NIFC/WFIGS
+  and NASA FIRMS incident data, filtered to a 50-mile radius. This replaced
+  the old manually-written `config/fire_status.json` nearby-wildfires note.
+  One real caveat worth knowing: this repo has not independently verified
+  the Worker's own wildfire-matching logic (e.g. exactly how it defines
+  "nearby" or resolves incident names) -- it trusts the Worker's numbers the
+  same way it trusts govallecito.com's own displayed numbers, which was the
+  explicit point of this change ("identical reporting"), but it does mean a
+  mistake in the Worker's own logic would show up here too.
 - **Emergency alerts have a real, disclosed coverage gap.** The automated
   half (NWS's active-alerts feed) cannot see a county-issued evacuation order
-  that's only distributed through a local CodeRED/Everbridge-type system with
-  no IPAWS/WEA relay -- there's no free public API for that. The manual
-  override file (`config/emergency_override.json`) is the intended backstop,
-  but it only helps if a person notices and edits that file; it is not a
-  substitute for following official county emergency-notification channels
-  directly.
+  that's only distributed through La Plata County's own resident
+  notification system -- LPC Alerts, which replaced CodeRED -- since neither
+  system has ever exposed a public API or feed (confirmed 2026-07-24). Two
+  manual backstops exist (`config/emergency_override.json`, and your Worker's
+  `restriction.override` -- see "Emergency alerts" above), but both only help
+  if a person notices and sets one of them; neither is a substitute for
+  following official county emergency-notification channels directly.
 - **Emergency alerts aren't instant in the literal sense.** A push to
-  `config/fire_status.json` or `config/emergency_override.json` triggers a
-  check within seconds; the automated NWS-feed side is polled every 10
-  minutes, so worst case is about that long. Both can also queue behind a
-  scheduled daily-post run that's already in progress, up to that workflow's
-  15-minute timeout -- see "Emergency alerts" above for the reasoning.
+  `config/emergency_override.json` triggers a check within seconds; the
+  automated NWS feed, the automatic fire/wildfire escalation check, and your
+  Worker's `restriction.override` flag are all only checked on the 10-minute
+  poll, so worst case is about that long for any of those three. All of
+  these can also queue behind a scheduled daily-post run that's already in
+  progress, up to that workflow's 15-minute timeout -- see "Emergency
+  alerts" above for the reasoning.
 - **Emergency alerts only fire on escalation, not de-escalation.** A fire
   stage or nearby-wildfire count going down doesn't produce an "all clear"
   post -- only increases are treated as alert-worthy. Restrictions being
@@ -426,8 +521,11 @@ setting is almost certainly why.
 
 ```
 scripts/
-  fetch_conditions.py    -- pulls NWS / USGS / Colorado DWR data, reads fire_status.json,
-                             pulls NWS active alerts for the emergency-alert workflow
+  fetch_conditions.py    -- pulls weather/lake/streamflow/fire+wildfire data primarily from
+                             govallecito.com's own Worker, falling back to direct NWS / USGS /
+                             Colorado DWR calls for the first three (fire has no fallback --
+                             see its docstring); also pulls NWS active alerts for the
+                             emergency-alert workflow
   fetch_image.py         -- searches + downloads a safely-licensed photo from Wikimedia
                              Commons for grounded posts (fails closed -- see its docstring)
   generate_post_text.py  -- turns conditions (+ almanac, + learned preferences) into
@@ -441,15 +539,19 @@ scripts/
   post_history.py        -- reads/writes state/post_history.json
   check_engagement.py    -- pulls engagement on 48h+ old posts, recomputes preferences
                              (excludes emergency-alert posts from that math -- see above)
-  check_emergency.py     -- orchestrator for the emergency-alert workflow; entry point
+  check_emergency.py     -- orchestrator for the emergency-alert workflow (NWS feed,
+                             config/emergency_override.json, Worker restriction.override,
+                             automatic fire/wildfire escalation); entry point
                              emergency-alert.yml calls
   main.py                -- orchestrator; entry point the daily-post workflow calls
   test_data_sources.py   -- standalone debug script, prints raw API responses
 config/
-  fire_status.json           -- manually maintained fire restriction status (also watched
-                                 for escalation by the emergency-alert workflow)
+  fire_status.json           -- LEGACY, no longer read (fire status is now automatic via
+                                 govallecito.com's own Worker -- see fetch_conditions.py);
+                                 kept only as a historical record
   seasonal_almanac.json       -- short, cited list of seasonal facts + Commons categories
-  emergency_override.json    -- manual emergency flag for what the NWS feed can't see
+  emergency_override.json    -- manual emergency flag for what the NWS feed can't see (one
+                                 of two such flags -- see "Emergency alerts" above)
 state/
   post_history.json             -- every real post: hook used, had an image?, engagement
                                     once checked, plus post_type/alert fields for alerts

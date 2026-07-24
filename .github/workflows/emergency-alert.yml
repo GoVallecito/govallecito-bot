@@ -5,16 +5,30 @@ name: Emergency Alert Check
 # the full detection logic and the honest version of what "immediately"
 # means here. Two trigger paths, deliberately different speeds:
 #
-# 1. schedule: polls the NWS active-alerts feed every 10 minutes, all day,
-#    every day (same "GitHub disables scheduled workflows after 60 days of
-#    repo inactivity" gotcha as daily-post.yml -- check the Actions tab for
-#    a re-enable banner if this silently stops for a couple of quiet months).
-# 2. push (paths filter): the moment David edits config/fire_status.json or
-#    config/emergency_override.json and pushes that change to `main`
-#    (including an edit + commit straight from GitHub's own web UI -- that
-#    counts as a push too), this runs within seconds instead of waiting for
-#    the next poll. This is the "instant" half of "posted immediately" --
-#    it only watches those two files so routine code changes never trigger it.
+# 1. schedule: every 10 minutes, all day, every day, runs
+#    scripts/check_emergency.py, which checks the NWS active-alerts feed,
+#    the automatic fire-restriction/wildfire escalation and
+#    restriction.override flag sourced from David's own Worker, and
+#    config/emergency_override.json, all in one pass (same "GitHub disables
+#    scheduled workflows after 60 days of repo inactivity" gotcha as
+#    daily-post.yml -- check the Actions tab for a re-enable banner if this
+#    silently stops for a couple of quiet months).
+# 2. push (paths filter): the moment David edits config/emergency_override.json
+#    and pushes that change to `main` (including an edit + commit straight
+#    from GitHub's own web UI -- that counts as a push too), this runs
+#    within seconds instead of waiting for the next poll. This is the
+#    "instant" half of "posted immediately" -- it only watches that one file
+#    so routine code changes never trigger it.
+#
+#    config/fire_status.json was REMOVED from this list 2026-07-24:
+#    fetch_conditions.fetch_fire_status() no longer reads that file at all
+#    (fire/wildfire data now comes from David's own Worker), so a
+#    push-trigger on it would have been actively misleading. The Worker's
+#    own restriction.override flag is the fire-side equivalent of this
+#    instant path now, but it can't be a push trigger here since it doesn't
+#    live in this repo -- see _check_worker_override() in
+#    check_emergency.py; it's covered by the schedule above instead
+#    (~10-15 min worst case, not instant).
 #
 # COST NOTE, worth knowing before you pick "public" or "private" for this
 # repo: every-10-minutes is ~144 runs/day. Public repos get UNLIMITED GitHub
@@ -30,7 +44,6 @@ on:
   push:
     branches: [main]
     paths:
-      - "config/fire_status.json"
       - "config/emergency_override.json"
   workflow_dispatch:
     inputs:

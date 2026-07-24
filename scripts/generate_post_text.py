@@ -347,12 +347,21 @@ def build_post(conditions, slot, dt=None, image_dest_path=None):
         })
 
     # -- streamflow ----------------------------------------------------------
+    # Wording depends on fetch_conditions.py's "combined" flag: normally
+    # (Worker reachable) this is the combined Pine River + Vallecito Creek
+    # figure -- the same one govallecito.com's own Fishing Report text uses
+    # -- so it's labeled "combined inflow"; during a Worker outage the
+    # fallback path only has the single Vallecito Creek USGS gauge, so it's
+    # labeled the same way it always used to be. The number and the label
+    # change together so the two can never disagree about what's actually
+    # being measured.
     if streamflow and streamflow.get("cfs") is not None:
-        caption_lines.append(f"🌊 Streamflow: {streamflow['cfs']:.0f} cfs (Vallecito Creek)")
+        flow_label = "cfs combined inflow" if streamflow.get("combined") else "cfs (Vallecito Creek)"
+        caption_lines.append(f"🌊 Streamflow: {streamflow['cfs']:.0f} {flow_label}")
         rows.append({
             "icon": "wave",
             "label": "STREAMFLOW",
-            "value": f"{streamflow['cfs']:.0f} cfs (Vallecito Creek)",
+            "value": f"{streamflow['cfs']:.0f} {flow_label}",
             "badge": LAKE_2,
             "icon_color": WHITE,
         })

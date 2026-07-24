@@ -1,22 +1,39 @@
 """
 Emergency alert orchestrator: checks for active flood/fire/evacuation/
-disaster conditions from three sources -- (1) NWS's public active-alerts
-feed, (2) config/emergency_override.json, a manual backstop for what that
-feed can't see (most importantly, a county evacuation order issued only
-through a local CodeRED/Everbridge system with no public API), and (3) an
-escalation in David's own hand-maintained config/fire_status.json (a stage
-increase, or a newly-nonzero nearby-wildfire count) -- and immediately
-posts a safety-priority-variant card for anything genuinely NEW, with no
-scheduling wait and no manual-approval gate. That's the whole point of this
-file: David's instruction was "posted immediately without review."
+disaster conditions from four sources -- (1) NWS's public active-alerts
+feed, (2) config/emergency_override.json, a manual backstop David edits by
+hand in this repo, (3) restriction.override on David's own
+govallecito-conditions Worker, a SECOND independent manual backstop (see
+_check_worker_override() below for the field contract), and (4) an
+escalation in fetch_conditions.fetch_fire_status()'s stage/nearby-wildfire
+numbers (sourced from that same Worker as of 2026-07-24; a stage increase,
+or a newly-higher nearby-wildfire count) -- and immediately posts a
+safety-priority-variant card for anything genuinely NEW, with no scheduling
+wait and no manual-approval gate. That's the whole point of this file:
+David's instruction was "posted immediately without review."
+
+Why TWO manual backstops (2 and 3) instead of one: neither La Plata
+County's current resident notification system (LPC Alerts, formerly branded
+CodeRED) nor its predecessor has ever exposed a public API or feed a script
+could poll (confirmed 2026-07-24) -- so a real county evacuation order only
+reaches this bot if David tells it by hand, through one of these two
+channels. They're not redundant: config/emergency_override.json is editable
+straight from GitHub's own web UI from a phone with zero code context (and
+pushing it triggers this workflow within seconds -- see below);
+restriction.override lives in code David already maintains for other
+reasons and may already be open when something happens, but a change there
+only gets picked up on the next scheduled poll (also see below).
 
 Runs via .github/workflows/emergency-alert.yml on both a frequent schedule
-AND an instant push trigger for the two config files above. "Immediately"
-here honestly means "within ~10-15 minutes at worst for the automated NWS
-feed, or within seconds of a git push for a manual override / fire-status
-edit" -- not truly real-time. See the README for the full honest version of
-that promise, including the coverage gap disclosed in
-fetch_conditions.fetch_active_alerts()'s docstring.
+AND an instant push trigger for config/emergency_override.json.
+"Immediately" here honestly means "within ~10-15 minutes at worst for the
+automated NWS feed and for a Worker-side restriction.override change, or
+within seconds of a git push for a config/emergency_override.json edit" --
+not truly real-time, and the Worker path specifically does NOT get the
+instant-push speed, since it lives outside this repo and GitHub has no way
+to know the moment David deploys a change to it. See the README for the
+full honest version of that promise, including the coverage gap disclosed
+in fetch_conditions.fetch_active_alerts()'s docstring.
 
 Respects the existing DRY_RUN toggle exactly like main.py does. This is NOT
 the "review gate" David asked to remove -- that instruction was about not
@@ -27,10 +44,10 @@ same repo variable as the two scheduled daily posts, until he flips it to
 "false".
 
 De-duplication is state-based (state/emergency_alert_state.json) so the
-same still-active NWS alert, still-open manual override, or still-elevated
-fire stage doesn't get re-posted every single run -- only a genuinely NEW
-alert id, a CHANGED override, or an INCREASE in fire stage/nearby-wildfire
-count triggers a new post. A stage or count DECREASE (restrictions being
+same still-active NWS alert, still-open manual override (either kind), or
+still-elevated fire stage doesn't get re-posted every single run -- only a
+genuinely NEW alert id, a CHANGED override, or an INCREASE in fire
+stage/nearby-wildfire count triggers a new post. A stage or count DECREASE (restrictions being
 lifted) is deliberately not treated as alert-worthy here -- that's good
 news, not an emergency, and it already shows up naturally in the next
 scheduled daily post same as it always has.
@@ -57,6 +74,7 @@ STATE_PATH = os.path.join(REPO_ROOT, "state", "emergency_alert_state.json")
 DEFAULT_STATE = {
     "posted_alert_ids": [],
     "manual_override": {"last_posted_fingerprint": None},
+    "worker_override": {"last_posted_fingerprint": None},
     "fire_escalation": {"last_posted_stage": None, "last_posted_nearby_count": None},
 }
 
@@ -76,6 +94,8 @@ def _load_state():
             merged["posted_alert_ids"] = loaded["posted_alert_ids"]
         if isinstance(loaded.get("manual_override"), dict):
             merged["manual_override"].update(loaded["manual_override"])
+        if isinstance(loaded.get("worker_override"), dict):
+            merged["worker_override"].update(loaded["worker_override"])
         if isinstance(loaded.get("fire_escalation"), dict):
             merged["fire_escalation"].update(loaded["fire_escalation"])
         return merged
@@ -156,6 +176,66 @@ def _check_manual_override(state):
     }
 
 
+def _check_worker_override(state, fire):
+    """Read-only: returns an alert dict if David's own Worker reports an
+    active override -- restriction.override truthy on the raw snapshot
+    fetch_conditions.py passes through as fire["_restriction_raw"] -- AND its
+    content differs from what was last successfully posted, else None. Does
+    NOT mutate state -- same convention as _check_manual_override() above.
+
+    This is a SECOND, independent way to flag a manual emergency; it
+    coexists with config/emergency_override.json rather than replacing it
+    (see the module docstring for why there are two). David asked
+    (2026-07-24) about connecting straight to the county's own evacuation
+    system -- not possible, neither CodeRED nor its LPC Alerts replacement
+    expose a public feed (see fetch_conditions.fetch_active_alerts()'s
+    docstring) -- so this is the closest practical substitute: flip one
+    field in code David already controls
+    (govallecito-conditions.dkontje.workers.dev) and it reaches Facebook on
+    the next poll (~10-15 min worst case; NOT instant -- see the module
+    docstring), no separate change in this repo required.
+
+    Field contract, all on the raw `restriction` object the Worker returns
+    (conditions.json's "restriction" key) -- this is a proposed convention,
+    not something the Worker sends today, so every field below is read
+    defensively and falls back to generic text if absent:
+      override           -- bool. Everything else here is optional --
+                             flipping just this one flag is enough to
+                             produce a real, if generically worded, post.
+      overrideCategory    -- one of generate_post_text.ALERT_CATEGORY_DISPLAY's
+                             keys ("flood"/"fire"/"evacuation"/"disaster").
+                             Unrecognized or missing -> "disaster".
+      overrideHeadline    -- short headline string.
+      overrideDetails     -- longer description string.
+      overrideSource      -- attribution shown in the post (e.g. "La Plata
+                             County OEM"). Missing -> "GoVallecito".
+      overrideSourceUrl   -- link included in the post if present.
+    """
+    restriction = (fire or {}).get("_restriction_raw") or {}
+    if not restriction.get("override"):
+        return None
+    category = restriction.get("overrideCategory") or "disaster"
+    if category not in generate_post_text.ALERT_CATEGORY_DISPLAY:
+        print(f"[check_emergency] restriction.overrideCategory has an unrecognized value "
+              f"{category!r} -- treating as 'disaster'. Valid categories: "
+              f"{sorted(generate_post_text.ALERT_CATEGORY_DISPLAY)}")
+        category = "disaster"
+    fp = _fingerprint(category, restriction.get("overrideHeadline"), restriction.get("overrideDetails"), restriction.get("overrideSource"))
+    if state["worker_override"]["last_posted_fingerprint"] == fp:
+        return None  # this exact override content was already posted
+    return {
+        "id": f"worker-override-{fp}",
+        "kind": "worker_override",
+        "fingerprint": fp,
+        "event": "Worker-flagged emergency",
+        "category": category,
+        "headline": restriction.get("overrideHeadline") or "Emergency alert",
+        "description": restriction.get("overrideDetails", ""),
+        "source_name": restriction.get("overrideSource") or "GoVallecito",
+        "source_url": restriction.get("overrideSourceUrl", ""),
+    }
+
+
 def _find_new_nws_alerts(state, active_alerts):
     """Read-only from the caller's perspective except for one harmless,
     idempotent side effect: pruning ids that are no longer active out of
@@ -222,6 +302,8 @@ def main():
     fire = conditions.get("fire")
     active_alerts = fetch_conditions.fetch_active_alerts()
     print(f"NWS active alerts matching our categories: {len(active_alerts)}")
+    print(f"Worker restriction.override flag: "
+          f"{bool((fire or {}).get('_restriction_raw', {}).get('override'))}")
 
     fe = state["fire_escalation"]
     if fire and fe["last_posted_stage"] is None and fe["last_posted_nearby_count"] is None:
@@ -249,6 +331,9 @@ def main():
     manual = _check_manual_override(state)
     if manual:
         new_events.append(manual)
+    worker_override = _check_worker_override(state, fire)
+    if worker_override:
+        new_events.append(worker_override)
     new_events.extend(_find_new_nws_alerts(state, active_alerts))
     fire_alert = _check_fire_escalation(state, fire)
     if fire_alert:
@@ -297,6 +382,8 @@ def main():
             # pending alert in this same run.
             if alert.get("kind") == "manual_override":
                 state["manual_override"]["last_posted_fingerprint"] = alert["fingerprint"]
+            elif alert.get("kind") == "worker_override":
+                state["worker_override"]["last_posted_fingerprint"] = alert["fingerprint"]
             elif alert.get("kind") == "fire_escalation":
                 state["fire_escalation"]["last_posted_stage"] = alert["stage"]
                 state["fire_escalation"]["last_posted_nearby_count"] = alert["nearby_count"]

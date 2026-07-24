@@ -1,5 +1,5 @@
 {
-  "_comment": "Manually maintained -- there is no public API for fire restriction stage (InciWeb and the Forest Service publish this as text/press releases, not structured data). Update this file whenever La Plata County / San Juan National Forest changes the stage. Check: https://www.fs.usda.gov/main/sanjuan/alerts-notices and the La Plata County Sheriff's Office Facebook page. This is the ONE file in this repo you should expect to hand-edit regularly.",
+  "_comment": "LEGACY / NO LONGER READ (as of 2026-07-24) -- fetch_conditions.fetch_fire_status() now sources fire restriction stage and wildfire-proximity data from govallecito.com's own Worker (govallecito-conditions.dkontje.workers.dev), the same backend the website itself reads from, instead of this file. This file is kept only as a historical record -- editing it no longer changes what the bot posts, and no longer triggers the emergency-alert workflow (its push-trigger path was updated to stop watching this file). If you ever want to go back to hand-maintaining fire status here instead of trusting the Worker, that's a one-line code change in fetch_conditions.fetch_fire_status() -- ask Claude.",
 
   "stage": 2,
   "stage_label": "Stage 2 fire restrictions",
