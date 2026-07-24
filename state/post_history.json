@@ -1,3 +1,18 @@
 {
-  "posts": []
+  "posts": [
+    {
+      "post_id": "1138532512682553_122118225129360003",
+      "posted_at": "2026-07-24T02:31:50.226438+00:00",
+      "slot": "morning",
+      "hook_line": "Morning check-in from the lake.",
+      "had_image": true,
+      "image_topic": "hummingbird_migration",
+      "fire_stage": 2,
+      "post_type": "daily",
+      "alert_category": null,
+      "alert_id": null,
+      "engagement_checked": false,
+      "engagement": null
+    }
+  ]
 }
