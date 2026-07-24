@@ -3,8 +3,11 @@
   "manual_override": {
     "last_posted_fingerprint": null
   },
+  "worker_override": {
+    "last_posted_fingerprint": null
+  },
   "fire_escalation": {
     "last_posted_stage": 2,
-    "last_posted_nearby_count": 0
+    "last_posted_nearby_count": 1
   }
 }
