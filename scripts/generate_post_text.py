@@ -44,6 +44,7 @@ import fetch_image
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ALMANAC_PATH = os.path.join(REPO_ROOT, "config", "seasonal_almanac.json")
 PREFERENCES_PATH = os.path.join(REPO_ROOT, "state", "content_preferences.json")
+DAILY_POST_STATE_PATH = os.path.join(REPO_ROOT, "state", "daily_post_state.json")
 
 MIN_SAMPLES_FOR_WEIGHTING = 15
 GROUNDED_POST_INTERVAL_DEFAULT = 4  # roughly 1.75x/week; see _grounded_interval()
@@ -115,6 +116,33 @@ def _load_json_safe(path, default):
             return json.load(f)
     except Exception:
         return default
+
+
+def _load_daily_post_state():
+    """See _decide_wildfire_situational_line()'s docstring for what this
+    tracks and why. Missing/corrupt file -> the safe "nothing known yet"
+    default, same fail-open behavior as _load_json_safe above -- worst
+    case a fire that's actually already been reported gets treated as
+    "new" one extra time, not a crash."""
+    return _load_json_safe(DAILY_POST_STATE_PATH, {"nearby_wildfires": {"last_known_count": 0}})
+
+
+def _save_daily_post_state(state):
+    """Mirrors post_history.py's save_history(): write-to-temp-then-
+    os.replace so a run that dies mid-write can never leave this file
+    half-written/corrupt for the next run to trip over. The GitHub Actions
+    workflow is responsible for committing this file back to the repo when
+    it changes (see .github/workflows/daily-post.yml) -- same split of
+    responsibilities as post_history.py's own module docstring describes."""
+    try:
+        os.makedirs(os.path.dirname(DAILY_POST_STATE_PATH), exist_ok=True)
+        tmp_path = DAILY_POST_STATE_PATH + f".tmp-{os.getpid()}"
+        with open(tmp_path, "w") as f:
+            json.dump(state, f, indent=2)
+            f.write("\n")
+        os.replace(tmp_path, DAILY_POST_STATE_PATH)
+    except Exception as exc:
+        print(f"[generate_post_text] failed to save {DAILY_POST_STATE_PATH}: {exc}")
 
 
 def _pick_hook(slot, dt):
@@ -215,6 +243,60 @@ def _try_build_featured_image(dt, slot, image_dest_path):
         "_fact_for_caption": fact,
         "_source_name": entry["source_name"],
     }
+
+
+def _decide_wildfire_situational_line(fire):
+    """Decides whether today's post should lead its one situational-line
+    slot with the nearby-wildfire safety note (as opposed to letting a
+    seasonal photo take that slot instead), and updates
+    state/daily_post_state.json to match. See the README's change log for
+    the full story (dated 2026-07-24); short version below.
+
+    Before this change, the safety note was shown on ANY post where a
+    wildfire sat within 50mi -- no memory of whether a previous post had
+    already said so. Once fire/wildfire data started coming from David's
+    own Worker (2026-07-24's Tier-2 change) instead of a hand-maintained
+    config file that in practice never had a real entry, this went from
+    effectively dormant to firing on every single post for as long as any
+    wildfire stayed within range -- weeks, for a slow-burning one -- and
+    since the card has only one situational-line slot, that also silently
+    shut out the seasonal-photo feature the entire time. That's the same
+    fact being repeated, not new information each time.
+
+    A genuinely NEW wildfire report should still always win that slot --
+    unchanged, safety-first behavior. "New" is judged the same way
+    check_emergency.py's own _check_fire_escalation() already judges it
+    for the immediate-alert path: the nearby-wildfire COUNT going up
+    versus the last count THIS state file recorded (a separate file from
+    check_emergency.py's own state -- "has a routine daily post already
+    told the public about this" and "has an emergency alert already fired
+    for this" are answered by two different, independently-scheduled
+    workflows, and conflating them would couple two features that should
+    be free to evolve independently). A count decrease, or an unchanged
+    count with only the descriptive note text differing (e.g. a
+    containment percentage ticking up), is NOT treated as new -- exactly
+    David's own framing: a status update "should not block seasonal photo
+    posting."
+
+    Returns (should_show_note, note_text_or_None). Always saves state to
+    the CURRENT count before returning regardless of the decision, so the
+    next run's comparison is against reality rather than a stale value --
+    same update-every-run behavior as _check_fire_escalation().
+    """
+    nearby = (fire or {}).get("nearby_wildfires") or {}
+    current_count = nearby.get("count", 0) or 0
+    note = nearby.get("note")
+
+    state = _load_daily_post_state()
+    wildfire_state = state.setdefault("nearby_wildfires", {})
+    last_known_count = wildfire_state.get("last_known_count", 0) or 0
+    is_new_report = current_count > last_known_count
+    show_note = bool(current_count > 0 and note and is_new_report)
+
+    wildfire_state["last_known_count"] = current_count
+    _save_daily_post_state(state)
+
+    return show_note, (note if show_note else None)
 
 
 def _fire_badge_color(fire):
@@ -369,12 +451,16 @@ def build_post(conditions, slot, dt=None, image_dest_path=None):
     # "delayed" when we don't actually know that's why our fetch came back
     # empty.
 
-    # -- optional situational line: safety (nearby wildfire) always wins
-    # over a seasonal fact, per the style guide's own stated priority ------
-    nearby = (fire or {}).get("nearby_wildfires") or {}
+    # -- optional situational line: a genuinely NEW wildfire report always
+    # wins over a seasonal fact, per the style guide's own stated safety-
+    # first priority -- but see _decide_wildfire_situational_line()'s
+    # docstring for why "new" is not the same test as "currently nonzero"
+    # (an ongoing, already-known fire no longer monopolizes this slot on
+    # every single post) ------------------------------------------------
+    show_wildfire_note, wildfire_note_text = _decide_wildfire_situational_line(fire)
     featured_image = None
-    if nearby.get("count", 0) > 0 and nearby.get("note"):
-        caption_lines.append(f"🚨 {_condense(nearby['note'], SAFETY_NOTE_CHAR_BUDGET)}")
+    if show_wildfire_note:
+        caption_lines.append(f"🚨 {_condense(wildfire_note_text, SAFETY_NOTE_CHAR_BUDGET)}")
     else:
         featured_image = _try_build_featured_image(dt, slot, image_dest_path)
         if featured_image:

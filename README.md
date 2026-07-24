@@ -127,8 +127,21 @@ information from reliable sources. It only covers about 4-5 months of the
 year right now -- add more entries the same way (find a real source, cite it)
 whenever you want more coverage. A matching photo + fact only gets used on
 about 1-2 days a week (the style guide's own cap on how often the "situational
-line" should appear), and never on a day when there's an actual nearby
-wildfire to report instead -- safety information always wins that slot.
+line" should appear).
+
+A genuinely NEW nearby-wildfire report always wins that slot over a seasonal
+photo -- safety first, unchanged. That's *not* the same as "any day a wildfire
+is within 50mi," though (changed 2026-07-24): once fire/wildfire data started
+coming live from your Worker instead of a hand-maintained config file that in
+practice never had a real entry, "wildfire within 50mi" stopped being rare --
+during fire season it can be true for weeks straight, which would have meant
+the safety note (correctly) winning that slot every single post and silently
+shutting the seasonal-photo feature out the entire time. `generate_post_text.py`
+now remembers (`state/daily_post_state.json`) the last nearby-wildfire count it
+already told the public about and only leads with the safety note when that
+count goes UP -- a routine status update about a fire you've already reported
+(containment ticking up, say) no longer blocks the seasonal photo. See
+`_decide_wildfire_situational_line()`'s docstring for the exact rule.
 
 ## Text always fits the card, on purpose
 
@@ -445,6 +458,30 @@ setting is almost certainly why.
   good matches for all four almanac categories" is genuinely still an open
   item. Worth specifically checking the first few grounded-post dry runs
   rather than just glancing at the data-only ones.
+- **The photo band's crop used to cut subjects' heads off -- fixed
+  2026-07-24, but worth understanding the fix's real limits.** The first
+  real grounded-post test used a portrait-orientation hummingbird photo
+  (subject in the upper third, blurred background filling the rest) --
+  exactly the composition this card's crop handles worst, because the photo
+  band is much wider than tall (1080x460) and a plain center crop of a
+  portrait photo down to that shape reliably lands well below the subject's
+  head. The fix (`render_card._smart_crop_offset()`) tries to find where the
+  photo actually has detail rather than always cropping dead-center -- but a
+  first attempt using pure edge-detection energy was tested against that
+  same real photo and FAILED, because it favored a sharp, wide, high-contrast
+  foreground object (the feeder rim) over the bird's smaller, finer head
+  detail. What's shipped now adds a positional bias toward the upper-middle
+  of the frame (a soft prior, not a hard rule -- real content detail can
+  still shift the result elsewhere) on top of the edge-detection signal,
+  which correctly framed that same test photo's head and eye. This is a
+  heuristic, not real subject/face detection -- it should work well for the
+  wildlife-closeup style of photo this feature mostly uses, but hasn't been
+  proven against all four almanac categories' actual photo styles (a full
+  tree canopy for aspen color, for instance, doesn't really have a single
+  "subject" the way an animal portrait does). Worth a look whenever a new
+  category's grounded post runs for the first time. This also added `numpy`
+  to `requirements.txt` -- a small, standard, no-compile dependency, not
+  something to worry about.
 - **The regular (non-grounded) data card still uses a solid brand-color
   background, not a photo.** That's deliberate -- reliability and legibility
   for what's fundamentally a utility post, and one less thing re-fetched
@@ -532,7 +569,9 @@ scripts/
                              caption text and image data; also builds the emergency-alert
                              post variant (build_alert_post())
   render_card.py         -- draws the 1080x1080 branded card, plain, with a photo band,
-                             or with an alert row (pure PIL, no browser)
+                             or with an alert row (PIL + numpy, no browser); the photo
+                             band uses a content-aware crop, not a plain center crop --
+                             see _smart_crop_offset()'s docstring (added 2026-07-24)
   icons.py               -- hand-drawn brand icons (see comment in the file for why
                              not emoji fonts)
   post_to_facebook.py    -- posts to the Graph API, or dry-runs to output/
@@ -557,6 +596,10 @@ state/
                                     once checked, plus post_type/alert fields for alerts
   content_preferences.json      -- learned weights (created once there's enough data)
   emergency_alert_state.json    -- dedup memory for the emergency-alert workflow
+  daily_post_state.json         -- last nearby-wildfire count a DAILY post already
+                                    reported (added 2026-07-24) -- a separate concern
+                                    from emergency_alert_state.json above; see
+                                    generate_post_text._decide_wildfire_situational_line()
 .github/workflows/
   daily-post.yml          -- the hourly GitHub Actions schedule
   engagement-check.yml    -- the daily engagement-check + learning-update schedule

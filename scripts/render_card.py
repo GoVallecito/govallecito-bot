@@ -1,8 +1,9 @@
 """
 Renders the branded 1080x1080 "conditions card" image that goes out with
-every post. Pure PIL, no browser/Chromium dependency -- deliberately, so this
-runs fast and identically every time in GitHub Actions without needing to
-install or launch a browser just to draw some text over a color.
+every post. Pure PIL (+ numpy for the smart-crop math below), no browser/
+Chromium dependency -- deliberately, so this runs fast and identically every
+time in GitHub Actions without needing to install or launch a browser just to
+draw some text over a color.
 
 Brand colors below are pulled directly from claude/facebook-brand-foundation.md
 (the same palette already live on the Facebook Page and the website's own
@@ -10,7 +11,8 @@ CSS) -- nothing here is a new invented color.
 """
 
 import os
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
+import numpy as np
 
 import icons
 
@@ -96,10 +98,97 @@ def _wrap_text(draw, text, font, max_width):
 
 MAX_COVER_FIT_PIXELS = 40_000_000  # sanity cap on the intermediate resize buffer
 
+# How wide/tall (whichever axis is being scored) the downscaled thumbnail
+# used for content-detection is. Kept small on purpose -- this only needs
+# to find roughly WHERE the detail is, not resolve fine structure, and a
+# small thumbnail keeps _smart_crop_offset fast even on a large source photo.
+CONTENT_PROFILE_SIZE = 120
+
+# Vertical-crop positional prior: a plain "most edge energy" search sounds
+# right but was empirically tested (2026-07-24, against the real photo that
+# produced David's "can't see the hummingbird's head at all" report) and it
+# FAILED -- it favored a wide, sharp, high-contrast foreground object (a
+# feeder rim spanning most of the frame width) over the bird's head, because
+# raw edge-magnitude summed per row rewards one long crisp manufactured edge
+# over the smaller, finer, more textured detail of an animal's eye/beak/
+# feathers. A subject-detection model would solve this properly, but pulling
+# one in (weights to fetch/bundle, a much heavier dependency) is out of
+# proportion to "don't crop the bird's head off." Instead this nudges the
+# search toward where wildlife/nature photography conventionally puts its
+# subject -- upper-to-upper-middle frame, with habitat/perch/background
+# filling the rest below -- while still letting real content detail shift
+# the result elsewhere when the evidence is strong (see the flat-image
+# fallback test in the change note: with zero content signal this reduces
+# to centering the crop window on the prior's peak, not a hardcoded crop).
+# Only applied to the vertical axis -- there's no equivalent "subjects go on
+# this particular side" convention horizontally, so horizontal cropping
+# (rare for this card's very wide, short photo band) stays pure content-only.
+VERTICAL_PRIOR_PEAK = 0.25   # fraction of frame height, from the top
+VERTICAL_PRIOR_SPREAD = 0.18  # gaussian sigma, same units
+
+
+def _content_energy_profile(photo_gray, axis):
+    """Returns a 1-D numpy array of per-row (axis="vertical") or per-column
+    (axis="horizontal") 'how much visual detail is here' scores, computed
+    from a small downscaled edge-detected copy of photo_gray."""
+    w, h = photo_gray.size
+    if axis == "vertical":
+        small_w = CONTENT_PROFILE_SIZE
+        small_h = max(1, round(h * (CONTENT_PROFILE_SIZE / w)))
+    else:
+        small_h = CONTENT_PROFILE_SIZE
+        small_w = max(1, round(w * (CONTENT_PROFILE_SIZE / h)))
+    small = photo_gray.resize((small_w, small_h), Image.LANCZOS)
+    edges = np.asarray(small.filter(ImageFilter.FIND_EDGES), dtype=np.float64)
+    return edges.sum(axis=1) if axis == "vertical" else edges.sum(axis=0)
+
+
+def _smart_crop_offset(photo_gray, full_len, target_len, axis):
+    """Picks WHERE along `axis` (the axis with cover-fit overflow) to
+    place the target_len-sized crop window. See the module-level
+    VERTICAL_PRIOR_PEAK comment above for why this is content-energy
+    PLUS a positional prior on the vertical axis, not content-energy
+    alone -- a pure edge-energy search was tried first and demonstrably
+    picked the wrong region on a real test photo.
+
+    Falls back to a dead-center offset if anything about the detection
+    step fails -- a slightly-off crop position is a cosmetic issue; a
+    crash here must never take down the whole post (same fail-open-to-
+    a-safe-default philosophy as the rest of this file's photo handling).
+    """
+    center_fallback = max(0, (full_len - target_len) // 2)
+    if full_len <= target_len:
+        return 0
+    try:
+        profile = _content_energy_profile(photo_gray, axis)
+        n = len(profile)
+        window = max(1, round(n * target_len / full_len))
+        if window >= n:
+            return center_fallback
+
+        if axis == "vertical":
+            row_frac = np.arange(n) / n
+            prior = np.exp(-0.5 * ((row_frac - VERTICAL_PRIOR_PEAK) / VERTICAL_PRIOR_SPREAD) ** 2)
+            profile = profile * prior
+
+        prefix = np.concatenate([[0.0], np.cumsum(profile)])
+        window_sums = prefix[window:] - prefix[:-window]
+        best_start = int(np.argmax(window_sums))
+        offset = round(best_start * full_len / n)
+        return max(0, min(offset, full_len - target_len))
+    except Exception as exc:
+        print(f"[render_card] smart crop offset failed ({exc}); falling back to a center crop")
+        return center_fallback
+
 
 def _cover_fit(photo, target_w, target_h):
-    """Resize + center-crop a photo to exactly fill target_w x target_h,
-    same idea as CSS background-size: cover."""
+    """Resize + content-aware crop a photo to exactly fill target_w x
+    target_h, same idea as CSS background-size: cover -- except WHERE the
+    crop window lands is chosen by _smart_crop_offset() rather than always
+    dead-center (see that function's docstring, and the VERTICAL_PRIOR_PEAK
+    comment above, for why plain center-crop was cutting subjects' heads
+    off and why plain content-energy alone wasn't a sufficient fix either).
+    Falls back to a plain center crop on any failure in the smart-crop step."""
     src_w, src_h = photo.size
     if src_w <= 0 or src_h <= 0:
         raise ValueError(f"photo has invalid dimensions {src_w}x{src_h}")
@@ -112,8 +201,16 @@ def _cover_fit(photo, target_w, target_h):
             "aspect-ratio source image) -- refusing rather than risking an OOM"
         )
     resized = photo.resize((new_w, new_h), Image.LANCZOS)
-    left = (new_w - target_w) // 2
-    top = (new_h - target_h) // 2
+
+    if new_h > target_h:
+        left = (new_w - target_w) // 2
+        top = _smart_crop_offset(resized.convert("L"), new_h, target_h, axis="vertical")
+    elif new_w > target_w:
+        top = (new_h - target_h) // 2
+        left = _smart_crop_offset(resized.convert("L"), new_w, target_w, axis="horizontal")
+    else:
+        left = (new_w - target_w) // 2
+        top = (new_h - target_h) // 2
     return resized.crop((left, top, left + target_w, top + target_h))
 
 
