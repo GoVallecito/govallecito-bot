@@ -276,7 +276,19 @@ def build_post(conditions, slot, dt=None, image_dest_path=None):
         # explicit "omit if missing" exception the way streamflow does
         # (see the streamflow block below), so a missing/incomplete
         # reading should say so rather than vanish silently.
+        #
+        # The card row mirrors the caption for the same reason fire status
+        # already did (see below): if the caption says "data delayed" but
+        # the card just drops the row, the two disagree about what happened
+        # -- exactly the divergence this whole feature exists to prevent.
         caption_lines.append("💧 Lake level: data delayed — check govallecito.com")
+        rows.append({
+            "icon": "droplet",
+            "label": "LAKE LEVEL",
+            "value": "Data delayed — check govallecito.com",
+            "badge": WARN,
+            "icon_color": LAKE,
+        })
 
     # -- weather -------------------------------------------------------------
     if weather and weather.get("current_f") is not None:
@@ -293,7 +305,17 @@ def build_post(conditions, slot, dt=None, image_dest_path=None):
             "icon_color": WHITE,
         })
     else:
+        # Same reasoning as the lake-level branch above: mirror the
+        # caption's "data delayed" in the card row instead of silently
+        # dropping the row, so the two can't disagree.
         caption_lines.append("🌡️ Weather: data delayed — check govallecito.com")
+        rows.append({
+            "icon": "thermo",
+            "label": "WEATHER",
+            "value": "Data delayed — check govallecito.com",
+            "badge": WARN,
+            "icon_color": WHITE,
+        })
 
     # -- fire status (always shown if config loaded) ------------------------
     if fire:
