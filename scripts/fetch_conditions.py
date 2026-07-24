@@ -16,13 +16,17 @@ workflow once by hand (see README, "workflow_dispatch") and read the job log
 -- main.py prints exactly what each source returned, and
 scripts/test_data_sources.py dumps the raw responses for debugging.
 
-Two sources are built from documentation only and flagged accordingly below;
-everything else was confirmed against a live query during development.
+One source (fetch_active_alerts) is built from documentation only and
+flagged accordingly below. fetch_lake_level was also documentation-only
+until its first production run (2026-07-24) hit a 400 -- see the big
+comment on that function for what the real DWR response looks like and
+what was wrong with the original guess. Everything else was confirmed
+against a live query during development.
 """
 
 import json
 import os
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 import requests
 
@@ -158,22 +162,40 @@ def fetch_lake_level():
     above), and because this is closer to the source govallecito.com itself
     credits ("USBR / USACE").
 
-    *** NOT CONFIRMED LIVE -- VERIFY THIS ONE FIRST ***
-    The endpoint itself (dwr.state.co.us .../telemetrytimeseriesraw) and its
-    date-range parameters are confirmed from DWR's own REST API help page.
-    The exact field names below (ResultList, parameter, measDate, value) are
-    a best-effort guess at CDSS's usual response shape, NOT verified against
-    a live response -- outbound access to dwr.state.co.us wasn't available
-    from the sandbox that wrote this. Run scripts/test_data_sources.py (or
-    just the first workflow_dispatch run) and check the raw JSON it prints;
-    fix the field names here if they don't match.
+    *** VERIFIED LIVE 2026-07-24 -- see below if it ever breaks again ***
+    The first real run (GitHub Actions run #13, 2026-07-23/24) hit a
+    400 Bad Request. Root-caused by querying the endpoint directly
+    (outside the sandbox's own restricted network) against the real,
+    live DWR API:
+
+      - `min-measurementDate` / `max-measurementDate` (this function's
+        original query params) are NOT accepted by this endpoint and
+        cause a flat 400 -- confirmed by reproducing the exact same 400
+        with those params, and getting a clean 200 with the same
+        abbrev/format params once they were removed. Rather than guess
+        at yet another spelling for a date-range filter, this function
+        now doesn't send one at all: the endpoint's default (no date
+        filter) already returns a small window of the most recent
+        readings (~3,000 records for this one station), and the
+        client-side "pick the max by measDateTime" logic below finds
+        the latest reading fine without any server-side date filtering.
+      - The real record fields are `measDateTime` and `measValue`, not
+        `measDate` / `value` as originally guessed. This would have kept
+        fetch_lake_level() silently returning None (or silently picking
+        an arbitrary "tied" record instead of the true latest one) even
+        after the 400 above was fixed -- there was no live sample to
+        catch it at write time.
+      - `ResultList` (top-level wrapper) and `parameter` (values seen
+        for this station: "STORAGE", "ELEV") were both correct in the
+        original guess -- unchanged here.
+
+    If this starts failing again: run scripts/test_data_sources.py (or a
+    workflow_dispatch run) and diff the raw JSON's field names against
+    what's parsed below.
     """
-    today = date.today()
-    start = today - timedelta(days=3)
     url = (
         "https://dwr.state.co.us/Rest/GET/api/v2/telemetrystations/telemetrytimeseriesraw"
         f"?abbrev={CDSS_STATION_ABBREV}"
-        f"&min-measurementDate={start.isoformat()}&max-measurementDate={today.isoformat()}"
         "&format=json"
     )
     try:
@@ -191,22 +213,22 @@ def fetch_lake_level():
         if not storage_records:
             return None
 
-        latest_ts = max(r.get("measDate", "") for r in storage_records)
-        tied = [r for r in storage_records if r.get("measDate", "") == latest_ts]
-        if len(tied) > 1 and len({r.get("value") for r in tied}) > 1:
+        latest_ts = max(r.get("measDateTime", "") for r in storage_records)
+        tied = [r for r in storage_records if r.get("measDateTime", "") == latest_ts]
+        if len(tied) > 1 and len({r.get("measValue") for r in tied}) > 1:
             print(f"[fetch_lake_level] warning: {len(tied)} storage records tied on "
-                  f"measDate={latest_ts!r} with differing values -- picking the last "
+                  f"measDateTime={latest_ts!r} with differing values -- picking the last "
                   "one in API response order, which may not be the most authoritative "
                   "reading. Worth checking test_data_sources.py output if this recurs.")
         latest_storage = tied[-1]
-        storage_af = float(latest_storage.get("value"))
+        storage_af = float(latest_storage.get("measValue"))
         pct_full = round(100 * storage_af / FULL_POOL_CAPACITY_ACRE_FEET)
 
         elevation_ft = None
         if elev_records:
-            latest_elev = sorted(elev_records, key=lambda r: r.get("measDate", ""))[-1]
+            latest_elev = sorted(elev_records, key=lambda r: r.get("measDateTime", ""))[-1]
             try:
-                elevation_ft = float(latest_elev.get("value"))
+                elevation_ft = float(latest_elev.get("measValue"))
             except (TypeError, ValueError):
                 print("[fetch_lake_level] elevation reading present but not parseable as a number; omitting elevation only")
                 elevation_ft = None
@@ -215,7 +237,7 @@ def fetch_lake_level():
             "storage_af": storage_af,
             "pct_full": pct_full,
             "elevation_ft": elevation_ft,
-            "timestamp": latest_storage.get("measDate"),
+            "timestamp": latest_storage.get("measDateTime"),
         }
     except Exception as exc:
         print(f"[fetch_lake_level] failed: {exc}")

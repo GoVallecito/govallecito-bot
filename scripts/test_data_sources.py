@@ -13,7 +13,6 @@ see what the Colorado DWR API actually sent back and fix the field names.
 
 import json
 import sys
-from datetime import date, timedelta
 
 import requests
 
@@ -40,12 +39,13 @@ def test_streamflow():
 
 def test_lake_level_raw():
     _divider("Colorado DWR lake level (dwr.state.co.us) -- RAW response")
-    today = date.today()
-    start = today - timedelta(days=3)
+    # No date-range params here on purpose -- min-measurementDate/
+    # max-measurementDate caused a 400 on the first real run (2026-07-24)
+    # and were dropped from fetch_conditions.fetch_lake_level() for the
+    # same reason. See the comment on that function for the full story.
     url = (
         "https://dwr.state.co.us/Rest/GET/api/v2/telemetrystations/telemetrytimeseriesraw"
         f"?abbrev={fc.CDSS_STATION_ABBREV}"
-        f"&min-measurementDate={start.isoformat()}&max-measurementDate={today.isoformat()}"
         "&format=json"
     )
     print(f"GET {url}\n")
