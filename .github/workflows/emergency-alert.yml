@@ -1,30 +1,52 @@
-name: Daily Vallecito Conditions Post
+name: Emergency Alert Check
 
-# Runs every hour, every day. That's intentional, not a typo -- see the long
-# comment at the top of scripts/main.py for why an hourly run beats a
-# hardcoded "13:30 and 20:00 UTC" cron (short version: Mountain Time's DST
-# switch would silently desync a fixed-UTC schedule twice a year). The
-# script itself checks the real local time and only posts during the 7am and
-# 2pm America/Denver hours -- the other ~22 runs/day exit in a couple
-# seconds without doing anything.
+# Checks for active flood/fire/evacuation/disaster conditions and posts
+# immediately if anything new is found -- see scripts/check_emergency.py for
+# the full detection logic and the honest version of what "immediately"
+# means here. Two trigger paths, deliberately different speeds:
 #
-# GOTCHA WORTH KNOWING: GitHub automatically disables scheduled workflows
-# after 60 days of no repo activity. If posts silently stop for no reason
-# after a couple of quiet months, check the Actions tab for a banner about
-# the workflow being disabled and click re-enable.
+# 1. schedule: every 10 minutes, all day, every day, runs
+#    scripts/check_emergency.py, which checks the NWS active-alerts feed,
+#    the automatic fire-restriction/wildfire escalation and
+#    restriction.override flag sourced from David's own Worker, and
+#    config/emergency_override.json, all in one pass (same "GitHub disables
+#    scheduled workflows after 60 days of repo inactivity" gotcha as
+#    daily-post.yml -- check the Actions tab for a re-enable banner if this
+#    silently stops for a couple of quiet months).
+# 2. push (paths filter): the moment David edits config/emergency_override.json
+#    and pushes that change to `main` (including an edit + commit straight
+#    from GitHub's own web UI -- that counts as a push too), this runs
+#    within seconds instead of waiting for the next poll. This is the
+#    "instant" half of "posted immediately" -- it only watches that one file
+#    so routine code changes never trigger it.
+#
+#    config/fire_status.json was REMOVED from this list 2026-07-24:
+#    fetch_conditions.fetch_fire_status() no longer reads that file at all
+#    (fire/wildfire data now comes from David's own Worker), so a
+#    push-trigger on it would have been actively misleading. The Worker's
+#    own restriction.override flag is the fire-side equivalent of this
+#    instant path now, but it can't be a push trigger here since it doesn't
+#    live in this repo -- see _check_worker_override() in
+#    check_emergency.py; it's covered by the schedule above instead
+#    (~10-15 min worst case, not instant).
+#
+# COST NOTE, worth knowing before you pick "public" or "private" for this
+# repo: every-10-minutes is ~144 runs/day. Public repos get UNLIMITED GitHub
+# Actions minutes; PRIVATE repos are metered (2,000 free minutes/month on
+# GitHub Free), and this schedule alone can approach or exceed that on a
+# private repo even though most runs are a few seconds of no-op. Nothing in
+# this repo is sensitive (the Facebook token lives in encrypted Secrets, not
+# in the repo itself), so a public repo is the recommended choice -- see the
+# README.
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "*/10 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - "config/emergency_override.json"
   workflow_dispatch:
     inputs:
-      force_slot:
-        description: "Force a slot regardless of current time (for testing)"
-        type: choice
-        options:
-          - ""
-          - morning
-          - afternoon
-        default: ""
       dry_run:
         description: "Dry run? (true = render + save only, do not post to Facebook)"
         type: choice
@@ -33,31 +55,28 @@ on:
           - "false"
         default: "true"
 
-# Serializes every run of THIS workflow, AND every run of engagement-check.yml
-# (same group name, see that file), against each other. Without this, a
-# manual workflow_dispatch run that overlaps the hourly schedule -- or two
-# manual dispatches close together, or a daily-post run overlapping an
-# engagement-check run -- could both call the live Graph API and both post,
-# or both try to commit+push state/post_history.json at once. Not cancelling
-# in-progress runs (cancel-in-progress: false) is deliberate: a run that has
-# already posted live to Facebook but hasn't yet committed its history record
-# must be allowed to finish, not get killed mid-way and lose that record.
+# Same shared group as daily-post.yml/engagement-check.yml -- this workflow
+# also reads/writes state/post_history.json (and now
+# state/emergency_alert_state.json), so it must never run at the same time
+# as either of the other two.
+#
+# Real tradeoff, stated plainly rather than glossed over: if daily-post.yml
+# or engagement-check.yml happens to be mid-run when an emergency is
+# detected, this run queues behind it instead of posting instantly --
+# bounded by that other workflow's own 15-minute timeout, worst case.
+# Judged the better default versus the alternative (two workflows racing to
+# write the same JSON file), but it IS a real, if rare, added delay worth
+# knowing about -- see the README.
 concurrency:
   group: govallecito-post-and-history
   cancel-in-progress: false
 
-# Needed so the built-in GITHUB_TOKEN can push state/post_history.json back
-# to this same repo after a real (non-dry-run) post -- that file is the
-# memory the engagement-check workflow and the learning loop run on.
 permissions:
   contents: write
 
 jobs:
-  post:
+  check-emergency:
     runs-on: ubuntu-latest
-    # Bounds how long a hung run can occupy the concurrency queue above and
-    # block the next scheduled run -- normal execution (fetch, render, post,
-    # commit) takes well under this.
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -66,63 +85,52 @@ jobs:
         with:
           python-version: "3.12"
 
-      # Liberation Sans is what render_card.py draws with (matches the
-      # site's Arial/Helvetica fallback). Most ubuntu-latest images already
-      # have it, but installing explicitly means this workflow doesn't
-      # silently break if a future runner image drops it.
+      # Same reasoning as daily-post.yml's identical step -- render_card.py
+      # draws with Liberation Sans, and this workflow renders cards too.
       - name: Install fonts
         run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-liberation
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Run daily post
+      - name: Check for emergencies and post if needed
         env:
           FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
           FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+          # Same DRY_RUN switch as daily-post.yml -- deliberately not a
+          # separate toggle. Flipping vars.DRY_RUN to "false" makes BOTH the
+          # scheduled daily posts AND emergency alerts go live; there's no
+          # way to enable one without the other, and that's intentional
+          # (see check_emergency.py's module docstring for why).
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || vars.DRY_RUN }}
-          FORCE_SLOT: ${{ github.event.inputs.force_slot }}
-        run: python scripts/main.py
+        run: python scripts/check_emergency.py
 
-      # So a dry run's rendered card + caption (or a failed live run's
-      # output) can actually be looked at from the Actions tab, not just
-      # trusted blindly.
+      # So a dry run's rendered alert card(s) -- or a failed live run's
+      # output -- can actually be looked at from the Actions tab.
       - name: Upload rendered output
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: post-output-${{ github.run_id }}
+          name: emergency-output-${{ github.run_id }}
           path: output/
           retention-days: 14
           if-no-files-found: ignore
 
-      # state/post_history.json changes only after a real, non-dry-run post.
-      # state/daily_post_state.json (added 2026-07-24) changes on EVERY run
-      # that sees fire["nearby_wildfires"], live or dry -- it's what lets
-      # generate_post_text.py tell a genuinely new wildfire report apart
-      # from a routine status update about one it already told the public
-      # about (see _decide_wildfire_situational_line()'s docstring). Both
-      # are harmless no-ops to `git add` when unchanged, so this step still
-      # does nothing on the common no-new-wildfire-data run.
-      #
-      # The concurrency block above is the primary defense against two runs
-      # touching these files at once, but it only serializes runs of these
-      # two workflows against EACH OTHER -- it doesn't cover every possible
-      # race (e.g. a manual commit landing between checkout and push). If
-      # the push is rejected (non-fast-forward), retry a few times against
-      # the latest remote state before giving up -- without this, a
-      # rejected push would silently lose that run's record of a real,
-      # already-live Facebook post with no automatic recovery.
-      - name: Commit updated post history, if any
+      # Only changes on a run that (a) posted something real (non-dry-run),
+      # which touches state/post_history.json, or (b) saw NWS alert ids
+      # appear/expire, or a fire-status baseline get recorded, which
+      # touches state/emergency_alert_state.json -- a no-op run (the common
+      # case, ~144x/day) leaves both untouched and this step exits early.
+      - name: Commit updated state, if any
         run: |
           git config user.name "govallecito-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add state/post_history.json state/daily_post_state.json
+          git add state/post_history.json state/emergency_alert_state.json
           if git diff --staged --quiet; then
-            echo "No change to post_history.json/daily_post_state.json this run -- nothing to commit."
+            echo "No change to tracked state this run -- nothing to commit."
             exit 0
           fi
-          git commit -m "Log post to history"
+          git commit -m "Emergency alert check: update state"
           for attempt in 1 2 3 4 5; do
             if git push; then
               echo "Pushed on attempt $attempt."
@@ -133,5 +141,5 @@ jobs:
             git rebase "origin/${GITHUB_REF_NAME}"
             sleep $((attempt * 5))
           done
-          echo "::error::Could not push state/post_history.json / state/daily_post_state.json after 5 attempts. A live Facebook post from this run may now have NO record in post_history.json, and/or the wildfire new-vs-ongoing tracking in daily_post_state.json may be stale (risking the safety note wrongly winning or losing its slot next run) -- check the Page directly and consider manually reconciling both files."
+          echo "::error::Could not push updated state after 5 attempts. A live emergency alert post from this run may now have NO record in post_history.json, and/or its dedup state may not be saved (risking a duplicate re-post next run) -- check the Page directly and consider manually reconciling state/post_history.json and state/emergency_alert_state.json."
           exit 1
