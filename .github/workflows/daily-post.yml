@@ -96,25 +96,30 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
-      # Only state/post_history.json ever changes here (main.py only writes
-      # to it after a real, non-dry-run post) -- this step is a no-op the
-      # other ~22 hourly runs a day and on every dry run.
+      # state/post_history.json changes only after a real, non-dry-run post.
+      # state/daily_post_state.json (added 2026-07-24) changes on EVERY run
+      # that sees fire["nearby_wildfires"], live or dry -- it's what lets
+      # generate_post_text.py tell a genuinely new wildfire report apart
+      # from a routine status update about one it already told the public
+      # about (see _decide_wildfire_situational_line()'s docstring). Both
+      # are harmless no-ops to `git add` when unchanged, so this step still
+      # does nothing on the common no-new-wildfire-data run.
       #
       # The concurrency block above is the primary defense against two runs
-      # touching this file at once, but it only serializes runs of these two
-      # workflows against EACH OTHER -- it doesn't cover every possible race
-      # (e.g. a manual commit landing between checkout and push). If the
-      # push is rejected (non-fast-forward), retry a few times against the
-      # latest remote state before giving up -- without this, a rejected
-      # push would silently lose that run's record of a real, already-live
-      # Facebook post with no automatic recovery.
+      # touching these files at once, but it only serializes runs of these
+      # two workflows against EACH OTHER -- it doesn't cover every possible
+      # race (e.g. a manual commit landing between checkout and push). If
+      # the push is rejected (non-fast-forward), retry a few times against
+      # the latest remote state before giving up -- without this, a
+      # rejected push would silently lose that run's record of a real,
+      # already-live Facebook post with no automatic recovery.
       - name: Commit updated post history, if any
         run: |
           git config user.name "govallecito-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add state/post_history.json
+          git add state/post_history.json state/daily_post_state.json
           if git diff --staged --quiet; then
-            echo "No change to post_history.json this run -- nothing to commit."
+            echo "No change to post_history.json/daily_post_state.json this run -- nothing to commit."
             exit 0
           fi
           git commit -m "Log post to history"
@@ -128,5 +133,5 @@ jobs:
             git rebase "origin/${GITHUB_REF_NAME}"
             sleep $((attempt * 5))
           done
-          echo "::error::Could not push state/post_history.json after 5 attempts. A live Facebook post from this run may now have NO record in post_history.json -- check the Page directly and consider manually reconciling the file."
+          echo "::error::Could not push state/post_history.json / state/daily_post_state.json after 5 attempts. A live Facebook post from this run may now have NO record in post_history.json, and/or the wildfire new-vs-ongoing tracking in daily_post_state.json may be stale (risking the safety note wrongly winning or losing its slot next run) -- check the Page directly and consider manually reconciling both files."
           exit 1
