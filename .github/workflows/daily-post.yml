@@ -25,6 +25,13 @@ on:
           - morning
           - afternoon
         default: ""
+      force_grounded_day:
+        description: "Force today to count as a seasonal-photo 'grounded' day, bypassing the usual 3-6 day interval (for testing the photo/crop fix). Still only applies to the morning slot -- see generate_post_text.py's _is_grounded_day()."
+        type: choice
+        options:
+          - "false"
+          - "true"
+        default: "false"
       dry_run:
         description: "Dry run? (true = render + save only, do not post to Facebook)"
         type: choice
@@ -82,6 +89,7 @@ jobs:
           FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || vars.DRY_RUN }}
           FORCE_SLOT: ${{ github.event.inputs.force_slot }}
+          FORCE_GROUNDED_DAY: ${{ github.event.inputs.force_grounded_day }}
         run: python scripts/main.py
 
       # So a dry run's rendered card + caption (or a failed live run's

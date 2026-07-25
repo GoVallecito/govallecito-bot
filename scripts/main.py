@@ -59,6 +59,14 @@ def main():
 
     print(f"=== GoVallecito daily post: {slot} slot, {now.strftime('%Y-%m-%d %H:%M %Z')} ===")
 
+    # Testing-only override, mirrors FORCE_SLOT's pattern above. See
+    # generate_post_text._try_build_featured_image's docstring for exactly
+    # what this does and doesn't bypass -- it does not manufacture seasonal
+    # content for dates outside the almanac's existing entries.
+    force_grounded_day = (os.environ.get("FORCE_GROUNDED_DAY") or "false").strip().lower() == "true"
+    if force_grounded_day:
+        print("FORCE_GROUNDED_DAY=true -- bypassing the seasonal-post interval gate (testing only).")
+
     print("Fetching conditions...")
     conditions = fetch_conditions.fetch_all()
     for key in ("weather", "streamflow", "lake_level", "fire"):
@@ -71,6 +79,7 @@ def main():
     post = generate_post_text.build_post(
         conditions, slot, dt=now,
         image_dest_path=os.path.join("output", "featured_image.jpg"),
+        force_grounded_day=force_grounded_day,
     )
     print(f"  meta: {post['meta']}")
 

@@ -174,11 +174,15 @@ def _grounded_interval():
     return max(GROUNDED_POST_INTERVAL_MIN, min(GROUNDED_POST_INTERVAL_MAX, interval))
 
 
-def _is_grounded_day(dt, slot):
+def _is_grounded_day(dt, slot, force=False):
     # Restricted to one slot so a grounded day doesn't hand the same
-    # seasonal photo/fact to both the morning and afternoon posts.
+    # seasonal photo/fact to both the morning and afternoon posts -- this
+    # restriction still applies even when force=True; forcing overrides the
+    # interval gate below, not the one-slot-per-day rule.
     if slot != "morning":
         return False
+    if force:
+        return True
     return dt.timetuple().tm_yday % _grounded_interval() == 0
 
 
@@ -205,13 +209,21 @@ def _matching_almanac_entry(dt):
     return ordered[dt.timetuple().tm_yday % len(ordered)]
 
 
-def _try_build_featured_image(dt, slot, image_dest_path):
+def _try_build_featured_image(dt, slot, image_dest_path, force_grounded_day=False):
     """Returns a featured_image dict for render_card.py, or None if today
     isn't a grounded day, no almanac entry matches, no safely-licensed
     photo could be found, or the matching entry is missing a required
     field -- any of which just means "no bonus photo today," not an
-    error."""
-    if not _is_grounded_day(dt, slot):
+    error.
+
+    force_grounded_day bypasses the interval gate (testing only -- see
+    FORCE_GROUNDED_DAY in daily-post.yml) but does NOT bypass the almanac
+    date-range match below: if no entry's date_start/date_end covers today,
+    there's still no fact to attach a photo to, forced or not. In practice
+    that means forcing on a date outside all 4 current entries' windows
+    still yields no photo -- this flag proves the render/crop path works,
+    it doesn't manufacture seasonal content that doesn't exist yet."""
+    if not _is_grounded_day(dt, slot, force=force_grounded_day):
         return None
     entry = _matching_almanac_entry(dt)
     if not entry:
@@ -313,11 +325,13 @@ def _fire_badge_color(fire):
     return DANGER if (stage >= 2 or nearby_count > 0) else WARN
 
 
-def build_post(conditions, slot, dt=None, image_dest_path=None):
+def build_post(conditions, slot, dt=None, image_dest_path=None, force_grounded_day=False):
     """conditions: the dict from fetch_conditions.fetch_all().
     slot: "morning" or "afternoon".
     image_dest_path: where to save a featured photo if one gets used
     (defaults to output/featured_image.jpg next to card.png).
+    force_grounded_day: testing-only override, see _try_build_featured_image's
+    docstring for exactly what it does and doesn't bypass.
     Returns {"caption": str, "card_data": dict, "meta": dict} -- "meta" is
     the bit main.py logs to state/post_history.json for the engagement loop.
     """
@@ -462,7 +476,7 @@ def build_post(conditions, slot, dt=None, image_dest_path=None):
     if show_wildfire_note:
         caption_lines.append(f"🚨 {_condense(wildfire_note_text, SAFETY_NOTE_CHAR_BUDGET)}")
     else:
-        featured_image = _try_build_featured_image(dt, slot, image_dest_path)
+        featured_image = _try_build_featured_image(dt, slot, image_dest_path, force_grounded_day=force_grounded_day)
         if featured_image:
             caption_lines.append(
                 f"🌿 {featured_image['_fact_for_caption']} (source: {featured_image['_source_name']})"
