@@ -27,6 +27,20 @@
       "alert_id": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122118785877360003",
+      "posted_at": "2026-07-26T16:13:17.494067+00:00",
+      "slot": "emergency",
+      "hook_line": "Emergency alert \u2014 Vallecito.",
+      "had_image": false,
+      "image_topic": null,
+      "fire_stage": 1,
+      "post_type": "emergency_alert",
+      "alert_category": "disaster",
+      "alert_id": "worker-override-585d3132e4097af3",
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
