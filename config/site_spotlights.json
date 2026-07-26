@@ -1,0 +1,90 @@
+{
+  "_comment": "Evergreen spotlights on govallecito.com's own site sections and story pages -- added 2026-07-26 as the 'site spotlight' leg of the grounded-content rotation (see generate_post_text.py's _try_build_grounded_content). Same discipline as seasonal_almanac.json: every headline/blurb below describes what's actually on the linked page, verified by reading that page directly this session -- nothing invented, no specific claims beyond what the page itself says. Unlike the almanac, these are NOT date-gated -- all always eligible, picked via deterministic day-of-year rotation. Left out of this first pass (not yet verified, add later the same way -- read the real page first): Respect Vallecito, First Visit, Living in Vallecito, Getting Here, Licenses & Permits, Launch Your Boat, and any individual named Featured Partner business (those are paid placements, not neutral informational content -- treated as a separate, not-yet-scoped decision, not bundled in here).",
+
+  "entries": [
+    {
+      "id": "stories_flood_2025",
+      "headline": "The week the creeks came up.",
+      "blurb": "govallecito.com's own account of the October 2025 flood — the hours as they happened, what was lost, and the eleven rescues.",
+      "url": "https://govallecito.com/october-flood"
+    },
+    {
+      "id": "stories_lake_levels",
+      "headline": "85 years of lake levels, charted.",
+      "blurb": "Every rise and fall since 1941 — the year the lake nearly filled, the year it nearly emptied, and why full pool now tops out at 96 percent.",
+      "url": "https://govallecito.com/lake-levels"
+    },
+    {
+      "id": "stories_missionary_ridge",
+      "headline": "The fire that changed how this valley thinks about fire.",
+      "blurb": "The Missionary Ridge Fire burned 73,000 acres and 56 homes in June 2002 — the Tour of Carvings' Alan Wyatt memorial honors a firefighter lost fighting it.",
+      "url": "https://govallecito.com/missionary-ridge-fire"
+    },
+    {
+      "id": "stories_tuckerville",
+      "headline": "The gold camp that never paid.",
+      "blurb": "Tuckerville was a 1913 gold strike in Cave Basin that emptied out fast — a ghost-town story from above the lake.",
+      "url": "https://govallecito.com/tuckerville"
+    },
+    {
+      "id": "stories_weaselskin",
+      "headline": "A name on the map with real history behind it.",
+      "blurb": "Weaselskin Creek carries a documented Southern Ute name and history, kept honestly separate from the settler-era gold legend nearby.",
+      "url": "https://govallecito.com/weaselskin"
+    },
+    {
+      "id": "stories_middle_mountain",
+      "headline": "The road above the east shore.",
+      "blurb": "Middle Mountain's forest road and ATV routes lead to a ghost town that technically isn't even in this county.",
+      "url": "https://govallecito.com/middle-mountain"
+    },
+    {
+      "id": "gallery",
+      "headline": "See Vallecito in pictures.",
+      "blurb": "Freely licensed photos of the lake, the dam, and the aspens — credited and dated.",
+      "url": "https://govallecito.com/gallery"
+    },
+    {
+      "id": "carvings",
+      "headline": "A tour that remembers, not just sightsees.",
+      "blurb": "A self-guided walk to memorial carvings made from fire-killed trees, including a tribute to firefighter Alan Wyatt.",
+      "url": "https://govallecito.com/carvings"
+    },
+    {
+      "id": "webcams",
+      "headline": "See the lake right now.",
+      "blurb": "Live webcams from around Vallecito Lake.",
+      "url": "https://govallecito.com/webcam"
+    },
+    {
+      "id": "trails",
+      "headline": "Where to hike around the lake.",
+      "blurb": "The full trail guide for the Vallecito area.",
+      "url": "https://govallecito.com/trails"
+    },
+    {
+      "id": "wildlife",
+      "headline": "What lives around Vallecito Lake.",
+      "blurb": "A guide to the wildlife you're likely to see around the lake, and where to look for it.",
+      "url": "https://govallecito.com/wildlife"
+    },
+    {
+      "id": "business_directory",
+      "headline": "Local businesses, guides, and services.",
+      "blurb": "One place to find who's who around the lake — lodging, guides, marina services, and more.",
+      "url": "https://govallecito.com/directory"
+    },
+    {
+      "id": "things_to_do",
+      "headline": "Not sure what to do today?",
+      "blurb": "The full rundown of things to do around Vallecito, from the water to the trailheads.",
+      "url": "https://govallecito.com/things-to-do"
+    },
+    {
+      "id": "camping",
+      "headline": "Where to camp around the lake.",
+      "blurb": "Campground info and what to know before you set up.",
+      "url": "https://govallecito.com/camping"
+    }
+  ]
+}

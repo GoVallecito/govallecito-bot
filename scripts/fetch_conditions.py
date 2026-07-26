@@ -58,6 +58,16 @@ REQUEST_TIMEOUT = 15
 WORKER_CONDITIONS_URL = "https://govallecito-conditions.dkontje.workers.dev/data/conditions.json"
 WILDFIRE_RADIUS_MI = 50  # matches the radius the Worker itself already filters wildfire incidents to
 
+# Separate endpoint from conditions.json above -- confirmed live 2026-07-26 by
+# fetching it directly (govallecito.com/fishing-report reads from this same
+# URL). Real shape: {"updated","author","source","summary","species","moon",
+# "generatedAt"}. NOTE: /data/events.json and /data/photo-of-week.json, both
+# mentioned in claude/data-source-consolidation.md as existing alongside this
+# one, were checked the same way this same session and returned 404 -- that
+# doc was wrong (or the endpoints existed once and were removed since); don't
+# build against them without re-confirming first.
+WORKER_FISHING_REPORT_URL = "https://govallecito-conditions.dkontje.workers.dev/data/fishing-report.json"
+
 # USGS's iv service uses large-magnitude negative sentinels (classically
 # -999999) to mean "no data," rather than omitting the value -- parsed as a
 # plain float that's indistinguishable from a real (if wildly unusual)
@@ -114,6 +124,36 @@ def fetch_worker_snapshot():
     except Exception as exc:
         print(f"[fetch_worker_snapshot] failed: {exc} -- callers will fall back to direct government APIs")
         return None
+
+
+def fetch_fishing_report():
+    """One HTTP call to the Worker's separate fishing-report endpoint.
+    Returns {"summary": str, "updated": str-or-None}, or None on any failure
+    (unreachable, timeout, non-200, unparseable, or an empty summary) --
+    same fail-open, "just means no bonus content today" pattern as
+    fetch_worker_snapshot() above.
+
+    Deliberately NOT called from fetch_all()/fetch_worker_snapshot(): this
+    is only ever needed on the fraction of grounded mornings
+    generate_post_text.py's rotation actually lands on a fishing-report
+    spotlight (see _try_build_grounded_content there), so fetching it on
+    every single hourly run -- most of which don't post at all -- would be a
+    mostly-wasted network call. Called lazily, only when actually needed.
+
+    No independent fallback exists for this one (unlike weather/streamflow/
+    lake, which have a direct-government-API fallback) -- there's no other
+    live source for a Vallecito-specific fishing report anywhere. A fetch
+    failure here just means today's rotation quietly tries the next
+    candidate instead, not an error."""
+    try:
+        data = _get_json(WORKER_FISHING_REPORT_URL, headers={"User-Agent": USER_AGENT})
+    except Exception as exc:
+        print(f"[fetch_fishing_report] failed: {exc}")
+        return None
+    summary = (data.get("summary") or "").strip()
+    if not summary:
+        return None
+    return {"summary": summary, "updated": data.get("updated")}
 
 
 # ---- weather ----------------------------------------------------------

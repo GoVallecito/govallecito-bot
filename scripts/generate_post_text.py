@@ -10,16 +10,32 @@ today's.
 
 Two things layered on top of the original design:
 
-1. "Grounded" seasonal posts. On a rotating cadence (roughly once or twice a
-   week, per the style guide's own "situational line" allowance), if
-   today's date falls inside one of the researched windows in
-   config/seasonal_almanac.json, the post tries to pull a real, safely-
-   licensed photo from Wikimedia Commons (see fetch_image.py) and use the
-   almanac's cited fact as the post's situational line. This only happens
-   when BOTH a matching almanac entry AND a usable photo are available --
-   "when applicable," not forced. A safety-relevant wildfire note (from
-   fire_status.json) always outranks a seasonal fact for that one slot, per
-   the style guide's own stated priority.
+1. "Grounded" content. On a rotating cadence (roughly once or twice a week,
+   per the style guide's own "situational line" allowance), the post's one
+   situational-line slot can carry one of three kinds of enrichment content
+   instead of just the routine data rows -- see _try_build_grounded_content:
+     a. The original (2026-07-22) seasonal almanac fact + a real,
+        safely-licensed Wikimedia Commons photo (config/seasonal_almanac.json,
+        fetch_image.py), rendered as its own dedicated photo band. Only
+        happens when BOTH a matching almanac entry AND a usable photo are
+        available -- "when applicable," not forced.
+     b. Added 2026-07-26: a fishing-report spotlight, built from David's own
+        Worker's real, weekly-updated fishing report (see
+        fetch_conditions.fetch_fishing_report()). Caption-only, no photo.
+     c. Added 2026-07-26: an evergreen site-section spotlight
+        (config/site_spotlights.json) -- stories, webcams, the business
+        directory, trail guide, etc. Also caption-only. Since this one has
+        no live dependency and no date-range gate, it's the guaranteed-
+        available fallback if the other two aren't (almanac's window
+        doesn't match today, or the fishing-report fetch fails).
+   Whichever of the three actually produces content wins a deterministic
+   day-of-year rotation among whichever candidates are eligible that day --
+   see _try_build_grounded_content's own docstring for exactly how. A
+   safety-relevant wildfire note (sourced from David's Worker as of the
+   2026-07-24 data-source-consolidation change, not the historical
+   config/fire_status.json this comment used to reference) always outranks
+   any of the three grounded-content kinds for that one slot, per the style
+   guide's own stated priority.
 
 2. Gentle, data-gated learning. If state/content_preferences.json exists
    (written by scripts/check_engagement.py from real engagement data), hook
@@ -40,9 +56,11 @@ from datetime import datetime
 
 from render_card import MINT, LAKE, WHITE, INFO, DANGER, WARN, LAKE_2
 import fetch_image
+import fetch_conditions
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ALMANAC_PATH = os.path.join(REPO_ROOT, "config", "seasonal_almanac.json")
+SITE_SPOTLIGHTS_PATH = os.path.join(REPO_ROOT, "config", "site_spotlights.json")
 PREFERENCES_PATH = os.path.join(REPO_ROOT, "state", "content_preferences.json")
 DAILY_POST_STATE_PATH = os.path.join(REPO_ROOT, "state", "daily_post_state.json")
 
@@ -84,6 +102,18 @@ SAFETY_NOTE_CHAR_BUDGET = 140
 ALMANAC_FACT_CHAR_BUDGET = 235
 ALMANAC_HEADLINE_CHAR_BUDGET = 80
 
+# Budgets for the two new grounded-content kinds added 2026-07-26 (see
+# _try_build_grounded_content). Both are CAPTION-ONLY, same rendering
+# treatment as the wildfire situational note above (no card row, no photo
+# band) -- captions don't have a hard pixel-overflow failure mode the way
+# the rendered image does, but everything in this file gets a real budget
+# regardless, same "never leave a length undefined" discipline as
+# everywhere else here. The link itself is never condensed away, only the
+# descriptive text in front of it -- same rule as every sign-off link in
+# this file.
+FISHING_REPORT_CHAR_BUDGET = 160
+SITE_SPOTLIGHT_BLURB_CHAR_BUDGET = 180
+
 
 def _condense(text, max_chars):
     """Shortens text to fit within max_chars, breaking on a word boundary
@@ -96,7 +126,15 @@ def _condense(text, max_chars):
     truncated = text[:max_chars - 1]
     if " " in truncated:
         truncated = truncated.rsplit(" ", 1)[0]
-    return truncated.rstrip(",;: ") + "…"
+    # Also strip a trailing "." (added 2026-07-26, noticed while building the
+    # fishing-report spotlight, which happens to append more text right after
+    # this function's own "…" -- a truncation landing right after a real
+    # sentence's period previously produced a double-punctuation "…." or
+    # ".…" artifact. Applies to every caller, not just the new one: a
+    # condensed value is already mid-thought and gets an ellipsis regardless,
+    # so it should never have also been allowed to look like a complete
+    # sentence via a leftover period.
+    return truncated.rstrip(",;:. ") + "…"
 
 
 def _lowercase_first(s):
@@ -209,26 +247,20 @@ def _matching_almanac_entry(dt):
     return ordered[dt.timetuple().tm_yday % len(ordered)]
 
 
-def _try_build_featured_image(dt, slot, image_dest_path, force_grounded_day=False):
-    """Returns a featured_image dict for render_card.py, or None if today
-    isn't a grounded day, no almanac entry matches, no safely-licensed
-    photo could be found, or the matching entry is missing a required
-    field -- any of which just means "no bonus photo today," not an
-    error.
+def _build_almanac_content(entry, image_dest_path):
+    """The original (2026-07-22, photo-crop-fixed 2026-07-24/07-26) grounded
+    content: a seasonal almanac fact + a real, safely-licensed Commons photo,
+    rendered as render_card.py's dedicated photo band (not a caption-only
+    line the way the other two grounded-content kinds below are). Assumes
+    the caller has already confirmed `entry` matches today's date --
+    kept as a separate function (rather than folded into the dispatcher)
+    purely so it reads the same as the other two _build_*_content functions
+    below it.
 
-    force_grounded_day bypasses the interval gate (testing only -- see
-    FORCE_GROUNDED_DAY in daily-post.yml) but does NOT bypass the almanac
-    date-range match below: if no entry's date_start/date_end covers today,
-    there's still no fact to attach a photo to, forced or not. In practice
-    that means forcing on a date outside all 4 current entries' windows
-    still yields no photo -- this flag proves the render/crop path works,
-    it doesn't manufacture seasonal content that doesn't exist yet."""
-    if not _is_grounded_day(dt, slot, force=force_grounded_day):
-        return None
-    entry = _matching_almanac_entry(dt)
-    if not entry:
-        return None
-
+    Returns None (not an error) if the entry is missing a required field or
+    no usable photo could be found -- either just means "no bonus photo
+    today," and the dispatcher below falls through to the next candidate
+    rather than giving up on grounded content entirely."""
     required = ("id", "headline", "fact", "source_name", "commons_category")
     missing = [k for k in required if not entry.get(k)]
     if missing:
@@ -244,17 +276,125 @@ def _try_build_featured_image(dt, slot, image_dest_path, force_grounded_day=Fals
     fact = _condense(entry["fact"], ALMANAC_FACT_CHAR_BUDGET)
 
     return {
-        "path": image["local_path"],
-        "headline": headline,
-        "fact": fact,
-        "credit_text": "Photo: Wikimedia Commons, public domain",
-        # kept alongside for the caption + for post_history logging -- the
-        # same (possibly condensed) headline/fact used in the image above,
-        # so the caption can never show more than the image does.
-        "_entry_id": entry["id"],
-        "_fact_for_caption": fact,
-        "_source_name": entry["source_name"],
+        "kind": "almanac",
+        "_meta_id": entry["id"],
+        "featured_image": {
+            "path": image["local_path"],
+            "headline": headline,
+            "fact": fact,
+            "credit_text": "Photo: Wikimedia Commons, public domain",
+            # kept alongside for the caption + for post_history logging -- the
+            # same (possibly condensed) headline/fact used in the image above,
+            # so the caption can never show more than the image does.
+            "_entry_id": entry["id"],
+            "_fact_for_caption": fact,
+            "_source_name": entry["source_name"],
+        },
     }
+
+
+def _build_fishing_report_content():
+    """Second grounded-content kind, added 2026-07-26: a caption-only
+    spotlight built from David's own Worker's real, weekly-updated fishing
+    report (see fetch_conditions.fetch_fishing_report()). Unlike the
+    almanac path above, there's no photo/card-image treatment here -- same
+    caption-only pattern as the wildfire situational note in build_post()
+    below. Returns None (not an error) if the Worker fetch fails or comes
+    back with no usable summary -- the dispatcher just tries the next
+    candidate."""
+    report = fetch_conditions.fetch_fishing_report()
+    if not report:
+        return None
+    text = _condense(report["summary"], FISHING_REPORT_CHAR_BUDGET)
+    return {
+        "kind": "fishing_report",
+        "_meta_id": "fishing_report",
+        "caption_text": f"{text} Full report → govallecito.com/fishing-report",
+    }
+
+
+def _pick_site_spotlight(dt):
+    """Deterministic day-of-year rotation through config/site_spotlights.json
+    -- same tie-break style as _matching_almanac_entry and _pick_hook's
+    fallback, so the same day always resolves to the same entry no matter
+    how many times this is called. Returns None only if the config is
+    missing/empty (fails open, same as every other _load_json_safe use in
+    this file) -- in practice this file always has entries, making this the
+    "there's always something to say" bottom rung of the rotation."""
+    spotlights = _load_json_safe(SITE_SPOTLIGHTS_PATH, {"entries": []}).get("entries", [])
+    if not spotlights:
+        return None
+    return spotlights[dt.timetuple().tm_yday % len(spotlights)]
+
+
+def _build_site_spotlight_content(dt):
+    """Third grounded-content kind, added 2026-07-26: an evergreen spotlight
+    on one of govallecito.com's own site sections or story pages (see
+    config/site_spotlights.json -- same hand-curated, verified-against-the-
+    real-page discipline as seasonal_almanac.json, just not date-gated).
+    Caption-only, same as the fishing-report kind above."""
+    entry = _pick_site_spotlight(dt)
+    if not entry:
+        return None
+    required = ("id", "headline", "blurb", "url")
+    missing = [k for k in required if not entry.get(k)]
+    if missing:
+        print(f"[generate_post_text] site spotlight entry matched but missing required field(s) {missing}, skipping")
+        return None
+    blurb = _condense(entry["blurb"], SITE_SPOTLIGHT_BLURB_CHAR_BUDGET)
+    return {
+        "kind": "site_spotlight",
+        "_meta_id": entry["id"],
+        "caption_text": f"{entry['headline']} {blurb} → {entry['url']}",
+    }
+
+
+def _try_build_grounded_content(dt, slot, image_dest_path, force_grounded_day=False):
+    """Dispatcher for ALL grounded/situational content, generalized
+    2026-07-26 from the original almanac-only _try_build_featured_image
+    (David asked for the bot to also spotlight site sections -- stories,
+    fishing report, webcams, etc. -- not just wildlife facts). Returns a
+    dict with a "kind" key ("almanac" / "fishing_report" / "site_spotlight")
+    build_post() below uses to decide how to render it, or None if today
+    isn't a grounded day or nothing was available from any candidate.
+
+    force_grounded_day bypasses the interval gate (testing only -- see
+    FORCE_GROUNDED_DAY in daily-post.yml) but does NOT bypass the almanac's
+    own date-range match: forcing on a date outside all 4 current almanac
+    entries' windows still won't produce almanac content, though it can
+    still produce a fishing-report or site-spotlight result, since neither
+    of those is date-gated. This flag proves the pipeline works, it doesn't
+    manufacture seasonal content that doesn't exist yet.
+
+    Rotation: almanac (if a window matches today) is one candidate among
+    three, not an automatic first choice -- ordered by a deterministic
+    day-of-year rotation (same "no true randomness, same day always
+    resolves the same way" rule as everywhere else in this file) so that on
+    days when an almanac entry DOES match, it doesn't always crowd out the
+    other two. Whichever candidate is tried first that actually succeeds
+    wins; a candidate that returns None (Worker unreachable for the fishing
+    report, no safely-licensed photo for the almanac entry, etc.) just
+    means the dispatcher tries the next one -- site_spotlight is a static
+    local config with no live dependency, so it's the guaranteed-available
+    bottom rung if both other candidates fail."""
+    if not _is_grounded_day(dt, slot, force=force_grounded_day):
+        return None
+
+    almanac_entry = _matching_almanac_entry(dt)
+    eligible = (["almanac"] if almanac_entry else []) + ["fishing_report", "site_spotlight"]
+    start = dt.timetuple().tm_yday % len(eligible)
+    ordered = eligible[start:] + eligible[:start]
+
+    for kind in ordered:
+        if kind == "almanac":
+            result = _build_almanac_content(almanac_entry, image_dest_path)
+        elif kind == "fishing_report":
+            result = _build_fishing_report_content()
+        else:
+            result = _build_site_spotlight_content(dt)
+        if result:
+            return result
+    return None
 
 
 def _decide_wildfire_situational_line(fire):
@@ -466,21 +606,33 @@ def build_post(conditions, slot, dt=None, image_dest_path=None, force_grounded_d
     # empty.
 
     # -- optional situational line: a genuinely NEW wildfire report always
-    # wins over a seasonal fact, per the style guide's own stated safety-
+    # wins over grounded content, per the style guide's own stated safety-
     # first priority -- but see _decide_wildfire_situational_line()'s
     # docstring for why "new" is not the same test as "currently nonzero"
     # (an ongoing, already-known fire no longer monopolizes this slot on
-    # every single post) ------------------------------------------------
+    # every single post). Below that, grounded content is now one of three
+    # kinds (added 2026-07-26 -- see _try_build_grounded_content): the
+    # original seasonal-almanac photo, a fishing-report spotlight, or a
+    # site-section spotlight -- exactly one caption-only emoji-prefixed line
+    # for the latter two, matching the wildfire note's own caption-only
+    # treatment; the almanac kind is the one exception that also gets a
+    # dedicated photo band, unchanged from before this rewrite. ----------
     show_wildfire_note, wildfire_note_text = _decide_wildfire_situational_line(fire)
     featured_image = None
+    grounded = None
     if show_wildfire_note:
         caption_lines.append(f"🚨 {_condense(wildfire_note_text, SAFETY_NOTE_CHAR_BUDGET)}")
     else:
-        featured_image = _try_build_featured_image(dt, slot, image_dest_path, force_grounded_day=force_grounded_day)
-        if featured_image:
+        grounded = _try_build_grounded_content(dt, slot, image_dest_path, force_grounded_day=force_grounded_day)
+        if grounded and grounded["kind"] == "almanac":
+            featured_image = grounded["featured_image"]
             caption_lines.append(
                 f"🌿 {featured_image['_fact_for_caption']} (source: {featured_image['_source_name']})"
             )
+        elif grounded and grounded["kind"] == "fishing_report":
+            caption_lines.append(f"🎣 {grounded['caption_text']}")
+        elif grounded and grounded["kind"] == "site_spotlight":
+            caption_lines.append(f"📍 {grounded['caption_text']}")
 
     # -- sign-off --------------------------------------------------------
     caption_lines.append("")
@@ -503,6 +655,15 @@ def build_post(conditions, slot, dt=None, image_dest_path=None, force_grounded_d
         "slot": slot,
         "had_image": bool(featured_image),
         "image_topic": featured_image["_entry_id"] if featured_image else None,
+        # New 2026-07-26: which of the three grounded-content kinds (if any)
+        # filled today's situational-line slot, and its specific entry id --
+        # generalizes image_topic above (which only ever meant "almanac")
+        # so check_engagement.py's learning loop can eventually compare
+        # engagement across kinds, not just within almanac topics. None/None
+        # when the wildfire note won the slot instead, or nothing was
+        # available at all.
+        "grounded_kind": grounded["kind"] if grounded else None,
+        "grounded_id": grounded["_meta_id"] if grounded else None,
         "fire_stage": (fire or {}).get("stage"),
     }
 
