@@ -21,6 +21,34 @@ one use per hook per week, is realistically a few months of real posting
 before hook-level weighting activates at all. That's intentional -- see the
 comments in generate_post_text.py for why guessing from 3 data points would
 be worse than not guessing.
+
+Impressions/reach (added 2026-07-26): the FB_PAGE_ACCESS_TOKEN now carries
+read_insights (added to the app's "Manage everything on your Page" use case
+that day), so fetch_post_impressions() can pull each post's lifetime
+impression count via /{post-id}/insights. Two things worth knowing before
+touching this:
+
+1. Meta's own Page Insights docs are explicit that insights data isn't
+   available for Pages under 100 likes/followers. GoVallecito is nowhere
+   close as of this writing, so expect fetch_post_impressions() to return
+   None for every post for a long while yet -- that's the normal, expected
+   state, not a bug. Confirmed the permission itself is active and working
+   (a live /insights call returned Meta's own "No Metric Specified" error,
+   not a permission error, on 2026-07-26), so when the Page does cross that
+   threshold this should just start working with no further changes needed.
+2. This deliberately uses the "post_impressions" metric, NOT
+   "post_impressions_unique" -- Meta is actively deprecating the "_unique"
+   family of post-insights metrics (removal tied to the v26.0 Graph API
+   version bump, confirmed against Meta's own changelog as of 2026-07-26).
+   "post_impressions" itself is not on that deprecation list. If a future
+   version bump deprecates this one too, fetch_post_impressions() failing
+   just means impressions go back to being None everywhere -- the rest of
+   this file's raw-count-based logic is unaffected either way (see
+   compute_preferences()'s docstring for how impressions are currently
+   used: collected and surfaced, not yet fed into hook_weights or the
+   grounded-post interval -- there's no real reach data to validate that
+   change against yet, and there won't be until the Page has real
+   followers).
 """
 
 import os
@@ -49,8 +77,11 @@ def _hours_since(iso_timestamp):
 
 
 def fetch_engagement(post_id, access_token):
-    """Returns {"likes": N, "comments": N, "shares": N, "total": N} or None
-    on failure."""
+    """Returns {"likes": N, "comments": N, "shares": N, "total": N,
+    "impressions": N or None} or None on failure (the whole call failed --
+    not to be confused with "impressions" being None inside a successful
+    result, which just means Insights data isn't available for this post
+    yet; see fetch_post_impressions())."""
     url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{post_id}"
     params = {
         "fields": "likes.summary(true),comments.summary(true),shares",
@@ -72,9 +103,60 @@ def fetch_engagement(post_id, access_token):
         likes = data.get("likes", {}).get("summary", {}).get("total_count", 0)
         comments = data.get("comments", {}).get("summary", {}).get("total_count", 0)
         shares = data.get("shares", {}).get("count", 0)
-        return {"likes": likes, "comments": comments, "shares": shares, "total": likes + comments + shares}
+        impressions = fetch_post_impressions(post_id, access_token)
+        return {
+            "likes": likes,
+            "comments": comments,
+            "shares": shares,
+            "total": likes + comments + shares,
+            "impressions": impressions,
+        }
     except Exception as exc:
         print(f"[fetch_engagement] {post_id}: failed -> {exc}")
+        return None
+
+
+def fetch_post_impressions(post_id, access_token):
+    """Returns the post's lifetime impression count (int), or None if
+    unavailable. None is the NORMAL, expected result for basically every
+    call right now -- Meta doesn't return Page/post Insights data until a
+    Page passes ~100 likes/followers, and GoVallecito is nowhere near that
+    yet (see the module docstring). A None here is not an error and is not
+    logged as one.
+
+    Kept as its own function/endpoint (/{post-id}/insights) rather than
+    folded into fetch_engagement's single fields= call because Insights has
+    a completely different response shape and error behavior than the
+    likes/comments/shares fields do, and a problem here must never take
+    down the fetch of the numbers that DO work today. Every failure mode
+    (HTTP error, Facebook error payload, malformed/empty data, exception)
+    falls through to returning None rather than raising, for exactly that
+    reason.
+    """
+    url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{post_id}/insights"
+    params = {"metric": "post_impressions", "period": "lifetime"}
+    headers = {"Authorization": f"Bearer {access_token}"}
+    try:
+        resp = requests.get(url, params=params, headers=headers, timeout=20)
+        data = resp.json()
+        if resp.status_code >= 400 or "error" in data:
+            return None
+        # Deliberately `or []` / `or {}` rather than relying on .get()'s
+        # default -- Facebook can return "data": [] (key present, value
+        # empty) when insights aren't available yet, and .get(key, default)
+        # only falls back to default when the KEY is missing, not when it's
+        # present but empty. Indexing an empty list from a .get() default
+        # that never gets used would throw IndexError instead of just
+        # meaning "no data yet".
+        entries = data.get("data") or []
+        if not entries:
+            return None
+        values = entries[0].get("values") or []
+        if not values:
+            return None
+        return values[0].get("value")
+    except Exception as exc:
+        print(f"[fetch_post_impressions] {post_id}: failed -> {exc}")
         return None
 
 
@@ -161,6 +243,8 @@ def compute_preferences():
     totals_by_hook = {}
     grounded_totals = []
     plain_totals = []
+    impressions_values = []
+    engagement_rates = []
     for p in checked:
         try:
             total = p["engagement"]["total"]
@@ -177,6 +261,19 @@ def compute_preferences():
             grounded_totals.append(total)
         else:
             plain_totals.append(total)
+
+        # Impressions (added 2026-07-26): informational only for now, see
+        # this file's module docstring for why. Plain .get() rather than a
+        # subscript -- every engagement record saved before this change has
+        # no "impressions" key at all (not even set to None), and a record
+        # saved after this change will very likely still HAVE the key but
+        # BE None (no Insights data yet, see fetch_post_impressions). Both
+        # cases need to just skip this post for impressions purposes, not
+        # raise or get counted as a real 0.
+        impressions = p["engagement"].get("impressions")
+        if impressions is not None and impressions > 0:
+            impressions_values.append(impressions)
+            engagement_rates.append(total / impressions)
 
         try:
             key = (p["slot"], p["hook_line"])
@@ -224,6 +321,26 @@ def compute_preferences():
     # unclamped, regardless of which branch above ran (or whether any did).
     interval = _clamp(interval, 3, 6)
 
+    # Impressions summary (added 2026-07-26): purely informational. Written
+    # into content_preferences.json and this script's own print output so
+    # it's visible, but generate_post_text.py does not read this key, and
+    # nothing above (hook_weights, grounded_post_interval_days) factors it
+    # in -- see the module docstring for why (no real follower base yet to
+    # validate a reach-normalized change against; revisit once
+    # available_count is actually growing).
+    impressions_summary = {
+        "available_count": len(impressions_values),
+        "checked_count": len(checked),
+        "avg_impressions": (
+            round(sum(impressions_values) / len(impressions_values), 1)
+            if impressions_values else None
+        ),
+        "avg_engagement_rate": (
+            round(sum(engagement_rates) / len(engagement_rates), 4)
+            if engagement_rates else None
+        ),
+    }
+
     new_prefs = {
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "hook_weights": hook_weights,
@@ -232,6 +349,7 @@ def compute_preferences():
             "hooks": sample_counts_flat,
             "grounded_vs_plain": {"grounded": len(grounded_totals), "plain": len(plain_totals)},
         },
+        "impressions": impressions_summary,
     }
     os.makedirs(os.path.dirname(PREFERENCES_PATH), exist_ok=True)
     with open(PREFERENCES_PATH, "w") as f:
@@ -265,6 +383,11 @@ def main():
     print(f"grounded_post_interval_days = {prefs['grounded_post_interval_days']}")
     print(f"hook sample counts = {prefs['sample_counts']['hooks']}")
     print(f"grounded vs plain samples = {prefs['sample_counts']['grounded_vs_plain']}")
+    impressions = prefs.get("impressions", {})
+    print(f"impressions available for {impressions.get('available_count', 0)}/"
+          f"{impressions.get('checked_count', 0)} checked posts "
+          f"(avg impressions = {impressions.get('avg_impressions')}, "
+          f"avg engagement rate = {impressions.get('avg_engagement_rate')})")
     return 0
 
 
