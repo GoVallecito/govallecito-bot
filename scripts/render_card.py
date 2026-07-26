@@ -104,72 +104,181 @@ MAX_COVER_FIT_PIXELS = 40_000_000  # sanity cap on the intermediate resize buffe
 # small thumbnail keeps _smart_crop_offset fast even on a large source photo.
 CONTENT_PROFILE_SIZE = 120
 
-# Vertical-crop positional prior: a plain "most edge energy" search sounds
-# right but was empirically tested (2026-07-24, against the real photo that
-# produced David's "can't see the hummingbird's head at all" report) and it
-# FAILED -- it favored a wide, sharp, high-contrast foreground object (a
-# feeder rim spanning most of the frame width) over the bird's head, because
-# raw edge-magnitude summed per row rewards one long crisp manufactured edge
-# over the smaller, finer, more textured detail of an animal's eye/beak/
-# feathers. A subject-detection model would solve this properly, but pulling
-# one in (weights to fetch/bundle, a much heavier dependency) is out of
-# proportion to "don't crop the bird's head off." Instead this nudges the
-# search toward where wildlife/nature photography conventionally puts its
-# subject -- upper-to-upper-middle frame, with habitat/perch/background
-# filling the rest below -- while still letting real content detail shift
-# the result elsewhere when the evidence is strong (see the flat-image
-# fallback test in the change note: with zero content signal this reduces
-# to centering the crop window on the prior's peak, not a hardcoded crop).
-# Only applied to the vertical axis -- there's no equivalent "subjects go on
-# this particular side" convention horizontally, so horizontal cropping
-# (rare for this card's very wide, short photo band) stays pure content-only.
-VERTICAL_PRIOR_PEAK = 0.25   # fraction of frame height, from the top
-VERTICAL_PRIOR_SPREAD = 0.18  # gaussian sigma, same units
+# **UPDATE 2026-07-26**: this whole section was rewritten after a second,
+# differently-shaped version of the same class of bug David originally
+# reported 2026-07-24 (bird's head cut off) showed up again in a real live
+# post -- this time as "bird positioned low enough that the photo band's own
+# text overlay covers it," not a test render. Root-caused directly against
+# the actual photo that produced that report, down to THREE separate,
+# independent problems, not the one thing the 2026-07-24 fix addressed:
+#
+# 1. A genuine bug unrelated to priors or weighting: PIL's
+#    ImageFilter.FIND_EDGES can't filter its outermost 1px border (a 3x3
+#    kernel needs neighbors past the edge) and instead just copies the
+#    ORIGINAL pixel brightness there. A bright sky/background at the very
+#    top or bottom row of the downscaled thumbnail therefore reads as a
+#    massive fake "edge" with zero relation to real content. Confirmed
+#    directly: even a perfectly flat, featureless test image scores its
+#    first/last row ~60x higher than every real (correctly ~0) interior
+#    row. This alone fully explains the specific bad crop reported
+#    2026-07-26 -- the old window-sum search was simply chasing a
+#    measurement artifact at the photo's own top edge (it picked an offset
+#    of 0, i.e. "start the crop at the very top," on a photo where that
+#    put the bird's eye 81px past where the text overlay begins). Fixed by
+#    discarding a 1px border on all four sides of the edge map before
+#    scoring anything -- see _interest_profile.
+# 2. The 2026-07-24 fix's own diagnosis was half right: summing edge
+#    magnitude across an entire row/column rewards WIDTH (one wide, uniform
+#    high-contrast feature, e.g. that fix's own example of a feeder rim)
+#    over a small, sharp, genuinely interesting one (an eye, a feather
+#    edge) -- it rewards "how much total edge-y stuff is in this row," not
+#    "how sharp is the sharpest small detail here." Confirmed with a
+#    controlled synthetic test (a wide bright bar vs. a small high-contrast
+#    cluster, positioned so only one is the "correct" choice, with zero
+#    positional weighting applied to either): plain per-row summing picked
+#    the bar; scoring each row/column by the MEAN of just its own top
+#    TOP_K_FRAC brightest cells picked the small cluster correctly, on
+#    content alone. See _interest_profile.
+# 3. Even with (1) and (2) fixed, a photo can have OTHER genuinely sharp
+#    detail away from the actual subject -- confirmed against the live
+#    photo itself: the dry curled leaves and crossing twigs below the bird
+#    measured sharper/higher-contrast than the bird's own damp, fluffed-up
+#    feathers that day. No amount of edge-magnitude cleverness
+#    distinguishes "sharp because it's the subject" from "sharp because
+#    it's a dry leaf" -- that needs actual subject detection, still out of
+#    proportion for this project (see the 2026-07-24 comment this
+#    replaces). Rather than fight that fight semantically, this leans
+#    harder on the same positional assumption the 2026-07-24 fix already
+#    made (these specific curated wildlife/nature categories conventionally
+#    frame the subject upper-to-upper-middle, habitat/perch/background
+#    below) -- but as a monotonic decay that keeps discouraging content the
+#    whole way down the frame, replacing the old Gaussian BUMP centered on
+#    one specific peak row, which only weakly discouraged content far from
+#    that peak and did nothing to stop a strong enough lower-frame signal
+#    from winning outright (which is exactly what let the twigs/leaves win).
+#    See VERTICAL_DECAY_SCALE below, tuned empirically against BOTH the
+#    live bad-crop photo and the original 2026-07-24 good-crop photo
+#    together -- confirming this isn't just re-fitting to the newest single
+#    anecdote the way a re-tuned Gaussian peak/spread would be (that is
+#    literally what happened last time: tuned against one bad photo, then
+#    failed differently on the next one).
+#
+# None of this makes the crop "always right" -- it can't be without a real
+# subject-detection model, which remains deliberately out of scope (see
+# point 3). What changed is narrower but real: given a photo where the
+# actual subject is reasonably sharp on its own (true of essentially any
+# photo worth using here -- an out-of-focus subject would have been a bad
+# candidate regardless), the search no longer has a measurement artifact
+# to chase, no longer systematically favors width over sharpness, and is
+# now decisively (not just gently) biased toward keeping the upper part of
+# the frame over the lower part.
+TOP_K_FRAC = 0.15   # each row/column's score = the MEAN of its own top 15%
+                     # brightest edge-pixels, not the sum of all of them --
+                     # see point 2 above.
+SMOOTH_WINDOW = 5    # light smoothing over the profile before use -- guards
+                     # against single-thumbnail-pixel noise winning the
+                     # argmax, without blurring away genuinely small
+                     # subjects (5 of ~120 thumbnail cells is still narrow).
+
+# Vertical axis only -- see point 3 above for why, and HORIZONTAL_DECAY_SCALE
+# below for why this doesn't apply sideways. Applied as
+# exp(-position_frac / VERTICAL_DECAY_SCALE): at 0.5, content at the very
+# top of the frame keeps full weight, content 50% down is already
+# discounted to ~14%, and content past 70-80% down is down to low single
+# digits. Empirically tested at 0.35/0.5/0.7/1.0 against both the live
+# bad-crop photo and the 2026-07-24 good-crop photo: 0.35-0.7 correctly
+# clear the text zone on BOTH photos; 1.0 and above reproduces the live bad
+# crop (not decisive enough to overcome the twig/leaf detail). 0.5 sits in
+# the middle of the confirmed-good range with margin on both sides, rather
+# than at either edge of it.
+VERTICAL_DECAY_SCALE = 0.5
+
+# Horizontal cropping only happens when a source photo is wider than this
+# card's very wide 1080x460 band -- rare for typical wildlife/nature
+# photography (see the note this section replaces). There's no equivalent
+# "stuff below here gets covered" hazard on that axis (the credit line is
+# small text tucked in one bottom corner, not a wide overlay band), so it
+# stays pure content-quality-driven. None disables the decay weighting
+# entirely, rather than e.g. a large number -- explicit about intent
+# instead of relying on "big enough to not matter."
+HORIZONTAL_DECAY_SCALE = None
 
 
-def _content_energy_profile(photo_gray, axis):
-    """Returns a 1-D numpy array of per-row (axis="vertical") or per-column
-    (axis="horizontal") 'how much visual detail is here' scores, computed
-    from a small downscaled edge-detected copy of photo_gray."""
+def _interest_profile(photo_gray, axis):
+    """Returns a smoothed 1-D numpy array scoring 'how much does this
+    row (axis="vertical") or column (axis="horizontal") look like the
+    point of interest', computed from a small downscaled edge-detected copy
+    of photo_gray.
+
+    Trims a 1px border off the edge map before scoring -- see point 1 in
+    the module-level comment above TOP_K_FRAC for why (PIL's FIND_EDGES
+    leaves that border unfiltered, and it can otherwise dominate the whole
+    profile with a pure measurement artifact). Scores each row/column by
+    the MEAN of its own top TOP_K_FRAC brightest cells rather than a sum
+    over all of them -- see point 2 in that same comment."""
     w, h = photo_gray.size
     if axis == "vertical":
         small_w = CONTENT_PROFILE_SIZE
-        small_h = max(1, round(h * (CONTENT_PROFILE_SIZE / w)))
+        small_h = max(3, round(h * (CONTENT_PROFILE_SIZE / w)))
     else:
         small_h = CONTENT_PROFILE_SIZE
-        small_w = max(1, round(w * (CONTENT_PROFILE_SIZE / h)))
+        small_w = max(3, round(w * (CONTENT_PROFILE_SIZE / h)))
     small = photo_gray.resize((small_w, small_h), Image.LANCZOS)
     edges = np.asarray(small.filter(ImageFilter.FIND_EDGES), dtype=np.float64)
-    return edges.sum(axis=1) if axis == "vertical" else edges.sum(axis=0)
+    if axis == "horizontal":
+        edges = edges.T  # score columns the same way rows are scored below
+    edges = edges[1:-1, 1:-1]  # drop the unfiltered artifact border (both axes)
+
+    n_cells, n_other = edges.shape
+    if n_cells <= 0 or n_other <= 0:
+        return np.zeros(max(n_cells, 1))  # degenerately tiny thumbnail --
+                                           # let the caller's no-signal
+                                           # fallback handle it
+    k = max(1, round(n_other * TOP_K_FRAC))
+    top_k = np.partition(edges, n_other - k, axis=1)[:, n_other - k:]
+    profile = top_k.mean(axis=1)
+
+    if SMOOTH_WINDOW > 1 and len(profile) >= SMOOTH_WINDOW:
+        kernel = np.ones(SMOOTH_WINDOW) / SMOOTH_WINDOW
+        profile = np.convolve(profile, kernel, mode="same")
+    return profile
 
 
 def _smart_crop_offset(photo_gray, full_len, target_len, axis):
     """Picks WHERE along `axis` (the axis with cover-fit overflow) to
-    place the target_len-sized crop window. See the module-level
-    VERTICAL_PRIOR_PEAK comment above for why this is content-energy
-    PLUS a positional prior on the vertical axis, not content-energy
-    alone -- a pure edge-energy search was tried first and demonstrably
-    picked the wrong region on a real test photo.
+    place the target_len-sized crop window, favoring the position that
+    keeps the most (weighted) point-of-interest content inside it. See
+    _interest_profile and the TOP_K_FRAC/VERTICAL_DECAY_SCALE comments
+    above for the reasoning -- better per-row/column scoring, plus (on the
+    vertical axis) an explicit, decisive positional bias tied to this
+    card's own text-overlay geometry, replacing the gentler statistical
+    prior from the original 2026-07-24 fix.
 
-    Falls back to a dead-center offset if anything about the detection
-    step fails -- a slightly-off crop position is a cosmetic issue; a
-    crash here must never take down the whole post (same fail-open-to-
-    a-safe-default philosophy as the rest of this file's photo handling).
+    Falls back to a dead-center offset if the profile has no real signal
+    (a flat/near-flat image -- centering is as good a guess as any) or if
+    anything else about the detection step fails. A slightly-off crop
+    position is a cosmetic issue; a crash here must never take down the
+    whole post (same fail-open-to-a-safe-default philosophy as the rest of
+    this file's photo handling).
     """
     center_fallback = max(0, (full_len - target_len) // 2)
     if full_len <= target_len:
         return 0
     try:
-        profile = _content_energy_profile(photo_gray, axis)
+        profile = _interest_profile(photo_gray, axis)
         n = len(profile)
         window = max(1, round(n * target_len / full_len))
         if window >= n:
             return center_fallback
 
-        if axis == "vertical":
-            row_frac = np.arange(n) / n
-            prior = np.exp(-0.5 * ((row_frac - VERTICAL_PRIOR_PEAK) / VERTICAL_PRIOR_SPREAD) ** 2)
-            profile = profile * prior
+        signal_range = float(profile.max() - profile.min()) if n else 0.0
+        if signal_range < 1e-6:
+            return center_fallback  # nothing to target -- center is as good as any guess
+
+        decay_scale = VERTICAL_DECAY_SCALE if axis == "vertical" else HORIZONTAL_DECAY_SCALE
+        if decay_scale:
+            position_frac = np.arange(n) / n
+            profile = profile * np.exp(-position_frac / decay_scale)
 
         prefix = np.concatenate([[0.0], np.cumsum(profile)])
         window_sums = prefix[window:] - prefix[:-window]
