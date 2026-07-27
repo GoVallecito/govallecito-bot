@@ -349,8 +349,16 @@ def _draw_photo_band(img, draw, featured_image):
     # re-bind draw context in case any PIL versions need it after paste
     draw = ImageDraw.Draw(img)
 
+    # Eyebrow label defaults to the original almanac-only wording so that
+    # path's rendered output is byte-for-byte unchanged -- the 2026-07-27
+    # evergreen-topic photos (generate_post_text.py's
+    # _try_evergreen_topic_image) pass their own "eyebrow_label" instead,
+    # since "SEASONAL NOTE" isn't an accurate label for a generic topic
+    # photo that isn't tied to a date-matched seasonal fact. Caught by this
+    # change's own local test pass, not shipped and found later.
     eyebrow_font = _font(FONT_BOLD, 20)
-    draw.text((MARGIN, PHOTO_BAND_H - 214), "SEASONAL NOTE", font=eyebrow_font, fill=MINT)
+    eyebrow_text = featured_image.get("eyebrow_label", "SEASONAL NOTE")
+    draw.text((MARGIN, PHOTO_BAND_H - 214), eyebrow_text, font=eyebrow_font, fill=MINT)
 
     photo_band_text_w = W - 2 * MARGIN
 

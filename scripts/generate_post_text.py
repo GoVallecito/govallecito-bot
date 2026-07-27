@@ -47,6 +47,50 @@ Two things layered on top of the original design:
    guide's own point of rotating hooks so posts don't feel copy-pasted, and
    with a brand new page, "best-scoring" from 3 data points isn't a real
    signal anyway.
+
+3. Always-on evergreen visual + CTA (added 2026-07-27). David's ask: every
+   post should carry a real visual and a genuine, specific call-to-action,
+   with the caption's topic rotating through lake / weather-forecast /
+   fishing / hiking / sunset / stargazing -- not just the ~1-2x/week
+   grounded-content days above. This is a SEPARATE, additional layer, not a
+   replacement for #1: every hook line in MORNING_HOOKS/AFTERNOON_HOOKS now
+   carries a topic tag (HOOK_TOPICS), and build_post() uses that topic to
+   (a) attempt a real, safely-licensed Commons photo via
+   _try_evergreen_topic_image() -- same fetch_image.py fail-closed license
+   gate as the almanac path, just tried on every run instead of a handful of
+   times a week -- and (b) append one genuine, topic-specific CTA question
+   (config/evergreen_topics.json) before the sign-off.
+
+   Precedence when both this AND the grounded-content rotation above are
+   eligible the same run: almanac's date-matched seasonal photo (rarer,
+   more specific) wins the one photo-band slot if it's already there; this
+   evergreen path only fills in when featured_image is still empty. The
+   fishing-report and site-spotlight caption lines are unaffected either
+   way -- they can now simply appear ALONGSIDE a real photo for the first
+   time, since photo and situational-line were previously the same slot and
+   now aren't.
+
+   Honesty note: the photo returned is a real photo of the Vallecito
+   Reservoir / Weminuche Wilderness / San Juan National Forest area -- not
+   necessarily one taken today, and not literally "tonight's sunset" or
+   "right now" stargazing conditions. config/evergreen_topics.json's CTA
+   copy for those two topics is deliberately worded around that (mood/
+   season framing, not a specific real-time claim) -- see that file's own
+   top-level comment.
+
+   Real, not-hidden tradeoff: config/evergreen_topics.json's commons_
+   categories were spot-checked against live Wikimedia Commons during this
+   change (not guessed) -- "Category:Vallecito Reservoir" itself turned out
+   to be small (4 files) and, in the 3 checked, entirely CC-BY (attribution-
+   required, so fetch_image.py's PD/CC0-only gate rejects all of them) --
+   "Category:San Juan National Forest" is the real workhorse fallback (41
+   files + a rich subcategory tree, confirmed to include genuine USDA-
+   sourced Public Domain Mark photos). Net effect: expect a real photo on
+   MOST but not every post -- when every category in a topic's list misses,
+   the post still goes out with its hook/CTA text and no photo, exactly the
+   same "a missing bonus photo is a fine outcome" philosophy fetch_image.py
+   already documents. This file will never weaken that license gate just to
+   force an image through.
 """
 
 import json
@@ -61,6 +105,7 @@ import fetch_conditions
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ALMANAC_PATH = os.path.join(REPO_ROOT, "config", "seasonal_almanac.json")
 SITE_SPOTLIGHTS_PATH = os.path.join(REPO_ROOT, "config", "site_spotlights.json")
+EVERGREEN_TOPICS_PATH = os.path.join(REPO_ROOT, "config", "evergreen_topics.json")
 PREFERENCES_PATH = os.path.join(REPO_ROOT, "state", "content_preferences.json")
 DAILY_POST_STATE_PATH = os.path.join(REPO_ROOT, "state", "daily_post_state.json")
 
@@ -69,12 +114,23 @@ GROUNDED_POST_INTERVAL_DEFAULT = 4  # roughly 1.75x/week; see _grounded_interval
 GROUNDED_POST_INTERVAL_MIN = 3      # floor: ~2.3x/week, never more frequent than this
 GROUNDED_POST_INTERVAL_MAX = 6      # ceiling: ~1.2x/week, never rarer than this
 
+# Every hook below is tagged with a topic in HOOK_TOPICS right after this
+# list -- added 2026-07-27 alongside config/evergreen_topics.json so EVERY
+# post (not just grounded days) can attempt a real, on-topic photo and close
+# with a genuine CTA question for that same topic. The hook bank itself
+# still drives _pick_hook()'s existing rotation/weighting completely
+# unchanged (HOOK_TOPICS is a read-only side lookup keyed by the exact same
+# hook text, not a new selection mechanism) -- adding a hook here means
+# also adding it to HOOK_TOPICS below, or it silently falls back to "lake".
 MORNING_HOOKS = [
     "Good morning, Vallecito.",
     "Rise and shine, lake people.",
     "Here's the morning read.",
     "Coffee's on — here's today's conditions.",
     "Morning check-in from the lake.",
+    "Early light on the water.",
+    "Cast lines are already out this morning.",
+    "Trailheads are filling in early.",
 ]
 
 AFTERNOON_HOOKS = [
@@ -82,7 +138,35 @@ AFTERNOON_HOOKS = [
     "Here's where things stand.",
     "Midday conditions check.",
     "Afternoon update, Vallecito.",
+    "Golden hour's coming up at the dam.",
+    "Clear skies tonight over the lake.",
+    "Afternoon bite report from the lake.",
+    "Trail conditions holding up this week.",
 ]
+
+# Maps every hook string above to one of config/evergreen_topics.json's
+# topic keys. A hook not listed here (e.g. a future addition someone forgot
+# to tag) falls back to "lake" in _try_evergreen_topic_image()/_topic_cta()
+# rather than raising -- an untagged hook getting the generic lake topic is
+# a harmless default, not a broken post.
+HOOK_TOPICS = {
+    "Good morning, Vallecito.": "lake",
+    "Rise and shine, lake people.": "lake",
+    "Here's the morning read.": "weather_forecast",
+    "Coffee's on — here's today's conditions.": "weather_forecast",
+    "Morning check-in from the lake.": "lake",
+    "Early light on the water.": "lake",
+    "Cast lines are already out this morning.": "fishing",
+    "Trailheads are filling in early.": "hiking",
+    "Afternoon at the lake.": "lake",
+    "Here's where things stand.": "weather_forecast",
+    "Midday conditions check.": "weather_forecast",
+    "Afternoon update, Vallecito.": "lake",
+    "Golden hour's coming up at the dam.": "sunset",
+    "Clear skies tonight over the lake.": "stargazing",
+    "Afternoon bite report from the lake.": "fishing",
+    "Trail conditions holding up this week.": "hiking",
+}
 
 HASHTAG_CORE = "#VallecitoLake #KnowBeforeYouGo #SanJuanMountains"
 SLOT_HASHTAG = {"morning": "#MorningReport", "afternoon": "#AfternoonUpdate"}
@@ -113,6 +197,19 @@ ALMANAC_HEADLINE_CHAR_BUDGET = 80
 # this file.
 FISHING_REPORT_CHAR_BUDGET = 160
 SITE_SPOTLIGHT_BLURB_CHAR_BUDGET = 180
+
+# Budgets for the always-on evergreen visual + CTA (added 2026-07-27, see
+# module docstring item 3 and config/evergreen_topics.json). EVERGREEN_
+# IMAGE_CAPTION shares the photo band's "fact" slot with the almanac path's
+# ALMANAC_FACT_CHAR_BUDGET but gets its own, tighter budget below it -- these
+# are short, hand-written one-liners (see evergreen_topics.json), not
+# open-ended fetched text, so there's no real reason for them to ever need
+# 235 chars; a smaller budget here just means the intent is clearer at a
+# glance. CTA_CHAR_BUDGET is caption-only, no pixel-overflow failure mode,
+# same "give it a budget anyway" discipline as every other free-text field
+# in this file.
+EVERGREEN_IMAGE_CAPTION_CHAR_BUDGET = 90
+CTA_CHAR_BUDGET = 150
 
 
 def _condense(text, max_chars):
@@ -197,6 +294,77 @@ def _pick_hook(slot, dt):
         return random.choices(bank, weights=weights, k=1)[0]
 
     return bank[dt.timetuple().tm_yday % len(bank)]
+
+
+def _load_evergreen_topics():
+    return _load_json_safe(EVERGREEN_TOPICS_PATH, {})
+
+
+def _evergreen_topic_entry(topic):
+    """Looks up one topic's config, falling back to the "lake" entry (the
+    most generic topic) if the given topic is unknown or the config is
+    missing/empty entirely -- same fail-open posture as every other
+    _load_json_safe consumer in this file. Returns {} only if even "lake"
+    isn't defined, i.e. the config file itself is missing or empty."""
+    topics = _load_evergreen_topics()
+    return topics.get(topic) or topics.get("lake") or {}
+
+
+def _try_evergreen_topic_image(topic, hook_text, image_dest_path):
+    """Added 2026-07-27 -- see module docstring item 3. Tries each of the
+    topic's commons_categories (config/evergreen_topics.json) IN ORDER via
+    fetch_image.get_seasonal_image(), same fail-closed PD/CC0-only license
+    gate as the almanac path (fetch_image.py itself, unchanged) -- the
+    first category that yields a qualifying candidate wins, and a topic
+    missing/empty in the config just means no photo this run, not a crash.
+
+    Reuses the almanac path's exact featured_image shape (path/headline/
+    fact/credit_text) so render_card.py's already-tested photo-band
+    rendering handles this the same way -- this is NOT a new rendering
+    path, just the existing one invoked more often. "headline" is the
+    hook line itself (so the card's big text and the caption's opening
+    line always agree); "fact" is the topic's own short image_caption
+    string, NOT the CTA question -- "tell us in the comments" doesn't mean
+    anything printed on a static image, so the two are kept as separate
+    strings in the config on purpose (see _topic_cta below for the CTA)."""
+    entry = _evergreen_topic_entry(topic)
+    categories = entry.get("commons_categories") or []
+    image_caption = _condense(entry.get("image_caption") or hook_text, EVERGREEN_IMAGE_CAPTION_CHAR_BUDGET)
+
+    for category in categories:
+        image = fetch_image.get_seasonal_image(category, image_dest_path)
+        if image:
+            return {
+                "path": image["local_path"],
+                "headline": _condense(hook_text, ALMANAC_HEADLINE_CHAR_BUDGET),
+                "fact": image_caption,
+                "credit_text": "Photo: Wikimedia Commons, public domain",
+                # render_card.py defaults this to "SEASONAL NOTE" if absent
+                # (the almanac path's original wording) -- this photo isn't
+                # a date-matched seasonal fact, so it gets its own accurate
+                # label instead of borrowing that one.
+                "eyebrow_label": "TODAY'S PHOTO",
+                # kept alongside for post_history logging, same pattern as
+                # the almanac path's _entry_id -- lets check_engagement.py
+                # eventually compare engagement by topic, not just by
+                # whether a photo happened to be present.
+                "_topic": topic,
+                "_source_category": category,
+            }
+    print(f"[generate_post_text] evergreen topic '{topic}' found no usable photo in any of {categories}")
+    return None
+
+
+def _topic_cta(topic):
+    """The genuine, specific CTA question for this topic (config/
+    evergreen_topics.json) -- falls back to a generic question if the
+    topic/config is missing, same fail-open posture as _evergreen_topic_
+    entry above. Always returns a real string (never None/empty) since,
+    unlike a photo, "no CTA at all" was never an acceptable outcome here --
+    David's ask was specifically that every post asks something real."""
+    entry = _evergreen_topic_entry(topic)
+    cta = entry.get("cta") or "What did you see at the lake today? Tell us in the comments."
+    return _condense(cta, CTA_CHAR_BUDGET)
 
 
 def _grounded_interval():
@@ -469,7 +637,12 @@ def build_post(conditions, slot, dt=None, image_dest_path=None, force_grounded_d
     """conditions: the dict from fetch_conditions.fetch_all().
     slot: "morning" or "afternoon".
     image_dest_path: where to save a featured photo if one gets used
-    (defaults to output/featured_image.jpg next to card.png).
+    (defaults to output/featured_image.jpg next to card.png). As of
+    2026-07-27 this is attempted on EVERY call, not just grounded days --
+    see module docstring item 3 -- so a real network fetch to Wikimedia
+    Commons now happens roughly twice a day instead of roughly twice a
+    week; still a fail-closed "None is a fine outcome" attempt, same as
+    before, just far more frequent.
     force_grounded_day: testing-only override, see _try_build_featured_image's
     docstring for exactly what it does and doesn't bypass.
     Returns {"caption": str, "card_data": dict, "meta": dict} -- "meta" is
@@ -484,6 +657,7 @@ def build_post(conditions, slot, dt=None, image_dest_path=None, force_grounded_d
     fire = conditions.get("fire")
 
     hook = _pick_hook(slot, dt)
+    topic = HOOK_TOPICS.get(hook, "lake")
     weekday_date = dt.strftime("%A, %B %-d")
 
     caption_lines = [f"{weekday_date} — {_lowercase_first(hook)}", ""]
@@ -634,6 +808,31 @@ def build_post(conditions, slot, dt=None, image_dest_path=None, force_grounded_d
         elif grounded and grounded["kind"] == "site_spotlight":
             caption_lines.append(f"📍 {grounded['caption_text']}")
 
+    # -- evergreen visual + CTA (added 2026-07-27, see module docstring
+    # item 3 and config/evergreen_topics.json). Runs on EVERY post, unlike
+    # the grounded-content rotation above -- this is the "always include a
+    # visual and a real call-to-action" behavior David asked for, layered
+    # on top of (not instead of) everything above it.
+    #
+    # Precedence: an almanac grounded-day's date-matched seasonal photo is
+    # rarer and more specific, so it keeps the one photo-band slot if it's
+    # already there -- this only runs when featured_image is still empty.
+    # A fishing-report or site-spotlight caption line above is unaffected
+    # either way and can now appear alongside a real photo for the first
+    # time (they used to share the one photo-band slot with almanac; they
+    # never actually used it themselves, so nothing changes for them here
+    # except gaining a neighbor).
+    #
+    # The CTA line, unlike the photo, is NOT conditional -- a topic-specific
+    # question is added every single time, whether or not a photo was found
+    # this run, since "ask something real" doesn't depend on image
+    # availability the way "show something real" does.
+    if not featured_image:
+        featured_image = _try_evergreen_topic_image(topic, hook, image_dest_path)
+
+    caption_lines.append("")
+    caption_lines.append(_topic_cta(topic))
+
     # -- sign-off --------------------------------------------------------
     caption_lines.append("")
     caption_lines.append("Full conditions → govallecito.com")
@@ -650,11 +849,24 @@ def build_post(conditions, slot, dt=None, image_dest_path=None, force_grounded_d
     if featured_image:
         card_data["featured_image"] = featured_image
 
+    # image_topic: the almanac entry id if that's what supplied the photo
+    # (unchanged meaning from before 2026-07-27), else the evergreen topic
+    # string if that's what supplied it instead, else None if no photo at
+    # all -- either key is only ever present on the dict that actually
+    # produced the image, so this can't accidentally read the wrong one.
+    image_topic = None
+    if featured_image:
+        image_topic = featured_image.get("_entry_id") or featured_image.get("_topic")
+
     meta = {
         "hook_line": hook,
         "slot": slot,
         "had_image": bool(featured_image),
-        "image_topic": featured_image["_entry_id"] if featured_image else None,
+        "image_topic": image_topic,
+        # New 2026-07-27: the hook's topic tag regardless of whether a photo
+        # was actually found this run -- lets check_engagement.py eventually
+        # compare engagement by topic on its own, separate from had_image.
+        "hook_topic": topic,
         # New 2026-07-26: which of the three grounded-content kinds (if any)
         # filled today's situational-line slot, and its specific entry id --
         # generalizes image_topic above (which only ever meant "almanac")
@@ -723,6 +935,15 @@ def build_alert_post(conditions, alert, dt=None):
     is deliberately no seasonal photo -- safety content only, matching the
     style guide's existing rule that safety always outranks a seasonal fact
     for that slot.
+
+    Deliberately NOT given the 2026-07-27 evergreen visual + CTA treatment
+    (build_post()'s _try_evergreen_topic_image()/_topic_cta()) even though
+    that's now on every routine post -- a "what did you see at the lake
+    today, tell us in the comments" question directly under a fire or
+    evacuation alert would read as tone-deaf, and a topic photo would
+    compete with the alert for attention it needs to keep. Safety posts
+    stay lean and fast on purpose; this is a real, intentional exception to
+    "always," not a gap someone forgot to fill in.
 
     alert: {"category", "headline", "description", "source_name",
     "source_url", ...} -- the normalized shape check_emergency.py produces,

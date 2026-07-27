@@ -1,0 +1,34 @@
+{
+  "_comment": "Added 2026-07-27 for the always-on evergreen visual + CTA (see generate_post_text.py's module docstring item 3, HOOK_TOPICS, _try_evergreen_topic_image, _topic_cta). Every commons_categories list below was checked directly against live Wikimedia Commons this same session -- not guessed. 'Category:Vallecito Reservoir' is real but small (4 files) and, of the 3 checked, all were CC-BY 4.0 (attribution-required -- fetch_image.py's PD/CC0-only gate rejects those, so in practice this category usually contributes nothing and the chain falls through to the next one). 'Category:Weminuche Wilderness' (19 files) had at least one CC-BY-SA file sampled; not exhaustively checked beyond that. 'Category:San Juan National Forest' (41 files + a 15-subcategory tree) is the confirmed-strongest source -- it contains genuine USDA-sourced Public Domain Mark photos (verified: a 1911 USDA/Forest-Service historical photo of Foresters fording Vallecito Creek, reviewed by FlickreviewR and confirmed Public Domain Mark). 'Category:Pine River (Colorado)', considered as a fourth candidate, does NOT exist on Commons -- confirmed, not included. Net effect: expect a real photo most runs, not literally every run -- see fetch_image.py and generate_post_text.py's own comments for why that's an accepted tradeoff, not a bug. image_caption is short mood/context text meant to sit ON the rendered photo band (no 'comment below' phrasing -- that only makes sense in a caption, not printed on a static image). cta is the fuller, genuine question that goes in the Facebook caption text itself. Add more topics/categories the same way this file's existing four docs (seasonal_almanac.json, site_spotlights.json) already require: check the real category on Commons first, don't invent a plausible-sounding name.",
+
+  "lake": {
+    "commons_categories": ["Category:Vallecito Reservoir", "Category:San Juan National Forest"],
+    "image_caption": "The lake, this week.",
+    "cta": "What did the water look like at your spot on the lake today? Tell us in the comments."
+  },
+  "weather_forecast": {
+    "commons_categories": ["Category:Vallecito Reservoir", "Category:San Juan National Forest"],
+    "image_caption": "Conditions over the San Juans.",
+    "cta": "Did the forecast hold up where you were today? Let us know in the comments."
+  },
+  "fishing": {
+    "commons_categories": ["Category:Vallecito Reservoir", "Category:San Juan National Forest"],
+    "image_caption": "On the water at Vallecito.",
+    "cta": "Anyone out fishing today — what's biting? Let us know in the comments."
+  },
+  "hiking": {
+    "commons_categories": ["Category:Weminuche Wilderness", "Category:San Juan National Forest"],
+    "image_caption": "Trail country around the lake.",
+    "cta": "Been on a trail near the lake recently? Tell us which one and how it's holding up."
+  },
+  "sunset": {
+    "commons_categories": ["Category:Vallecito Reservoir", "Category:Weminuche Wilderness", "Category:San Juan National Forest"],
+    "image_caption": "Evening light over the reservoir.",
+    "cta": "Catch the evening light at the lake tonight? Share what you saw in the comments."
+  },
+  "stargazing": {
+    "commons_categories": ["Category:Weminuche Wilderness", "Category:San Juan National Forest"],
+    "image_caption": "Dark skies over the San Juans.",
+    "cta": "Clear, dark nights like this are good for stargazing at the lake — planning to stay out and look up?"
+  }
+}
