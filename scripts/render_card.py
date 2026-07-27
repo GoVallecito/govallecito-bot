@@ -294,9 +294,10 @@ def _cover_fit(photo, target_w, target_h):
     """Resize + content-aware crop a photo to exactly fill target_w x
     target_h, same idea as CSS background-size: cover -- except WHERE the
     crop window lands is chosen by _smart_crop_offset() rather than always
-    dead-center (see that function's docstring, and the VERTICAL_PRIOR_PEAK
-    comment above, for why plain center-crop was cutting subjects' heads
-    off and why plain content-energy alone wasn't a sufficient fix either).
+    dead-center (see that function's docstring, and the TOP_K_FRAC /
+    VERTICAL_DECAY_SCALE comments above, for why plain center-crop was
+    cutting subjects' heads off and why plain content-energy alone wasn't a
+    sufficient fix either).
     Falls back to a plain center crop on any failure in the smart-crop step."""
     src_w, src_h = photo.size
     if src_w <= 0 or src_h <= 0:
