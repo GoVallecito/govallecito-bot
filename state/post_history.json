@@ -43,8 +43,10 @@
       "post_type": "emergency_alert",
       "alert_category": "disaster",
       "alert_id": "worker-override-585d3132e4097af3",
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": null,
+      "engagement_checked_at": "2026-08-10T11:02:34.795982+00:00",
+      "engagement_unavailable": true
     },
     {
       "post_id": "1138532512682553_122118820401360003",
@@ -57,8 +59,10 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": null,
+      "engagement_checked_at": "2026-08-10T11:02:35.336155+00:00",
+      "engagement_unavailable": true
     },
     {
       "post_id": "1138532512682553_122118834081360003",
@@ -71,8 +75,10 @@
       "post_type": "emergency_alert",
       "alert_category": "fire",
       "alert_id": "fire-escalation-1-2",
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": null,
+      "engagement_checked_at": "2026-08-10T11:02:35.964279+00:00",
+      "engagement_unavailable": true
     },
     {
       "post_id": "1138532512682553_122118844509360003",
@@ -85,8 +91,10 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": null,
+      "engagement_checked_at": "2026-08-10T11:02:36.503680+00:00",
+      "engagement_unavailable": true
     },
     {
       "post_id": "1138532512682553_122119268937360003",
