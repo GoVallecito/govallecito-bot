@@ -425,6 +425,20 @@
       "alert_id": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122123418933360003",
+      "posted_at": "2026-08-14T13:51:42.333729+00:00",
+      "slot": "emergency",
+      "hook_line": "Fire alert \u2014 Vallecito.",
+      "had_image": false,
+      "image_topic": null,
+      "fire_stage": 1,
+      "post_type": "emergency_alert",
+      "alert_category": "fire",
+      "alert_id": "fire-escalation-1-4",
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
