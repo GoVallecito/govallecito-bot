@@ -625,6 +625,20 @@
       "alert_id": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122125089627360003",
+      "posted_at": "2026-08-20T20:17:37.598481+00:00",
+      "slot": "afternoon",
+      "hook_line": "Afternoon at the lake.",
+      "had_image": true,
+      "image_topic": "lake",
+      "fire_stage": 1,
+      "post_type": "daily",
+      "alert_category": null,
+      "alert_id": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
