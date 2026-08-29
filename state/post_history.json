@@ -507,8 +507,10 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": null,
+      "engagement_checked_at": "2026-08-29T14:53:48.838600+00:00",
+      "engagement_unavailable": true
     },
     {
       "post_id": "1138532512682553_122123840949360003",
