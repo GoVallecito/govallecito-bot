@@ -39,7 +39,18 @@ jobs:
           WX_FIRST_30_DAYS: ${{ vars.WX_FIRST_30_DAYS }}
           WX_SITE_DIR: ${{ vars.WX_SITE_DIR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python scripts/wx/run_verify.py
+        run: |
+          mkdir -p state
+          # Capture the run's own output where it can be read from a plain
+          # clone. GitHub's raw logs sit behind short-lived signed URLs, so an
+          # import-time failure -- which happens before any in-script handler
+          # exists -- was otherwise effectively unreadable.
+          set +e
+          python scripts/wx/run_verify.py 2>&1 | tee state/last-run-verify.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit=$code" >> state/last-run-verify.log
+          exit $code
       - uses: actions/upload-artifact@v4
         if: always()
         with:
