@@ -1,11 +1,12 @@
 # Forecast run — held for review
 
-When: 2026-08-30T22:58:18-06:00 (Mountain)
+When: 2026-08-30T23:06:04-06:00 (Mountain)
 Slot: `school_call`
 
 ## Detail
 
 ```
+mentions a burn scar -- debris flows here have been triggered by ordinary sub-two-year storms
 first-30-days policy: review everything
 ```
 
@@ -21,19 +22,16 @@ first-30-days policy: review everything
 ```
 08/31/26 5:45am: Morning, its Monday.
 
-The National Weather Service has a Flood Watch up for the whole county today, and the question this morning is whether the Florida Road and the 501 get hit hard enough to complicate afternoon pickups. The districts decide by 6:30 but right now everything's dry and the threat window is this afternoon, not the morning commute.
+The National Weather Service has a Flood Watch up for the Florida drainage starting 7pm tonight through Monday evening, and for town and Bayfield starting 6am this morning through tonight. The threat is afternoon thunderstorms with localized heavy rain and the potential for flash flooding, especially over saturated ground and the burn scars.
 
-The snow line is up at 13,100 feet so this is all rain, even in the high country. The Flood Watch is about soil saturation from the last few days stacking up with whatever falls today.
+Snow line's way up at 13,100 feet, so this is all rain at every elevation we live at. Town and the Animas Valley could see a tenth or two of liquid this afternoon with scattered storms firing between noon and 5pm. Bayfield and up the Pine are in the same window, maybe a trace to a few hundredths. Vallecito and the Florida could pick up a few hundredths to a tenth, also afternoon-focused.
 
-In town and the Animas Valley the models are showing around a tenth of an inch this afternoon, mostly between noon and 5pm. That's not a huge number but the NWS is flagging that soils are already wet from the weekend, so runoff could be faster than normal.
+The question this morning is not the drive in, its the drive home this afternoon. The 501 and the 240 could see localized heavy rain and poor visibility if a cell parks over the road between 2pm and 6pm. The models are all over the place on exactly where the heaviest stuff sets up (the Euro's dry, the GFS has a tenth, the ICON and GEM are in between), so take those amounts with a big grain of salt. What's certain is the moisture's here and the atmosphere's primed.
 
-Up the Pine and around Bayfield the numbers are lighter, maybe two hundredths, but same afternoon window and same saturation concern.
+Districts decide by 6:30am but I'd be watching the radar this afternoon if you're picking kids up from the lake or up the Pine. The NWS discussion is keying on saturated soils and burn scar runoff, so if a storm does hit it could move water fast.
 
-The Florida drainage and Vallecito are the focus — the Flood Watch started last night for COZ019 and runs through 3pm today. Models have about four hundredths at the lake but the high Weminuche could see close to a tenth. The 240 is the route to watch this afternoon, not this morning. If storms set up over the drainage and sit there, small drainages could come up fast on already-wet ground.
+1. NWS Flood Watch graphic (Grand Junction office)
+2. Precipitable water anomaly (NOAA)
 
-The models all agree this is an afternoon event and they all agree the amounts are modest, but the NWS discussion is pretty clear that the setup favors areas that got hit hard over the weekend and that's us. The Flood Watch is the real deal — its not about the rain itself, its about where its falling.
-
-Morning roads should be fine. Afternoon pickups are the question and the districts will be watching radar through the day.
-
-Did your gauge catch anything overnight?
+What route are you watching this afternoon?
 ```
