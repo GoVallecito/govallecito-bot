@@ -160,9 +160,16 @@ def test_storm_watch_stays_quiet_on_a_calm_pattern():
 
 
 def test_missing_cdot_key_does_not_break_the_run():
-    # The pass card is valuable but not load-bearing.
+    """No live road status, but the pass card still exists - from the forecast.
+
+    CDOT's public feed documentation has been withdrawn, so `roads` is expected
+    to be absent. That must not cost us the pass section, and it must not abort
+    the run: we forecast the passes and link CDOT for status.
+    """
     b = B.build(fetchers=_fakes())
-    assert "roads" in b["sources"] and b["sources"]["roads"]["ok"] is False
-    assert "pass_card" not in b
+    assert b["sources"]["roads"]["ok"] is False, "no CDOT key in tests"
+    assert "roads" not in b, "no live road status available"
+    assert b.get("pass_card"), "the forecast-based pass card should still be built"
+    assert "not the road status" in b["pass_card"], "must defer to CDOT"
     assert not any("roads" in p for p in __import__(
         "wx.guardrails", fromlist=["x"]).require_or_abort(b))

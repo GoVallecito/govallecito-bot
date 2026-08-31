@@ -11,6 +11,7 @@ import datetime as _dt
 from zoneinfo import ZoneInfo
 
 from . import constants as C
+from . import passes as PASSES
 from . import snowline as SL
 from .sources import caic, cdot, nws, openmeteo, snotel, water
 
@@ -34,6 +35,7 @@ def build(days=5, want_model_spread=True, calibration_offset_ft=0.0,
         "reservoir": water.fetch_reservoir,
         "caic": caic.resolve_zone,
         "roads": cdot.fetch_conditions,
+        "passes": PASSES.fetch,
     }
     if fetchers:
         f.update(fetchers)
@@ -118,6 +120,13 @@ def build(days=5, want_model_spread=True, calibration_offset_ft=0.0,
     if roads.ok:
         out["roads"] = roads.data
         out["pass_card"] = cdot.format_pass_card(roads.data)
+
+    pf = f["passes"]()
+    out["sources"]["passes"] = pf.to_dict()
+    if pf.ok:
+        out["passes"] = pf.data
+        out["pass_card"] = PASSES.format_card(pf.data)
+        out["passes_notable"] = PASSES.worth_leading_with(pf.data)
 
     cz = f["caic"](C.VALLECITO["lat"], C.VALLECITO["lon"])
     out["sources"]["caic"] = cz.to_dict()

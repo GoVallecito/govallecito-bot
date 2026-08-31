@@ -141,9 +141,14 @@ def render_bundle(bundle, post_type="school_call"):
     A("")
 
     if bundle.get("pass_card"):
-        A("PASSES AND ROADS (CDOT). 'The pass is closed' unqualified means Red")
-        A("Mountain in Durango and Wolf Creek in Bayfield -- always name which:")
+        A("THE PASSES -- FORECAST ONLY. You do NOT know whether any road is open,")
+        A("closed, or under chain law. There is no live road-status source. Say")
+        A("what the passes are GETTING, then send people to CDOT for status.")
+        A("The three US-550 passes close as a unit. 'The pass is closed'")
+        A("unqualified means Red Mountain in Durango and Wolf Creek in Bayfield.")
         A(bundle["pass_card"])
+        if bundle.get("passes_notable"):
+            A("  -> A pass is getting enough that it belongs near the top.")
         A("")
 
     obs = bundle.get("observed")

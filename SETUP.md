@@ -79,15 +79,32 @@ commits; the forecaster additionally needs it to open review issues.
 
 ---
 
-## Step 4 — Get the free CDOT key (5 min, optional but do it before winter)
+## Step 4 — The passes (nothing to do)
 
-Sign up at **data.cotrip.org**, get an API key, add it as a secret named
-`CDOT_API_KEY`. That turns on the pass card — US-160 over Wolf Creek and the
-US-550 passes, which close as a unit.
+**An earlier version of this file told you to get a free CDOT key at
+data.cotrip.org. That was wrong, and it is why that page gave you an error.**
 
-Without it everything else still works; the road line is just omitted.
+`data.cotrip.org` is a bare API gateway with no signup page — its root returns
+`{"code":404,"message":"The current request is not defined by this API."}`,
+which is the correct response to visiting it. Every CDOT developer doc URL
+(`cotrip.org/help/117`, `xmlHelp.html`, `xmlFeed.htm`) now redirects to the
+COtrip homepage. CDOT's own footer "Data Feeds" link is broken, and Colorado's
+open-data catalog still advertises an "API ACCESS" link pointing at the dead
+page. There is currently no public way to register.
 
----
+So the forecaster **forecasts** the passes instead, using the same Open-Meteo
+call that drives the elevation bands — Coal Bank 10,640 ft, Molas 10,910 ft,
+Red Mountain 11,018 ft, Wolf Creek 10,857 ft — and links CDOT for live status.
+
+It will never say a road is open or closed. That is enforced in
+`guardrails.py`, not just asked for in the prompt: a draft claiming a closure,
+or chain law, or avalanche control, is blocked outright unless live road data
+is actually present. A wrong "closed" sends someone on a three-hour detour; a
+wrong "open" sends them at a pass that is shut.
+
+If CDOT ever restores public feed access, add the key as `CDOT_API_KEY` and the
+adapter picks it up — the guardrail relaxes automatically once real data is in
+the bundle.
 
 ## Step 5 — Watch it for a week before it says anything in public (ongoing)
 

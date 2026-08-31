@@ -68,6 +68,48 @@ BANDS = [
 
 BAND_ORDER = [b["key"] for b in BANDS]
 
+# --- The passes ------------------------------------------------------------
+#
+# WE FORECAST THESE. WE DO NOT REPORT THEIR STATUS.
+#
+# CDOT's public developer documentation has been removed -- every documented
+# URL now redirects to the COtrip homepage, and the Colorado open-data catalog
+# still advertises an "API ACCESS" link that points at the dead page. There is
+# an undocumented backend behind the COtrip app; building on it would be
+# unstable and is not what it is there for.
+#
+# So the honest product is a FORECAST for the pass elevations, plus a link to
+# CDOT for live status. "Coal Bank and Molas, 8-14 inches overnight, expect
+# traction law by morning" is something nobody else publishes. "Red Mountain is
+# closed" is something CDOT tells people faster than we ever could -- and
+# claiming it without their data is how someone ends up making a three-hour
+# detour they did not need, or driving into a pass that is actually shut.
+#
+# elevation_ft is the SIGNED elevation, which is what belongs in copy.
+# elevation_m is what goes to the model. USGS point-elevation queries return
+# terrain height at a coordinate, which sits below the signed summit; the
+# self-test echoes back the terrain elevation the model used so a bad
+# coordinate shows up rather than hiding.
+#
+# Coordinates are approximate summit locations and are flagged as such.
+
+PASSES = [
+    {"key": "coal_bank",   "name": "Coal Bank Pass",    "route": "US-550",
+     "lat": 37.6989, "lon": -107.7767, "elevation_ft": 10640, "elevation_m": 3243},
+    {"key": "molas",       "name": "Molas Pass",        "route": "US-550",
+     "lat": 37.7481, "lon": -107.7050, "elevation_ft": 10910, "elevation_m": 3325},
+    {"key": "red_mountain","name": "Red Mountain Pass", "route": "US-550",
+     "lat": 37.8994, "lon": -107.7128, "elevation_ft": 11018, "elevation_m": 3358},
+    {"key": "wolf_creek",  "name": "Wolf Creek Pass",   "route": "US-160",
+     "lat": 37.4794, "lon": -106.8003, "elevation_ft": 10857, "elevation_m": 3309},
+]
+
+# The three US-550 passes close as a unit. Saying "Molas is closed" without
+# saying the other two are is how an outsider gives themselves away.
+US550_UNIT = ["coal_bank", "molas", "red_mountain"]
+
+CDOT_STATUS_URL = "https://www.cotrip.org/"
+
 # --- NWS ------------------------------------------------------------------
 #
 # VERIFIED live from the /points warnzone and firewxzone parameters.

@@ -92,6 +92,22 @@ def fake_fetchers(*, break_band=None, life_safety=False, snotel_ok=True):
             source="Colorado DWR (CDSS)"),
         "caic": lambda lat, lon: SourceResult(False, source="CAIC map-layer",
                                               error="out of season"),
+        # Stubbed, or every bundle test makes four real Open-Meteo calls and
+        # the suite hangs on retries.
+        "passes": lambda days=2: SourceResult(True, {
+            "coal_bank": {"name": "Coal Bank Pass", "route": "US-550",
+                          "elevation_ft": 10640, "snow_in": 9.0, "precip_in": 0.7,
+                          "gust_mph_max": 28, "temp_f_min": 18},
+            "molas": {"name": "Molas Pass", "route": "US-550",
+                      "elevation_ft": 10910, "snow_in": 10.0, "precip_in": 0.8,
+                      "gust_mph_max": 31, "temp_f_min": 17},
+            "red_mountain": {"name": "Red Mountain Pass", "route": "US-550",
+                             "elevation_ft": 11018, "snow_in": 11.0, "precip_in": 0.9,
+                             "gust_mph_max": 35, "temp_f_min": 15},
+            "wolf_creek": {"name": "Wolf Creek Pass", "route": "US-160",
+                           "elevation_ft": 10857, "snow_in": 14.0, "precip_in": 1.1,
+                           "gust_mph_max": 30, "temp_f_min": 16},
+        }, source="Pass forecast (stub)"),
     }
 
 

@@ -39,6 +39,22 @@ FORBIDDEN_PATTERNS = [
     (r"\blake[- ]effect\b", "lake-effect at Vallecito is physically wrong here"),
 ]
 
+# Live road-status claims. We forecast the passes; we never report their state.
+# CDOT's public feed documentation has been withdrawn, so there is no source
+# behind a sentence like "Red Mountain is closed" -- and a wrong one sends
+# somebody on a three-hour detour or at a pass that is actually shut. Allowed
+# only when live roads data is present in the bundle.
+ROAD_STATUS_CLAIMS = [
+    (r"\b(?:pass|passes|road|highway|550|160|240|501)\b[^.\n]{0,50}\b(?:is|are|'s)\s+(?:closed|open)\b",
+     "states whether a road is open or closed"),
+    (r"\b(?:is|are|'s)\s+(?:closed|open)\b[^.\n]{0,40}\b(?:pass|passes|550|160)\b",
+     "states whether a road is open or closed"),
+    (r"\bchain law(?:'s| is| are)?\s*(?:on|in effect|up)\b", "asserts chain law status"),
+    (r"\btraction law(?:'s| is)?\s*(?:on|in effect|up)\b", "asserts traction law status"),
+    (r"\bCDOT has (?:closed|opened|lifted)\b", "asserts a CDOT action"),
+    (r"\bthey(?:'re| are) doing control work\b", "asserts avalanche control is underway"),
+]
+
 # Saying Florida with first-syllable stress is the number one newcomer tell.
 #
 # CAREFUL: the persona writes the plain word "Florida" constantly and correctly
@@ -82,6 +98,14 @@ def evaluate(bundle, draft_text, *, first_30_days=False, calibrated=False):
             escalate(BLOCK, f"draft {why}")
     if FLORIDA_MISPRONUNCIATION.search(draft_text):
         escalate(BLOCK, "draft mispronounces Florida (it is fluh-REE-duh)")
+
+    # Road status without a road-status source.
+    if not bundle.get("roads"):
+        for pattern, why in ROAD_STATUS_CLAIMS:
+            if re.search(pattern, draft_text, re.IGNORECASE):
+                escalate(BLOCK, f"draft {why} with no live CDOT data behind it -- "
+                                "forecast the passes, link CDOT for status")
+                break
 
     # --- life safety: REVIEW ---------------------------------------------
     if bundle.get("life_safety_alerts"):

@@ -90,4 +90,5 @@ FORCE_SLOT=school_call DRY_RUN=true python scripts/wx/run_forecast.py
 | `WX_FIRST_30_DAYS` | variable | `true` holds every post for review |
 | `WX_SITE_DIR` | variable | where to write the govallecito.com markdown |
 | `FB_GROUP_ID` | variable | optional; group publishing is Meta-restricted |
+| `CDOT_API_KEY` | secret | optional, and **currently unobtainable** — CDOT withdrew public feed registration. The passes are forecast instead. |
 | `WX_MODEL` | variable | optional model override |
