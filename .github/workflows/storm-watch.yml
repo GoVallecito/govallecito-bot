@@ -29,7 +29,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      # The conditions bot's workflows already do this and mine did not, which
+      # is why the forecaster died at import on `from PIL import Image` while
+      # the self-test -- which imports no Pillow -- passed every time.
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
       - name: Look for a storm in the day 2-5 window
         env:
           DRY_RUN: ${{ inputs.dry_run || vars.DRY_RUN }}
