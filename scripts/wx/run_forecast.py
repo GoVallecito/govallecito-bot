@@ -25,12 +25,25 @@ from wx import constants as C       # noqa: E402
 from wx import guardrails as G      # noqa: E402
 from wx import notify as N         # noqa: E402
 from wx import publish as P         # noqa: E402
+from wx import sanitize as SAN     # noqa: E402
 from wx import render_forecast_card as RC  # noqa: E402
 from wx import email_digest as ED   # noqa: E402
 from wx import verify as V          # noqa: E402
 
 TZ = ZoneInfo(C.TIMEZONE)
 SLOT_HOURS = {C.SCHOOL_CALL_HOUR: "school_call", C.EVENING_HOUR: "evening"}
+
+
+def _enabled_slots():
+    """Which slots actually post. Defaults to the school call alone.
+
+    The research is blunt that cadence beats brilliance: one post a day that
+    never misses beats three that are erratic. The evening slot gets switched
+    on by setting WX_SLOTS once the morning one has gone a month without
+    failing.
+    """
+    raw = (os.environ.get("WX_SLOTS") or "school_call").strip()
+    return {s.strip() for s in raw.split(",") if s.strip()}
 
 
 def determine_slot(now=None, forced=None):
@@ -40,6 +53,9 @@ def determine_slot(now=None, forced=None):
         return forced
     now = now or datetime.now(TZ)
     slot = SLOT_HOURS.get(now.hour)
+    if slot is not None and slot not in _enabled_slots():
+        print(f"{slot} is not in WX_SLOTS ({sorted(_enabled_slots())}); skipping.")
+        return None
     if slot is None:
         print(f"{now:%Y-%m-%d %H:%M %Z} is not a posting hour "
               f"({sorted(SLOT_HOURS)} local). Exiting.")
@@ -177,6 +193,10 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
         print(f"ABORT -- {exc}")
         return 0
 
+    # Strip the machine tells before the gate sees it, so the guardrail's
+    # dash check only fires if the sanitizer somehow missed something.
+    text = SAN.clean(text)
+
     verdict, reasons = G.evaluate(bundle, text, first_30_days=first_30_days,
                                   calibrated=calibrated)
     print(f"guardrails: {verdict.upper()}")
@@ -186,6 +206,7 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
     os.makedirs("output", exist_ok=True)
     with open(os.path.join("output", "draft.txt"), "w") as fh:
         fh.write(text)
+    _archive_draft(text, bundle, slot, verdict)
     with open(os.path.join("output", "bundle.json"), "w") as fh:
         json.dump(bundle, fh, indent=2, default=str)
 
@@ -280,6 +301,32 @@ def write_status(state, detail, bundle=None, slot=None, hint=None, draft=None):
         print(f"Wrote {path}")
     except Exception as exc:  # noqa: BLE001
         print(f"could not write status file: {exc}")
+
+
+def _archive_draft(text, bundle, slot, verdict):
+    """Keep every draft in state/drafts/ so a week of them reads in one place.
+
+    The review issues are the notification; this is the archive. Reading seven
+    drafts side by side is how the voice actually gets tuned, and scrolling
+    seven separate issues is a worse way to do it.
+    """
+    import os as _os
+    root = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+    d = _os.path.join(root, "state", "drafts")
+    name = f"{bundle.get('post_for_date', bundle.get('local_date'))}-{slot}.md"
+    try:
+        _os.makedirs(d, exist_ok=True)
+        with open(_os.path.join(d, name), "w") as fh:
+            fh.write(f"# {bundle.get('post_for_weekday')}, "
+                     f"{bundle.get('post_for_date')}, {slot}\n\n")
+            fh.write(f"Verdict: `{verdict}` | Snow line: "
+                     f"{(bundle.get('snow_line') or {}).get('representative_ft', 'n/a')} | "
+                     f"Alerts: {[a['event'] for a in (bundle.get('alerts') or [])] or 'none'}\n\n")
+            fh.write("---\n\n")
+            fh.write(text.strip() + "\n")
+        print(f"Archived draft -> state/drafts/{name}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"could not archive draft: {exc}")
 
 
 def _group_caption(slot):

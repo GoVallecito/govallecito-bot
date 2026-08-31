@@ -26,6 +26,7 @@ from wx import guardrails as G      # noqa: E402
 from wx import notify as N          # noqa: E402
 from wx import observations as OB   # noqa: E402
 from wx import publish as P         # noqa: E402
+from wx import sanitize as SAN     # noqa: E402
 from wx import verify as V          # noqa: E402
 from wx.sources import cocorahs     # noqa: E402
 
@@ -82,6 +83,8 @@ def run(llm=None, obs=None, bundle_override=None, first_30_days=None):
     if first_30_days is None:
         first_30_days = (os.environ.get("WX_FIRST_30_DAYS") or "true").lower() \
             not in ("false", "0", "no")
+
+    text = SAN.clean(text)
 
     verdict, reasons = G.evaluate(bundle, text, first_30_days=first_30_days,
                                   calibrated=cal["active"])

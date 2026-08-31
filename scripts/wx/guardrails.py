@@ -107,6 +107,13 @@ def evaluate(bundle, draft_text, *, first_30_days=False, calibrated=False):
                                 "forecast the passes, link CDOT for status")
                 break
 
+    # Should be unreachable: sanitize.clean() runs first. If this fires, the
+    # sanitizer has a gap worth knowing about rather than shipping past.
+    from . import sanitize as _san
+    tells = _san.has_tells(draft_text)
+    if tells:
+        escalate(BLOCK, f"draft still contains {', '.join(tells)} after sanitising")
+
     # --- life safety: REVIEW ---------------------------------------------
     if bundle.get("life_safety_alerts"):
         events = sorted({a["event"] for a in bundle["life_safety_alerts"]})
