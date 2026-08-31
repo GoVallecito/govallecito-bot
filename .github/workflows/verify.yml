@@ -1,0 +1,57 @@
+name: Vallecito Verify
+
+# Runs after the school call, once the overnight CoCoRaHS reports are in.
+# Scores yesterday's forecast, adds one calibration point to the snow-line
+# heuristic, and drafts the totals post.
+on:
+  schedule:
+    - cron: "30 15 * * *"    # ~08:30 MST / 09:30 MDT
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run"
+        required: false
+        default: "true"
+
+concurrency:
+  group: govallecito-bot-state
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      issues: write          # the review-notification path opens issues
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Score yesterday and draft the totals post
+        env:
+          DRY_RUN: ${{ inputs.dry_run || vars.DRY_RUN }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CDOT_API_KEY: ${{ secrets.CDOT_API_KEY }}
+          WX_FIRST_30_DAYS: ${{ vars.WX_FIRST_30_DAYS }}
+          WX_SITE_DIR: ${{ vars.WX_SITE_DIR }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/wx/run_verify.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verify-${{ github.run_id }}
+          path: output/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Commit state
+        if: always()
+        run: |
+          git config user.name  "govallecito-wx"
+          git config user.email "bot@govallecito.com"
+          git add state/ || true
+          git diff --staged --quiet || git commit -m "wx: verify + calibration [skip ci]"
+          git push || echo "nothing to push"

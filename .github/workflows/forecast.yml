@@ -1,0 +1,75 @@
+name: Vallecito Forecast
+
+# Hourly, like the existing conditions bot, and for the same reason: GitHub
+# Actions cron is fixed in UTC, but "5:45am" is a Mountain Time promise and
+# Mountain Time changes twice a year. run_forecast.py checks the clock in
+# America/Denver itself, so the ~22 non-posting runs a day are a few seconds of
+# no-op and the schedule stays correct forever with no YAML edits.
+on:
+  schedule:
+    - cron: "45 * * * *"
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: "Force a slot"
+        required: false
+        type: choice
+        options: ["", school_call, evening, storm_setup, totals, life_safety]
+      dry_run:
+        description: "Dry run (nothing posts)"
+        required: false
+        default: "true"
+
+# Shares a lock with the existing bot's workflows -- they all write state files
+# and letting two run at once is worse than a delay.
+concurrency:
+  group: govallecito-bot-state
+  cancel-in-progress: false
+
+jobs:
+  forecast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      issues: write          # review-notification path
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run the forecaster
+        env:
+          DRY_RUN: ${{ inputs.dry_run || vars.DRY_RUN }}
+          FORCE_SLOT: ${{ inputs.slot }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+          FB_GROUP_ID: ${{ vars.FB_GROUP_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CDOT_API_KEY: ${{ secrets.CDOT_API_KEY }}
+          WX_MODEL: ${{ vars.WX_MODEL }}
+          WX_FIRST_30_DAYS: ${{ vars.WX_FIRST_30_DAYS }}
+          WX_SITE_DIR: ${{ vars.WX_SITE_DIR }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/wx/run_forecast.py
+
+      # Always uploaded, including on a BLOCK or REVIEW verdict -- the held
+      # draft is the thing you most need to read when the gate stops something.
+      - name: Upload draft and bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forecast-${{ github.run_id }}
+          path: output/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Commit state
+        if: always()
+        run: |
+          git config user.name  "govallecito-wx"
+          git config user.email "bot@govallecito.com"
+          git add state/ || true
+          git diff --staged --quiet || git commit -m "wx: update forecast state [skip ci]"
+          git push || echo "nothing to push"

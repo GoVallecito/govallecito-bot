@@ -1,0 +1,27 @@
+name: WX Self-Test (live endpoints)
+
+# The one thing that could not be done from the sandbox that wrote this code:
+# call the real APIs. Every weather host is blocked there by an egress
+# allowlist. GitHub Actions has open outbound HTTPS, so this workflow IS the
+# first real test. Run it before trusting anything else.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 13 * * 1"   # Monday, so a silently-dead source surfaces weekly
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python scripts/wx/selftest.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selftest-${{ github.run_id }}
+          path: output/selftest.json
+          if-no-files-found: ignore
