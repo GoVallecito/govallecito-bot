@@ -1,43 +1,21 @@
-# Forecast run — crashed
+# Forecast run — model call failed (HTTP 401)
 
-When: 2026-08-30T22:37:44-06:00 (Mountain)
+When: 2026-08-30T22:41:32-06:00 (Mountain)
+Slot: `school_call`
 
 ## Detail
 
 ```
-Traceback (most recent call last):
-  File "/home/runner/work/govallecito-bot/govallecito-bot/scripts/wx/run_forecast.py", line 276, in <module>
-    _code = main()
-            ^^^^^^
-  File "/home/runner/work/govallecito-bot/govallecito-bot/scripts/wx/run_forecast.py", line 271, in main
-    return run(slot=determine_slot(forced=args.slot), site_dir=args.site_dir)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/govallecito-bot/govallecito-bot/scripts/wx/run_forecast.py", line 131, in run
-    text = CO.compose(bundle, llm, post_type=slot)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/govallecito-bot/govallecito-bot/scripts/wx/compose.py", line 247, in compose
-    return llm(build_messages(bundle, post_type=post_type, **kw))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/govallecito-bot/govallecito-bot/scripts/wx/run_forecast.py", line 73, in call
-    with urllib.request.urlopen(req, timeout=120) as resp:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 216, in urlopen
-    return opener.open(url, data, timeout)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 525, in open
-    response = meth(req, response)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 634, in http_response
-    response = self.parent.error(
-               ^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 563, in error
-    return self._call_chain(*args)
-           ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 496, in _call_chain
-    result = func(*args)
-             ^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 643, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 401: Unauthorized
+HTTP 401 calling model claude-sonnet-4-5. The API rejected the key. Nothing on your side was changed by storing it here - a secret is a read-only copy and cannot revoke the original. Almost always this is the pasted VALUE: a trailing newline, a leading space, a partial copy, or a key from a different account. Re-paste it (select the whole value, no surrounding whitespace). Do NOT regenerate a key other systems share - that would break them; create an additional key instead.
+API said: {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"},"request_id":"req_011CeaDGzHhxGhQ3eEbGzj24"}
 ```
+
+**What to do:** The API rejected the key. Nothing on your side was changed by storing it here - a secret is a read-only copy and cannot revoke the original. Almost always this is the pasted VALUE: a trailing newline, a leading space, a partial copy, or a key from a different account. Re-paste it (select the whole value, no surrounding whitespace). Do NOT regenerate a key other systems share - that would break them; create an additional key instead.
+
+## What the data looked like
+
+- Snow line: 47200
+- Alerts: ['Flood Watch', 'Flood Watch']
+- Missing sources: none
+- Pass forecast: built
 
