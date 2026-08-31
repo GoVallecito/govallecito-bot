@@ -1,6 +1,6 @@
 # Self-test — live endpoint check
 
-Run: 2026-08-31T03:35:39+00:00
+Run: 2026-08-31T03:40:23+00:00
 Result: **12/16 sources reachable**
 
 ## The elevation thesis
@@ -28,7 +28,7 @@ Confirmed: Vallecito (COZ019) is in a different forecast zone than Durango (COZ0
 | CAIC zone for Vallecito | NO | only 1 polygon(s) published -- CAIC is out of season. Re-run mid-Nov to mid-Apr. Do NOT trust a point-in-polygon result against a single statewide shape. |
 | CDOT road conditions | NO | CDOT_API_KEY not set -- free at data.cotrip.org |
 | CoCoRaHS reports | NO | AL: HTTP Error 500: Internal Server Error |
-| Colorado DWR reservoir | NO | HTTP Error 400: Bad Request |
+| Colorado DWR reservoir | yes |  |
 | NRCS SNOTEL | yes |  |
 | NWS AFD (GJT) | yes |  |
 | NWS alerts (COZ019 + COZ022) | yes |  |
@@ -39,7 +39,7 @@ Confirmed: Vallecito (COZ019) is in a different forecast zone than Durango (COZ0
 | Open-Meteo model spread | yes |  |
 | Open-Meteo vallecito @ 7650ft | yes |  |
 | Open-Meteo weminuche @ 10500ft | yes |  |
-| USGS streamflow | yes |  |
+| USGS streamflow | NO | HTTP Error 503:  |
 | elevation_thesis | yes |  |
 
 ## Endpoint probes
@@ -48,29 +48,29 @@ Variants tried against the endpoints that failed. The one that returns 200 with 
 
 ### Colorado DWR (CDSS)
 
-| Status | Variant | First bytes |
+| Status | Rows | Variant | First data row |
 |---|---|---|
-| 400 | raw + min/max-measurementDate (current code) | `"Error: \"measurementDate\" is not a valid URL query key"` |
-| 200 | raw + parameter=STORAGE + startDate/endDate mm/dd/yyyy | `{"PageNumber":1,"PageCount":1,"ResultCount":373,"ResultDateTime":"2026-08-30T21:35:48.1181222-06:00","ResultList":[{"abbrev":"VALRESCO","parameter":"S` |
-| 200 | raw + parameter=STORAGE + iso dates | `{"PageNumber":1,"PageCount":1,"ResultCount":373,"ResultDateTime":"2026-08-30T21:35:48.2743393-06:00","ResultList":[{"abbrev":"VALRESCO","parameter":"S` |
-| 200 | day + parameter=STORAGE | `{"PageNumber":1,"PageCount":1,"ResultCount":3,"ResultDateTime":"2026-08-30T21:35:48.4149574-06:00","ResultList":[{"abbrev":"VALRESCO","parameter":"STO` |
-| 200 | station metadata only (is the abbrev right?) | `{"PageNumber":1,"PageCount":1,"ResultCount":1,"ResultDateTime":"2026-08-30T21:35:48.6760228-06:00","ResultList":[{"division":7,"waterDistrict":31,"cou` |
-| 200 | hourly + parameter=STORAGE | `{"PageNumber":1,"PageCount":1,"ResultCount":93,"ResultDateTime":"2026-08-30T21:35:48.8010201-06:00","ResultList":[{"abbrev":"VALRESCO","parameter":"ST` |
+| 400 | - | raw + min/max-measurementDate (current code) | `"Error: \"measurementDate\" is not a valid URL query key"` |
+| 200 | 0 | raw + parameter=STORAGE + startDate/endDate mm/dd/yyyy | `(header only, NO DATA ROWS)` |
+| 200 | 0 | raw + parameter=STORAGE + iso dates | `(header only, NO DATA ROWS)` |
+| 200 | 0 | day + parameter=STORAGE | `(header only, NO DATA ROWS)` |
+| 200 | 0 | station metadata only (is the abbrev right?) | `(header only, NO DATA ROWS)` |
+| 200 | 0 | hourly + parameter=STORAGE | `(header only, NO DATA ROWS)` |
 
 ### CoCoRaHS
 
-| Status | Variant | First bytes |
+| Status | Rows | Variant | First data row |
 |---|---|---|
-| 200 | county=LP, mm/dd/yyyy (current code) | `ObservationDate,ObservationTime,EntryDateTime,StationNumber,StationName,Latitude,Longitude,TotalPrecipAmt,NewSnowDepth,NewSnowSWE,TotalSnowDepth,Total` |
-| 200 | county=LP, iso dates | `ObservationDate,ObservationTime,EntryDateTime,StationNumber,StationName,Latitude,Longitude,TotalPrecipAmt,NewSnowDepth,NewSnowSWE,TotalSnowDepth,Total` |
-| 200 | state only, no county | `ObservationDate,ObservationTime,EntryDateTime,StationNumber,StationName,Latitude,Longitude,TotalPrecipAmt,NewSnowDepth,NewSnowSWE,TotalSnowDepth,Total` |
-| 200 | county=LP, wider window (7 days) | `ObservationDate,ObservationTime,EntryDateTime,StationNumber,StationName,Latitude,Longitude,TotalPrecipAmt,NewSnowDepth,NewSnowSWE,TotalSnowDepth,Total` |
-| 200 | XML instead of CSV | `<?xml version="1.0" encoding="utf-8"?> \| <Cocorahs> \|   <DailyPrecipReports> \|     <DailyPrecipReport> \|       <ObservationDate>2026-08-30</Observ` |
-| 200 | ReportType=DailyPrecipReports | `ObservationDate,ObservationTime,EntryDateTime,StationNumber,StationName,Latitude,Longitude,TotalPrecipAmt,NewSnowDepth,NewSnowSWE,TotalSnowDepth,Total` |
+| 200 | 29 | county=LP, mm/dd/yyyy (current code) | `2026-08-30, 07:00 AM, 2026-08-30 08:10 AM, CO-LP-22, Durango 0.8 SSW, 37.2736, -107.8749, T, NA, NA, NA, NA, 2026-08-30 02:09 PM` |
+| 200 | 29 | county=LP, iso dates | `2026-08-30, 07:00 AM, 2026-08-30 08:10 AM, CO-LP-22, Durango 0.8 SSW, 37.2736, -107.8749, T, NA, NA, NA, NA, 2026-08-30 02:09 PM` |
+| 200 | 28 | state only, no county | `2026-08-30, 12:00 AM, 2026-08-30 09:20 AM, CO-DN-326, Denver 6.6 SSE, 39.6444, -104.90306, 0.03, NA, NA, NA, NA, 2026-08-30 03:20 PM` |
+| 200 | 29 | county=LP, wider window (7 days) | `2026-08-30, 07:00 AM, 2026-08-30 08:10 AM, CO-LP-22, Durango 0.8 SSW, 37.2736, -107.8749, T, NA, NA, NA, NA, 2026-08-30 02:09 PM` |
+| 200 | 91 | XML instead of CSV | `<Cocorahs>` |
+| 200 | 29 | ReportType=DailyPrecipReports | `2026-08-30, 07:00 AM, 2026-08-30 08:10 AM, CO-LP-22, Durango 0.8 SSW, 37.2736, -107.8749, T, NA, NA, NA, NA, 2026-08-30 02:09 PM` |
 
 ## Needs attention
 
-- **Colorado DWR reservoir** — HTTP Error 400: Bad Request
+- **USGS streamflow** — HTTP Error 503: 
 - **CoCoRaHS reports** — AL: HTTP Error 500: Internal Server Error
 - **CDOT road conditions** — CDOT_API_KEY not set -- free at data.cotrip.org
 - **CAIC zone for Vallecito** — only 1 polygon(s) published -- CAIC is out of season. Re-run mid-Nov to mid-Apr. Do NOT trust a point-in-polygon result against a single statewide shape.
