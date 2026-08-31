@@ -101,6 +101,14 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
         print("ABORT -- preconditions not met, posting nothing:")
         for p in problems:
             print(f"  - {p}")
+        # The dead-man switch firing is the case that most needs an explanation:
+        # a silent 5:45am with no post and no reason is indistinguishable from
+        # the agent being broken.
+        write_status("aborted — data unavailable", "\n".join(problems), bundle, slot,
+                     hint="No post went out, deliberately. A forecast built on "
+                          "half its inputs is worse than silence at 5:45am. If "
+                          "this repeats, check state/selftest-latest.md for which "
+                          "source is down.")
         return 0
 
     if bundle.get("life_safety_alerts") and slot in ("school_call", "evening"):
@@ -108,7 +116,18 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
         print(f"life-safety alert(s) active {events} -- composing as life_safety")
         slot = "life_safety"
 
-    llm = llm or _llm_from_env()
+    if llm is None:
+        try:
+            llm = _llm_from_env()
+        except RuntimeError as exc:
+            # A missing key is a configuration state, not a bug. Crashing here
+            # produced a red X whose only explanation lived in a log that is
+            # genuinely hard to read after the fact.
+            write_status("not configured", str(exc), bundle, slot,
+                         hint="Add ANTHROPIC_API_KEY under Settings > Secrets and "
+                              "variables > Actions > Secrets. Nothing else is missing.")
+            print(f"ABORT -- {exc}")
+            return 0
     text = CO.compose(bundle, llm, post_type=slot)
 
     verdict, reasons = G.evaluate(bundle, text, first_30_days=first_30_days,
@@ -125,11 +144,13 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
 
     if verdict == G.BLOCK:
         print("BLOCKED -- nothing published. Draft saved to output/draft.txt")
+        write_status("blocked", "\n".join(reasons), bundle, slot, draft=text)
         return 0
     if verdict == G.REVIEW:
         print("HELD FOR REVIEW -- draft saved to output/draft.txt")
         # A review gate nobody sees is not a safety mechanism. Open an issue so
         # the held draft actually reaches a human.
+        write_status("held for review", "\n".join(reasons), bundle, slot, draft=text)
         N.review_requested(text, verdict, reasons, bundle, slot=slot)
         return 0
 
@@ -160,6 +181,58 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
                             post_id=result.get("id"))
     print(f"logged forecast {fid} for tomorrow's verification")
     return 0
+
+
+def write_status(state, detail, bundle=None, slot=None, hint=None, draft=None):
+    """Leave a readable record of what this run did, committed to the repo.
+
+    The self-test learned this the hard way: GitHub's raw logs sit behind
+    short-lived signed URLs and the API log endpoint needs a token, so a failure
+    is oddly hard to read after the fact. This runs twice a day, so it needs the
+    same treatment even more.
+    """
+    import os as _os
+    path = _os.path.join(
+        _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))),
+        "state", "forecast-status.md")
+    L = [f"# Forecast run — {state}", ""]
+    L.append(f"When: {C.local_now().isoformat(timespec='seconds')} (Mountain)")
+    if slot:
+        L.append(f"Slot: `{slot}`")
+    L.append("")
+    if detail:
+        L.append("## Detail")
+        L.append("")
+        L.append("```")
+        L.append(str(detail).strip()[:3000])
+        L.append("```")
+        L.append("")
+    if hint:
+        L.append(f"**What to do:** {hint}")
+        L.append("")
+    if bundle:
+        sl = (bundle.get("snow_line") or {}).get("representative_ft")
+        L.append("## What the data looked like")
+        L.append("")
+        L.append(f"- Snow line: {sl if sl else 'no precipitation forecast'}")
+        L.append(f"- Alerts: {[a['event'] for a in (bundle.get('alerts') or [])] or 'none'}")
+        L.append(f"- Missing sources: {bundle.get('missing') or 'none'}")
+        if bundle.get("pass_card"):
+            L.append("- Pass forecast: built")
+        L.append("")
+    if draft:
+        L.append("## Draft")
+        L.append("")
+        L.append("```")
+        L.append(draft.strip()[:6000])
+        L.append("```")
+    try:
+        _os.makedirs(_os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as fh:
+            fh.write("\n".join(L) + "\n")
+        print(f"Wrote {path}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"could not write status file: {exc}")
 
 
 def _group_caption(slot):
@@ -199,4 +272,12 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        _code = main()
+    except Exception:
+        import traceback
+        _tb = traceback.format_exc()
+        print(_tb)
+        write_status("crashed", _tb)
+        _code = 1
+    sys.exit(_code)

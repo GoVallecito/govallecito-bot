@@ -173,3 +173,50 @@ def test_missing_cdot_key_does_not_break_the_run():
     assert "not the road status" in b["pass_card"], "must defer to CDOT"
     assert not any("roads" in p for p in __import__(
         "wx.guardrails", fromlist=["x"]).require_or_abort(b))
+
+
+def test_abort_leaves_a_readable_record():
+    """A silent 5:45am with no post and no reason looks like a broken agent.
+
+    The dead-man switch is correct behaviour, but it has to explain itself
+    somewhere a person can actually read - GitHub's raw logs are not that place.
+    """
+    os.environ["DRY_RUN"] = "true"
+    with tempfile.TemporaryDirectory() as d:
+        import wx.run_forecast as RFmod
+        os.chdir(d)
+        os.makedirs(os.path.join(d, "state"), exist_ok=True)
+        real = RFmod.write_status
+        captured = {}
+
+        def spy(state, detail, bundle=None, slot=None, hint=None, draft=None):
+            captured.update(state=state, detail=detail, slot=slot, hint=hint)
+        RFmod.write_status = spy
+        try:
+            rc = RFmod.run(slot="school_call", llm=stub_llm,
+                           dry_bundle=B.build(fetchers=_fakes(break_band="vallecito")))
+        finally:
+            RFmod.write_status = real
+        assert rc == 0
+        assert "aborted" in captured.get("state", "")
+        assert "vallecito" in captured.get("detail", "")
+        assert "worse than silence" in (captured.get("hint") or "")
+
+
+def test_missing_api_key_is_a_state_not_a_crash():
+    os.environ["DRY_RUN"] = "true"
+    os.environ.pop("ANTHROPIC_API_KEY", None)
+    with tempfile.TemporaryDirectory() as d:
+        import wx.run_forecast as RFmod
+        os.chdir(d)
+        real = RFmod.write_status
+        captured = {}
+        RFmod.write_status = lambda state, detail, *a, **k: captured.update(
+            state=state, detail=detail, hint=k.get("hint"))
+        try:
+            rc = RFmod.run(slot="school_call", dry_bundle=B.build(fetchers=_fakes()))
+        finally:
+            RFmod.write_status = real
+        assert rc == 0, "a missing key must not crash the run"
+        assert captured.get("state") == "not configured"
+        assert "ANTHROPIC_API_KEY" in (captured.get("hint") or "")
