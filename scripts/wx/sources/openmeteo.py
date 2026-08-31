@@ -11,8 +11,10 @@ separate forecast products and would still be guessing at the lapse rate.
 
 It also needs no API key, exposes ECMWF IFS / GFS / ICON / GEM separately (so
 the voice rule "name the model, then say whether you believe it" has real data
-behind it), and returns `freezing_level_height` in metres MSL, which is the
-raw material for the snow line.
+behind it), and returns `freezing_level_height` -- in FEET when the request asks for
+fahrenheit/mph/inch, as this one does, and metres otherwise. The unit is read
+from the response's own hourly_units block; assuming it cost us a 47,200 ft
+snow line once already.
 """
 
 from urllib.parse import urlencode

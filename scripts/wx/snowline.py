@@ -35,6 +35,11 @@ settled.
 
 M_TO_FT = 3.28084
 
+# A freezing level outside this range is not a reading, it is a unit bug or a
+# bad value. Publishing one is worse than publishing nothing, because a snow
+# line above every band silently turns a snowstorm into "rain everywhere".
+PLAUSIBLE_FL_FT = (-1000, 20000)
+
 # Melting distance below the freezing level in saturated air, feet.
 BASE_OFFSET_FT = 600.0
 # Additional drop per degree F of surface dewpoint depression (dry-air cooling).
@@ -53,17 +58,27 @@ def _f(x, default=None):
         return default
 
 
-def snow_line_ft(freezing_level_m, temp_f=None, dew_point_f=None,
-                 precip_in_hr=None, calibration_offset_ft=0.0):
+def snow_line_ft(freezing_level, temp_f=None, dew_point_f=None,
+                 precip_in_hr=None, calibration_offset_ft=0.0, units="m"):
     """One hour's snow line, in feet MSL, with its reasoning attached.
 
-    Returns None if the freezing level is missing -- the caller must then say
-    it doesn't know rather than substitute a guess.
+    `units` MUST match what the API actually returned. Open-Meteo reports
+    freezing_level_height in FEET when the request asks for fahrenheit/mph/inch,
+    and in metres otherwise -- so this is read from the response's own
+    hourly_units block rather than assumed. Assuming metres against an imperial
+    response multiplies every height by 3.28: a real 6,000 ft freezing level
+    becomes 19,685 ft, every band reads as rain, and a snowstorm is forecast as
+    a wet day. That happened.
+
+    Returns None if the freezing level is missing or implausible -- the caller
+    must then say it doesn't know rather than substitute a guess.
     """
-    fl_m = _f(freezing_level_m)
-    if fl_m is None:
+    fl_raw = _f(freezing_level)
+    if fl_raw is None:
         return None
-    fl_ft = fl_m * M_TO_FT
+    fl_ft = fl_raw * M_TO_FT if str(units).lower().startswith("m") else fl_raw
+    if not (PLAUSIBLE_FL_FT[0] <= fl_ft <= PLAUSIBLE_FL_FT[1]):
+        return None
 
     t = _f(temp_f)
     td = _f(dew_point_f)
@@ -86,7 +101,14 @@ def snow_line_ft(freezing_level_m, temp_f=None, dew_point_f=None,
         "dewpoint_depression_f": round(depression, 1),
         "precip_in_hr": round(rate, 3),
         "method": "freezing level minus melting-distance heuristic (UNCALIBRATED)",
+        "source_units": units,
     }
+
+
+def units_of(payload, field="freezing_level_height", default="m"):
+    """What unit the API says it used. Never guess this."""
+    u = ((payload or {}).get("hourly_units") or {}).get(field)
+    return u or default
 
 
 def series_from_payload(payload, calibration_offset_ft=0.0, hours=48):
@@ -103,6 +125,7 @@ def series_from_payload(payload, calibration_offset_ft=0.0, hours=48):
     if not times:
         return []
     n = min(hours, len(times))
+    fl_units = units_of(payload)
 
     def col(k):
         v = h.get(k) or []
@@ -116,7 +139,8 @@ def series_from_payload(payload, calibration_offset_ft=0.0, hours=48):
         rate = _f(pcp[i], 0.0) or 0.0
         if rate <= 0.001:
             continue
-        s = snow_line_ft(frz[i], temp[i], dew[i], rate, calibration_offset_ft)
+        s = snow_line_ft(frz[i], temp[i], dew[i], rate, calibration_offset_ft,
+                         units=fl_units)
         if s:
             s["time"] = times[i]
             out.append(s)
