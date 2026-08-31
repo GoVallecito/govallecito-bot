@@ -9,10 +9,20 @@ on:
   schedule:
     - cron: "17 13 * * 1"   # Monday, so a silently-dead source surfaces weekly
 
+# Writes state/selftest-latest.md back to the repo, so the result of every run
+# is readable from a plain clone. GitHub's raw job logs live behind short-lived
+# signed URLs and the API log endpoint needs a token, which makes "just read the
+# log" far harder than it sounds. A committed file is diffable and permanent.
+concurrency:
+  group: govallecito-bot-state
+  cancel-in-progress: false
+
 jobs:
   selftest:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,3 +35,12 @@ jobs:
           name: selftest-${{ github.run_id }}
           path: output/selftest.json
           if-no-files-found: ignore
+
+      - name: Commit the readable result
+        if: always()
+        run: |
+          git config user.name  "govallecito-wx"
+          git config user.email "bot@govallecito.com"
+          git add state/selftest-latest.md || true
+          git diff --staged --quiet || git commit -m "wx: self-test result [skip ci]"
+          git push || echo "nothing to push"

@@ -25,6 +25,7 @@ from wx.sources import (caic, cdot, cocorahs, nws, openmeteo,   # noqa: E402
                         snotel, water)
 
 results = {}
+FINDINGS = {}
 
 
 def check(name, fn):
@@ -47,7 +48,10 @@ def check(name, fn):
         print(f"  NOTE: {res.age_note}")
     if res.ok:
         print("  data:", json.dumps(res.data, default=str)[:1200])
-    results[name] = {"ok": res.ok, "error": res.error, "note": res.age_note}
+    results[name] = {
+        "ok": res.ok, "error": res.error, "note": res.age_note,
+        "sample": (json.dumps(res.data, default=str)[:400] if res.ok else None),
+    }
     return res
 
 
@@ -61,6 +65,11 @@ def main():
         if r and r.ok:
             print(f"  >> zone={r.data['forecast_zone']} fire={r.data['fire_zone']} "
                   f"grid={r.data['grid']}")
+            FINDINGS.setdefault("zones", {})[pt] = {
+                "forecast_zone": r.data["forecast_zone"],
+                "fire_zone": r.data["fire_zone"],
+                "grid": r.data["grid"],
+            }
 
     # --- the critical one -------------------------------------------------
     print(f"\n{'=' * 66}\nELEVATION PARAMETER -- THE PRODUCT THESIS\n{'=' * 66}")
@@ -80,9 +89,11 @@ def main():
               "is being ignored and the entire elevation-band product does not "
               "work. Stop and investigate before going further. ***")
         results["elevation_thesis"] = {"ok": False}
+        FINDINGS["elevation"] = {"pass": False, "temps": temps, "elevations": elevations}
     else:
         print(f"  OK: {distinct} distinct band temperatures.")
         results["elevation_thesis"] = {"ok": True, "distinct_temps": distinct}
+        FINDINGS["elevation"] = {"pass": True, "temps": temps, "elevations": elevations}
 
     r = check("Open-Meteo model spread",
               lambda: openmeteo.fetch_model_spread(
@@ -122,6 +133,7 @@ def main():
     os.makedirs("output", exist_ok=True)
     with open("output/selftest.json", "w") as fh:
         json.dump(results, fh, indent=2)
+    write_markdown()
 
     failed = [k for k, v in results.items() if not v.get("ok")]
     print(f"\n{'=' * 66}\nSUMMARY: {len(results) - len(failed)}/{len(results)} ok")
@@ -135,3 +147,97 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def write_markdown(path="state/selftest-latest.md"):
+    """Commit a readable record of this run into the repo.
+
+    GitHub's raw job logs sit behind short-lived signed URLs and the API log
+    endpoint needs a token, which makes "just read the log" surprisingly hard
+    for anyone or anything not sitting at the browser. A committed markdown
+    file is diffable, greppable, readable from a plain clone, and turns the
+    weekly scheduled run into a health record you can look back through.
+    """
+    import datetime as _dt
+
+    ok = [k for k, v in results.items() if v.get("ok")]
+    bad = [k for k, v in results.items() if not v.get("ok")]
+
+    L = ["# Self-test — live endpoint check", ""]
+    L.append(f"Run: {_dt.datetime.now(_dt.timezone.utc).isoformat(timespec='seconds')}")
+    L.append(f"Result: **{len(ok)}/{len(results)} sources reachable**")
+    L.append("")
+
+    # --- the one that decides whether the product works at all ---
+    el = FINDINGS.get("elevation")
+    L.append("## The elevation thesis")
+    if not el:
+        L.append("**NOT EVALUATED** — Open-Meteo did not return usable data.")
+    elif el["pass"]:
+        L.append("**PASS.** The bands return different forecasts, so the "
+                 "elevation parameter is being honoured and elevation-band "
+                 "forecasting works.")
+    else:
+        L.append("**FAIL.** Every band returned the same temperature, which "
+                 "means the elevation parameter is being ignored. The "
+                 "elevation-band product does not work as designed. Stop and "
+                 "investigate before building further.")
+    if el:
+        L.append("")
+        L.append("| Band | Elevation requested (m) | Elevation used (m) | First-hour temp |")
+        L.append("|---|---|---|---|")
+        for b in C.BANDS:
+            k = b["key"]
+            L.append(f"| {b['label']} | {b['elevation_m']} | "
+                     f"{el['elevations'].get(k, '—')} | {el['temps'].get(k, '—')} |")
+    L.append("")
+
+    # --- the zone split this whole product depends on ---
+    L.append("## NWS zones")
+    zones = FINDINGS.get("zones") or {}
+    if zones:
+        L.append("| Point | Forecast zone | Fire zone | Grid |")
+        L.append("|---|---|---|---|")
+        for k, v in zones.items():
+            L.append(f"| {k} | {v['forecast_zone']} | {v['fire_zone']} | {v['grid']} |")
+        v_zone = (zones.get("vallecito") or {}).get("forecast_zone")
+        d_zone = (zones.get("durango") or {}).get("forecast_zone")
+        if v_zone and d_zone:
+            if v_zone != d_zone:
+                L.append("")
+                L.append(f"Confirmed: Vallecito ({v_zone}) is in a different "
+                         f"forecast zone than Durango ({d_zone}). Polling only "
+                         f"one of them would miss the other's warnings.")
+            else:
+                L.append("")
+                L.append(f"**Unexpected:** both points report {v_zone}. The zone "
+                         f"constants may need revisiting.")
+    else:
+        L.append("Not retrieved.")
+    L.append("")
+
+    L.append("## Every source")
+    L.append("")
+    L.append("| Source | OK | Detail |")
+    L.append("|---|---|---|")
+    for k in sorted(results):
+        v = results[k]
+        detail = (v.get("error") or v.get("note") or "")
+        detail = str(detail).replace("|", "\\|")[:180]
+        L.append(f"| {k} | {'yes' if v.get('ok') else 'NO'} | {detail} |")
+    L.append("")
+
+    if bad:
+        L.append("## Needs attention")
+        L.append("")
+        for k in bad:
+            L.append(f"- **{k}** — {results[k].get('error')}")
+        L.append("")
+        L.append("A failure here is information, not a crash. CDOT without a key "
+                 "and CAIC out of season are both expected.")
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as fh:
+        fh.write("\n".join(L) + "\n")
+    print(f"\nWrote {path} — committed by the workflow so it can be read "
+          f"without touching GitHub's logs.")
