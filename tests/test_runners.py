@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 sys.path.insert(0, os.path.dirname(__file__))
 from test_end_to_end import fake_fetchers
 from wx import constants as C
+from wx import compose as CO
 from wx import bundle as B, storm_watch as SW, verify as V
 from wx import run_forecast as RF, run_verify as RV, run_storm_watch as RSW
 from wx.sources.http import SourceResult
@@ -220,3 +221,35 @@ def test_missing_api_key_is_a_state_not_a_crash():
         assert rc == 0, "a missing key must not crash the run"
         assert captured.get("state") == "not configured"
         assert "ANTHROPIC_API_KEY" in (captured.get("hint") or "")
+
+
+def test_brief_states_the_day_the_post_is_for():
+    """"Morning, its Sunday" appeared at the top of a post dated Monday.
+
+    The composer was handed a run timestamp and inferred the weekday from it.
+    An evening run writes tomorrow's post, so the two genuinely differ - and a
+    wrong weekday in the opening line is the kind of single word a local stops
+    trusting over.
+    """
+    import datetime as _dt
+    b = B.build(fetchers=_fakes())
+    assert b.get("post_for_weekday") and b.get("post_for_date")
+    # internally consistent
+    d = _dt.date.fromisoformat(b["post_for_date"])
+    assert d.strftime("%A") == b["post_for_weekday"]
+    assert d.strftime("%m/%d/%y") == b["post_for_stamp"]
+    # and stated unmissably in the brief
+    user = CO.build_messages(b, post_type="school_call")[1]["content"]
+    assert "THIS POST IS FOR" in user
+    assert b["post_for_weekday"] in user
+    assert "Use no other weekday" in user
+
+
+def test_evening_runs_target_tomorrow_morning():
+    import datetime as _dt
+    from zoneinfo import ZoneInfo
+    tz = ZoneInfo("America/Denver")
+    for hour, offset in ((5, 0), (11, 0), (12, 1), (22, 1)):
+        now = _dt.datetime(2026, 8, 30, hour, tzinfo=tz)
+        target = now.date() + _dt.timedelta(days=1) if now.hour >= 12 else now.date()
+        assert (target - now.date()).days == offset, f"hour {hour}"

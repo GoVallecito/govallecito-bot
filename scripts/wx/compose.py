@@ -36,7 +36,13 @@ def render_bundle(bundle, post_type="school_call"):
     A = L.append
 
     A(f"POST TYPE: {post_type}")
-    A(f"LOCAL DATE/TIME: {bundle.get('generated_at')}  (season: {bundle.get('season')})")
+    A(f"THIS POST IS FOR: {bundle.get('post_for_weekday')}, "
+      f"{bundle.get('post_for_date')}")
+    A(f"  -> Open with the stamp {bundle.get('post_for_stamp')} and, if you name")
+    A(f"     the day, it is {bundle.get('post_for_weekday')}. Use no other weekday.")
+    A(f"COMPOSED AT: {bundle.get('generated_at')} (this is NOT necessarily the")
+    A(f"  date the post is for -- an evening run writes tomorrow's post)")
+    A(f"SEASON: {bundle.get('season')}")
     A("")
 
     # --- alerts first: they change what kind of post this is ---

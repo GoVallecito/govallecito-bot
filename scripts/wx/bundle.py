@@ -41,9 +41,17 @@ def build(days=5, want_model_spread=True, calibration_offset_ft=0.0,
         f.update(fetchers)
 
     now = _dt.datetime.now(TZ)
+    # The date a post is FOR is not always the date it was composed. The school
+    # call written at 10pm is for tomorrow morning; the same call at 5:45am is
+    # for today. Getting this wrong put "its Sunday" at the top of a post dated
+    # Monday - a single word, and exactly the kind a local stops trusting over.
+    target = now.date() + _dt.timedelta(days=1) if now.hour >= 12 else now.date()
     out = {
         "generated_at": now.isoformat(),
         "local_date": now.date().isoformat(),
+        "post_for_date": target.isoformat(),
+        "post_for_weekday": target.strftime("%A"),
+        "post_for_stamp": target.strftime("%m/%d/%y"),
         "season": _season(now),
         "sources": {},
         "missing": [],

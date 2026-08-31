@@ -54,19 +54,31 @@ def review_requested(draft, verdict, reasons, bundle, slot="school_call"):
     if sl:
         title += f" (snow line ~{sl} ft)"
 
-    payload = json.dumps({
-        "title": title,
-        "body": body,
-        "labels": ["wx-review", f"wx-{verdict}"],
-    }).encode()
-    req = urllib.request.Request(
-        f"{API}/repos/{repo}/issues", data=payload, method="POST",
-        headers={"Authorization": f"Bearer {token}",
-                 "Accept": "application/vnd.github+json",
-                 "User-Agent": "govallecito-wx"})
-    try:
+    def _post(with_labels):
+        fields = {"title": title, "body": body}
+        if with_labels:
+            fields["labels"] = ["wx-review", f"wx-{verdict}"]
+        req = urllib.request.Request(
+            f"{API}/repos/{repo}/issues", data=json.dumps(fields).encode(),
+            method="POST",
+            headers={"Authorization": f"Bearer {token}",
+                     "Accept": "application/vnd.github+json",
+                     "User-Agent": "govallecito-wx"})
         with urllib.request.urlopen(req, timeout=30) as resp:
-            issue = json.loads(resp.read().decode())
+            return json.loads(resp.read().decode())
+
+    try:
+        try:
+            issue = _post(True)
+        except urllib.error.HTTPError as exc:
+            # GitHub rejects labels that do not exist yet rather than creating
+            # them. The notification matters more than the tidy label, so drop
+            # them and retry rather than losing the draft.
+            if exc.code == 422:
+                print("[notify] labels do not exist in this repo; retrying without")
+                issue = _post(False)
+            else:
+                raise
         print(f"Review issue opened: {issue.get('html_url')}")
         return {"notified": True, "url": issue.get("html_url")}
     except urllib.error.HTTPError as exc:
