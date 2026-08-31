@@ -1,6 +1,6 @@
 # Self-test — live endpoint check
 
-Run: 2026-08-31T03:45:17+00:00
+Run: 2026-08-31T04:09:10+00:00
 Result: **14/16 sources reachable**
 
 ## The elevation thesis
