@@ -1,12 +1,11 @@
 # Forecast run — held for review
 
-When: 2026-08-30T22:53:45-06:00 (Mountain)
+When: 2026-08-30T22:58:18-06:00 (Mountain)
 Slot: `school_call`
 
 ## Detail
 
 ```
-mentions a burn scar -- debris flows here have been triggered by ordinary sub-two-year storms
 first-30-days policy: review everything
 ```
 
@@ -20,19 +19,21 @@ first-30-days policy: review everything
 ## Draft
 
 ```
-08/31/26 5:52am: Morning, its Sunday and a weird one to call.
+08/31/26 5:45am: Morning, its Monday.
 
-The short version for the 240 and the 501 is that you're dry until midday and then its thunderstorms this afternoon with a flood watch in effect through 3pm. The snow line is 13,100' so this is all rain even up high. The districts decide by 6:30 but the real question today isn't the morning drive, its whether they want buses running through afternoon storms with a flash flood risk already elevated from yesterday's rain.
+The National Weather Service has a Flood Watch up for the whole county today, and the question this morning is whether the Florida Road and the 501 get hit hard enough to complicate afternoon pickups. The districts decide by 6:30 but right now everything's dry and the threat window is this afternoon, not the morning commute.
 
-Durango and the Animas Valley (6,500') stay dry through noon and then scattered storms develop after lunch. The Grand Junction office has a flood watch starting at 6am Monday for town — basically saying the soils are already saturated and any heavy cell could run off fast. Models show a tenth of an inch in the afternoon window but take that with a big grain of salt (convective rainfall is a crapshoot for amounts). Worst window looks like 2pm to 5pm.
+The snow line is up at 13,100 feet so this is all rain, even in the high country. The Flood Watch is about soil saturation from the last few days stacking up with whatever falls today.
 
-Bayfield and up the Pine (6,900') same story — dry morning, storms fire midday and into afternoon. You're under the same flood watch starting at 6am. Models are drier for you than town but its August thunderstorms so one cell sitting over the drainage changes everything.
+In town and the Animas Valley the models are showing around a tenth of an inch this afternoon, mostly between noon and 5pm. That's not a huge number but the NWS is flagging that soils are already wet from the weekend, so runoff could be faster than normal.
 
-Vallecito and the Florida (7,650'+) you've got the flood watch already active since last night and it runs through 3pm today. Dry this morning but storms develop after noon with maybe a few hundredths. The 240 should be fine for morning routes but afternoon pickup is the question with saturated ground and cells that could dump.
+Up the Pine and around Bayfield the numbers are lighter, maybe two hundredths, but same afternoon window and same saturation concern.
 
-The high Weminuche (10,000'+) gets the most action with a tenth possible this afternoon, all rain.
+The Florida drainage and Vallecito are the focus — the Flood Watch started last night for COZ019 and runs through 3pm today. Models have about four hundredths at the lake but the high Weminuche could see close to a tenth. The 240 is the route to watch this afternoon, not this morning. If storms set up over the drainage and sit there, small drainages could come up fast on already-wet ground.
 
-The NWS discussion makes it pretty clear they're worried about burn scars and saturated soils more than raw rainfall totals — its the setup after multiple wet days that has them concerned. 
+The models all agree this is an afternoon event and they all agree the amounts are modest, but the NWS discussion is pretty clear that the setup favors areas that got hit hard over the weekend and that's us. The Flood Watch is the real deal — its not about the rain itself, its about where its falling.
 
-What'd you get yesterday up your way?
+Morning roads should be fine. Afternoon pickups are the question and the districts will be watching radar through the day.
+
+Did your gauge catch anything overnight?
 ```

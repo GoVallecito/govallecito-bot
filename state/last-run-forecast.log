@@ -1,11 +1,10 @@
 FORCE_SLOT=school_call -- skipping the clock check.
-=== Vallecito forecast: school_call @ 2026-08-30 22:52 MDT ===
+=== Vallecito forecast: school_call @ 2026-08-30 22:57 MDT ===
 snow-line calibration: offset=0.0ft active=False
 guardrails: REVIEW
-  - mentions a burn scar -- debris flows here have been triggered by ordinary sub-two-year storms
   - first-30-days policy: review everything
 HELD FOR REVIEW -- draft saved to output/draft.txt
 Wrote /home/runner/work/govallecito-bot/govallecito-bot/state/forecast-status.md
-[notify] could not open issue (HTTP 422): {"message":"Validation Failed","errors":[{"value":"wx-review","resource":"Label","field":"name","code":"invalid"}],"documentation_url":"https://docs.github.com/rest/issues/issues#create-an-issue","status":"422"}
-[notify] check Settings > Actions > Workflow permissions is 'Read and write' -- same setting the state commit-back needs.
+[notify] labels do not exist in this repo; retrying without
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/1
 exit=0
