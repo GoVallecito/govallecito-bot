@@ -55,6 +55,109 @@ def check(name, fn):
     return res
 
 
+def write_markdown(path="state/selftest-latest.md", crash=None):
+    """Commit a readable record of this run into the repo.
+
+    GitHub's raw job logs sit behind short-lived signed URLs and the API log
+    endpoint needs a token, which makes "just read the log" surprisingly hard
+    for anyone or anything not sitting at the browser. A committed markdown
+    file is diffable, greppable, readable from a plain clone, and turns the
+    weekly scheduled run into a health record you can look back through.
+    """
+    import datetime as _dt
+
+    ok = [k for k, v in results.items() if v.get("ok")]
+    bad = [k for k, v in results.items() if not v.get("ok")]
+
+    L = ["# Self-test — live endpoint check", ""]
+    if crash:
+        L.append("## The self-test itself crashed")
+        L.append("")
+        L.append("Everything below may be incomplete. The traceback:")
+        L.append("")
+        L.append("```")
+        L.append(crash.strip())
+        L.append("```")
+        L.append("")
+    L.append(f"Run: {_dt.datetime.now(_dt.timezone.utc).isoformat(timespec='seconds')}")
+    L.append(f"Result: **{len(ok)}/{len(results)} sources reachable**")
+    L.append("")
+
+    # --- the one that decides whether the product works at all ---
+    el = FINDINGS.get("elevation")
+    L.append("## The elevation thesis")
+    if not el:
+        L.append("**NOT EVALUATED** — Open-Meteo did not return usable data.")
+    elif el["pass"]:
+        L.append("**PASS.** The bands return different forecasts, so the "
+                 "elevation parameter is being honoured and elevation-band "
+                 "forecasting works.")
+    else:
+        L.append("**FAIL.** Every band returned the same temperature, which "
+                 "means the elevation parameter is being ignored. The "
+                 "elevation-band product does not work as designed. Stop and "
+                 "investigate before building further.")
+    if el:
+        L.append("")
+        L.append("| Band | Elevation requested (m) | Elevation used (m) | First-hour temp |")
+        L.append("|---|---|---|---|")
+        for b in C.BANDS:
+            k = b["key"]
+            L.append(f"| {b['label']} | {b['elevation_m']} | "
+                     f"{el['elevations'].get(k, '—')} | {el['temps'].get(k, '—')} |")
+    L.append("")
+
+    # --- the zone split this whole product depends on ---
+    L.append("## NWS zones")
+    zones = FINDINGS.get("zones") or {}
+    if zones:
+        L.append("| Point | Forecast zone | Fire zone | Grid |")
+        L.append("|---|---|---|---|")
+        for k, v in zones.items():
+            L.append(f"| {k} | {v['forecast_zone']} | {v['fire_zone']} | {v['grid']} |")
+        v_zone = (zones.get("vallecito") or {}).get("forecast_zone")
+        d_zone = (zones.get("durango") or {}).get("forecast_zone")
+        if v_zone and d_zone:
+            if v_zone != d_zone:
+                L.append("")
+                L.append(f"Confirmed: Vallecito ({v_zone}) is in a different "
+                         f"forecast zone than Durango ({d_zone}). Polling only "
+                         f"one of them would miss the other's warnings.")
+            else:
+                L.append("")
+                L.append(f"**Unexpected:** both points report {v_zone}. The zone "
+                         f"constants may need revisiting.")
+    else:
+        L.append("Not retrieved.")
+    L.append("")
+
+    L.append("## Every source")
+    L.append("")
+    L.append("| Source | OK | Detail |")
+    L.append("|---|---|---|")
+    for k in sorted(results):
+        v = results[k]
+        detail = (v.get("error") or v.get("note") or "")
+        detail = str(detail).replace("|", "\\|")[:180]
+        L.append(f"| {k} | {'yes' if v.get('ok') else 'NO'} | {detail} |")
+    L.append("")
+
+    if bad:
+        L.append("## Needs attention")
+        L.append("")
+        for k in bad:
+            L.append(f"- **{k}** — {results[k].get('error')}")
+        L.append("")
+        L.append("A failure here is information, not a crash. CDOT without a key "
+                 "and CAIC out of season are both expected.")
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as fh:
+        fh.write("\n".join(L) + "\n")
+    print(f"\nWrote {path} — committed by the workflow so it can be read "
+          f"without touching GitHub's logs.")
+
+
 def main():
     check("NWS alerts (COZ019 + COZ022)", nws.fetch_alerts)
     check("NWS AFD (GJT)", lambda: nws.fetch_afd())
@@ -146,98 +249,20 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
-
-
-def write_markdown(path="state/selftest-latest.md"):
-    """Commit a readable record of this run into the repo.
-
-    GitHub's raw job logs sit behind short-lived signed URLs and the API log
-    endpoint needs a token, which makes "just read the log" surprisingly hard
-    for anyone or anything not sitting at the browser. A committed markdown
-    file is diffable, greppable, readable from a plain clone, and turns the
-    weekly scheduled run into a health record you can look back through.
-    """
-    import datetime as _dt
-
-    ok = [k for k, v in results.items() if v.get("ok")]
-    bad = [k for k, v in results.items() if not v.get("ok")]
-
-    L = ["# Self-test — live endpoint check", ""]
-    L.append(f"Run: {_dt.datetime.now(_dt.timezone.utc).isoformat(timespec='seconds')}")
-    L.append(f"Result: **{len(ok)}/{len(results)} sources reachable**")
-    L.append("")
-
-    # --- the one that decides whether the product works at all ---
-    el = FINDINGS.get("elevation")
-    L.append("## The elevation thesis")
-    if not el:
-        L.append("**NOT EVALUATED** — Open-Meteo did not return usable data.")
-    elif el["pass"]:
-        L.append("**PASS.** The bands return different forecasts, so the "
-                 "elevation parameter is being honoured and elevation-band "
-                 "forecasting works.")
-    else:
-        L.append("**FAIL.** Every band returned the same temperature, which "
-                 "means the elevation parameter is being ignored. The "
-                 "elevation-band product does not work as designed. Stop and "
-                 "investigate before building further.")
-    if el:
-        L.append("")
-        L.append("| Band | Elevation requested (m) | Elevation used (m) | First-hour temp |")
-        L.append("|---|---|---|---|")
-        for b in C.BANDS:
-            k = b["key"]
-            L.append(f"| {b['label']} | {b['elevation_m']} | "
-                     f"{el['elevations'].get(k, '—')} | {el['temps'].get(k, '—')} |")
-    L.append("")
-
-    # --- the zone split this whole product depends on ---
-    L.append("## NWS zones")
-    zones = FINDINGS.get("zones") or {}
-    if zones:
-        L.append("| Point | Forecast zone | Fire zone | Grid |")
-        L.append("|---|---|---|---|")
-        for k, v in zones.items():
-            L.append(f"| {k} | {v['forecast_zone']} | {v['fire_zone']} | {v['grid']} |")
-        v_zone = (zones.get("vallecito") or {}).get("forecast_zone")
-        d_zone = (zones.get("durango") or {}).get("forecast_zone")
-        if v_zone and d_zone:
-            if v_zone != d_zone:
-                L.append("")
-                L.append(f"Confirmed: Vallecito ({v_zone}) is in a different "
-                         f"forecast zone than Durango ({d_zone}). Polling only "
-                         f"one of them would miss the other's warnings.")
-            else:
-                L.append("")
-                L.append(f"**Unexpected:** both points report {v_zone}. The zone "
-                         f"constants may need revisiting.")
-    else:
-        L.append("Not retrieved.")
-    L.append("")
-
-    L.append("## Every source")
-    L.append("")
-    L.append("| Source | OK | Detail |")
-    L.append("|---|---|---|")
-    for k in sorted(results):
-        v = results[k]
-        detail = (v.get("error") or v.get("note") or "")
-        detail = str(detail).replace("|", "\\|")[:180]
-        L.append(f"| {k} | {'yes' if v.get('ok') else 'NO'} | {detail} |")
-    L.append("")
-
-    if bad:
-        L.append("## Needs attention")
-        L.append("")
-        for k in bad:
-            L.append(f"- **{k}** — {results[k].get('error')}")
-        L.append("")
-        L.append("A failure here is information, not a crash. CDOT without a key "
-                 "and CAIC out of season are both expected.")
-
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as fh:
-        fh.write("\n".join(L) + "\n")
-    print(f"\nWrote {path} — committed by the workflow so it can be read "
-          f"without touching GitHub's logs.")
+    # The whole point of this script is the record it leaves behind, so a crash
+    # must still produce one. Without this, an exception anywhere above means
+    # the run fails with the reason visible only in a log that is genuinely
+    # hard to read after the fact -- which is exactly what happened once.
+    try:
+        code = main()
+    except Exception:
+        import traceback
+        tb = traceback.format_exc()
+        print(tb)
+        results["selftest_itself"] = {"ok": False, "error": tb.strip().splitlines()[-1]}
+        try:
+            write_markdown(crash=tb)
+        except Exception as inner:
+            print(f"could not even write the result file: {inner}")
+        code = 1
+    sys.exit(code)
