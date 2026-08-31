@@ -153,12 +153,12 @@ def write_markdown(path="state/selftest-latest.md", crash=None):
             L.append("")
             L.append(f"### {src}")
             L.append("")
-            L.append("| Status | Variant | First bytes |")
+            L.append("| Status | Rows | Variant | First data row |")
             L.append("|---|---|---|")
             for name, r in variants.items():
                 head = str(r.get("head") or r.get("error") or "")[:150]
                 head = head.replace("|", "\\|").replace("`", "'")
-                L.append(f"| {r.get('status')} | {name} | `{head}` |")
+                L.append(f"| {r.get('status')} | {r.get('rows', '-')} | {name} | `{head}` |")
         L.append("")
 
     if bad:

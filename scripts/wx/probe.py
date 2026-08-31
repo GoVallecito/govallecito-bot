@@ -32,8 +32,14 @@ def _try(url, headers=None):
         req = urllib.request.Request(url, headers=hdrs)
         with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
             body = resp.read(4000).decode("utf-8", "replace")
+        lines = [l for l in body.splitlines() if l.strip()]
+        # Row count and the first DATA line matter more than the header. A 200
+        # with a valid header and nothing under it looks like success and is
+        # not, which is exactly what CoCoRaHS did.
         return {"status": resp.status, "len": len(body),
-                "head": body[:SNIP].replace("\n", " | ")}
+                "rows": max(0, len(lines) - 1),
+                "head": (lines[1] if len(lines) > 1 else
+                         "(header only, NO DATA ROWS)")[:SNIP]}
     except urllib.error.HTTPError as exc:
         try:
             body = exc.read(1200).decode("utf-8", "replace")

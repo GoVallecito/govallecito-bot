@@ -21,7 +21,10 @@ from .http import SourceResult, get_json
 
 USGS_IV = "https://waterservices.usgs.gov/nwis/iv/"
 CDSS = ("https://dwr.state.co.us/Rest/GET/api/v2/telemetrystations/"
-        "telemetrytimeseriesraw")
+        "telemetrytimeseriesday")
+# Elevation lives under a different parameter and is a nice-to-have, so it
+# gets its own best-effort call rather than blocking the storage reading.
+CDSS_ELEV_PARAMS = ("GAGE_HT", "ELEV", "STAGE")
 
 
 def fetch_streamflow(site_keys=None):
@@ -79,9 +82,13 @@ def fetch_reservoir(abbrev=None, days_back=4):
     abbrev = abbrev or C.CDSS_VALLECITO
     end = _dt.date.today()
     begin = end - _dt.timedelta(days=days_back)
-    url = (f"{CDSS}?abbrev={abbrev}&format=json"
-           f"&min-measurementDate={begin.isoformat()}"
-           f"&max-measurementDate={end.isoformat()}")
+    # The parameter names below are not a guess. A live probe returned:
+    #   "Error: \"measurementDate\" is not a valid URL query key"
+    # for the previous shape, and 200 with 3 daily rows for this one. CDSS
+    # requires an explicit `parameter` and uses startDate/endDate in mm/dd/yyyy.
+    url = (f"{CDSS}?abbrev={abbrev}&format=json&parameter=STORAGE"
+           f"&startDate={begin.strftime('%m/%d/%Y')}"
+           f"&endDate={end.strftime('%m/%d/%Y')}")
     try:
         data = get_json(url)
     except Exception as exc:  # noqa: BLE001
@@ -96,13 +103,14 @@ def fetch_reservoir(abbrev=None, days_back=4):
     def param(r):
         return str(_first(r, "parameter", "measType", "parameterName") or "").upper()
 
-    storage = [r for r in records if "STORAGE" in param(r)]
-    elev = [r for r in records if "GAGE" in param(r) or "ELEV" in param(r)]
-
+    # The API filtered to STORAGE for us, but stay defensive in case that
+    # changes: a response full of some other parameter should fail loudly
+    # rather than be read as storage.
+    storage = [r for r in records if "STORAGE" in param(r)] or records
     if not storage:
         seen = sorted({param(r) for r in records})[:8]
         return SourceResult(False, source="Colorado DWR (CDSS)", url=url,
-                            error=f"no STORAGE parameter; saw {seen}")
+                            error=f"no STORAGE rows; saw parameters {seen}")
 
     def when(r):
         return str(_first(r, "measDate", "measDateTime", "date") or "")
@@ -114,12 +122,7 @@ def fetch_reservoir(abbrev=None, days_back=4):
         return SourceResult(False, source="Colorado DWR (CDSS)", url=url,
                             error="storage value not parseable")
 
-    elevation_ft = None
-    if elev:
-        try:
-            elevation_ft = float(_first(max(elev, key=when), "value", "measValue"))
-        except (TypeError, ValueError):
-            elevation_ft = None
+    elevation_ft = _fetch_elevation(abbrev, begin, end)
 
     return SourceResult(True, {
         "storage_af": storage_af,
@@ -128,3 +131,29 @@ def fetch_reservoir(abbrev=None, days_back=4):
         "full_pool_elevation_ft": C.FULL_POOL_ELEVATION_FT,
         "timestamp": when(latest),
     }, source="Colorado DWR (CDSS)", url=url)
+
+
+def _fetch_elevation(abbrev, begin, end):
+    """Reservoir surface elevation, best-effort.
+
+    Its parameter name is not confirmed for this station, so several are tried
+    and a miss simply means the post omits the elevation line. Storage is the
+    number that matters; elevation is colour.
+    """
+    for pname in CDSS_ELEV_PARAMS:
+        url = (f"{CDSS}?abbrev={abbrev}&format=json&parameter={pname}"
+               f"&startDate={begin.strftime('%m/%d/%Y')}"
+               f"&endDate={end.strftime('%m/%d/%Y')}")
+        try:
+            data = get_json(url)
+        except Exception:  # noqa: BLE001
+            continue
+        rows = (data.get("ResultList") or data.get("resultList") or [])
+        if not rows:
+            continue
+        try:
+            latest = max(rows, key=lambda r: str(_first(r, "measDate", "measDateTime", "date") or ""))
+            return float(_first(latest, "value", "measValue"))
+        except (TypeError, ValueError):
+            continue
+    return None
