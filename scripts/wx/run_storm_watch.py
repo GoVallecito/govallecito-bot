@@ -117,7 +117,7 @@ def _days_out(decision):
     try:
         from datetime import date
         peak = decision["storm"]["peak_hour"][:10]
-        return max(1, (date.fromisoformat(peak) - date.today()).days)
+        return max(1, (date.fromisoformat(peak) - C.local_date()).days)
     except Exception:  # noqa: BLE001
         return 3
 

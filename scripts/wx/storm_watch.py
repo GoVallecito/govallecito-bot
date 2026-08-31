@@ -93,7 +93,7 @@ def evaluate(bundle, raw_band_payloads=None, now=None):
     `raw_band_payloads` is {band_key: open-meteo payload}; when absent, the
     bundle's summarized blocks are used instead, which is coarser but works.
     """
-    now = now or _dt.datetime.now()
+    now = now or C.local_now()
     payload = (raw_band_payloads or {}).get("vallecito")
 
     if payload:

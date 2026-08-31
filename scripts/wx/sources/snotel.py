@@ -40,7 +40,7 @@ def fetch_stations(keys=None, days_back=10):
     """
     keys = keys or list(C.SNOTEL.keys())
     triplets = [C.SNOTEL[k]["triplet"] for k in keys]
-    end = _dt.date.today()
+    end = C.local_date()
     begin = end - _dt.timedelta(days=days_back)
     url = _url(triplets, ELEMENTS, begin.isoformat(), end.isoformat())
 

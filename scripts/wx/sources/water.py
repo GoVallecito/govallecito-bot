@@ -80,7 +80,7 @@ def _first(record, *names):
 def fetch_reservoir(abbrev=None, days_back=4):
     """Vallecito Reservoir storage and elevation from Colorado DWR."""
     abbrev = abbrev or C.CDSS_VALLECITO
-    end = _dt.date.today()
+    end = C.local_date()
     begin = end - _dt.timedelta(days=days_back)
     # The parameter names below are not a guess. A live probe returned:
     #   "Error: \"measurementDate\" is not a valid URL query key"

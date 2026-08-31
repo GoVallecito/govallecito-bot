@@ -154,7 +154,7 @@ def write_markdown(path="state/selftest-latest.md", crash=None):
             L.append(f"### {src}")
             L.append("")
             L.append("| Status | Rows | Variant | First data row |")
-            L.append("|---|---|---|")
+            L.append("|---|---|---|---|")
             for name, r in variants.items():
                 head = str(r.get("head") or r.get("error") or "")[:150]
                 head = head.replace("|", "\\|").replace("`", "'")
@@ -259,7 +259,10 @@ def main():
     if needs_probe:
         print(f"\n{'=' * 66}\nPROBING FAILED ENDPOINTS: {needs_probe}\n{'=' * 66}")
         try:
-            FINDINGS["probes"] = PROBE.run_all()
+            all_probes = PROBE.run_all()
+            FINDINGS["probes"] = {k: v for k, v in all_probes.items()
+                                  if any(n.startswith(k.split(' ')[0]) for n in needs_probe)
+                                  or k.split(' ')[0] in ' '.join(needs_probe)}
             for src, variants in FINDINGS["probes"].items():
                 print(f"\n{src}")
                 for name, r in variants.items():

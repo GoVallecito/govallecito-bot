@@ -29,6 +29,7 @@ import os
 import re
 import urllib.parse
 import urllib.request
+from . import constants as C
 
 GRAPH_VERSION = "v25.0"
 DEFAULT_PAGE_ID = "1138532512682553"   # GoVallecito Page -- public, not a secret
@@ -148,7 +149,7 @@ def post_to_group(text, group_id=None, token=None):
 
 def _dry(target, text, ident):
     os.makedirs("output", exist_ok=True)
-    stamp = _dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    stamp = C.local_now().strftime("%Y-%m-%d_%H%M%S")
     path = os.path.join("output", f"{stamp}_{target}.txt")
     with open(path, "w") as fh:
         fh.write(text)
@@ -175,7 +176,7 @@ def write_site_post(text, bundle, out_dir, post_type="school_call", title=None):
     table, an archive, and a public track-record page from the same files
     without re-parsing prose.
     """
-    date = bundle.get("local_date") or _dt.date.today().isoformat()
+    date = bundle.get("local_date") or C.local_date().isoformat()
     sl = bundle.get("snow_line") or {}
     title = title or _auto_title(bundle, post_type)
     slug = f"{date}-{slugify(title)}"

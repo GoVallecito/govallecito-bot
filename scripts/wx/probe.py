@@ -57,7 +57,7 @@ def probe_cdss():
     CDSS has several telemetry endpoints with different date-parameter
     conventions; these cover the documented shapes.
     """
-    end = _dt.date.today()
+    end = C.local_date()
     start = end - _dt.timedelta(days=4)
     us = start.strftime("%m/%d/%Y")
     ue = end.strftime("%m/%d/%Y")
@@ -87,7 +87,7 @@ def probe_cocorahs():
     Either the export parameters are wrong or the response is not the CSV shape
     the parser expects. Capturing the first bytes settles which.
     """
-    end = _dt.date.today()
+    end = C.local_date()
     start = end - _dt.timedelta(days=2)
     exp = "https://data.cocorahs.org/cocorahs/export/exportreports.aspx"
 

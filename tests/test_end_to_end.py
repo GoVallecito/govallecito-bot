@@ -9,6 +9,7 @@ model output.
 import json, os, sys, tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 
+from wx import constants as C
 from wx import bundle as B, compose as CO, constants as C
 from wx import guardrails as G, publish as P, snowline as SL, verify as V
 from wx.sources.http import SourceResult
@@ -183,7 +184,8 @@ def test_verify_loop_scores_and_calibrates():
         V.CALIBRATION = os.path.join(d, "cal.json")
         b = B.build(fetchers=fake_fetchers())
         import datetime as _dt
-        b["local_date"] = (_dt.date.today() - _dt.timedelta(days=1)).isoformat()
+        # local, not UTC -- the code under test now reasons in Mountain Time
+        b["local_date"] = (C.local_date() - _dt.timedelta(days=1)).isoformat()
         V.record_forecast(b, {"vallecito": {"snow_low_in": 3.0, "snow_high_in": 7.0}})
         scored = V.verify_pending({"vallecito": {"snow_in": 9.5},
                                    "snow_line_observed_ft": 7600})

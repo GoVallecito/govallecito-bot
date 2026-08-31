@@ -27,6 +27,7 @@ import io
 import re
 
 from .http import SourceResult, get_text
+from .. import constants as C
 
 EXPORT = "https://data.cocorahs.org/cocorahs/export/exportreports.aspx"
 
@@ -79,13 +80,13 @@ def _pick(row, *names):
     return None
 
 
-def fetch_reports(date=None, counties=None, days=1):
+def fetch_reports(date=None, counties=None, days=2):
     """Daily precipitation and new-snow reports.
 
     Returns a list sorted by precipitation descending -- which is the order the
     post prints them in, because the biggest number is the headline.
     """
-    date = date or _dt.date.today()
+    date = date or C.local_date()
     start = date - _dt.timedelta(days=days - 1)
     counties = counties or [COUNTY] + NEIGHBOR_COUNTIES
 

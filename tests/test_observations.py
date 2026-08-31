@@ -1,5 +1,6 @@
 import datetime as _dt, json, os, sys, tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
+from wx import constants as C
 from wx import observations as OB, notify as N, verify as V
 from wx.sources import cocorahs as CC
 from wx.sources.http import SourceResult
@@ -51,7 +52,8 @@ def test_snotel_lands_in_weminuche_not_vallecito():
 def test_home_gauge_overrides_and_supplies_the_calibration_point():
     with tempfile.TemporaryDirectory() as d:
         OB.MANUAL_LOG = os.path.join(d, "home_gauge.json")
-        today = _dt.date.today().isoformat()
+        # local, not UTC: collect() reads the Mountain Time date
+        today = C.local_date().isoformat()
         with open(OB.MANUAL_LOG, "w") as fh:
             json.dump({today: {"new_snow_in": 11.0, "snow_line_observed_ft": 7300,
                                "note": "wind scoured the stake"}}, fh)

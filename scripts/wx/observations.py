@@ -46,7 +46,7 @@ def read_home_gauge(date=None):
     Editing that file and pushing is the whole workflow -- same pattern as the
     hand-maintained fire_status.json the conditions bot already uses.
     """
-    date = (date or _dt.date.today()).isoformat()
+    date = (date or C.local_date()).isoformat()
     if not os.path.exists(MANUAL_LOG):
         return None
     try:
@@ -71,7 +71,7 @@ def collect(date=None, fetchers=None):
     Returns {band_key: {"snow_in": x, "precip_in": y, "sources": [...]}} plus a
     top-level snow_line_observed_ft when the home gauge supplied one.
     """
-    date = date or _dt.date.today()
+    date = date or C.local_date()
     f = {"cocorahs": cocorahs.fetch_reports, "snotel": snotel.fetch_stations}
     if fetchers:
         f.update(fetchers)

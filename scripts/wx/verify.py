@@ -25,6 +25,7 @@ import datetime as _dt
 import json
 import os
 import statistics
+from . import constants as C
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 STATE_DIR = os.path.join(REPO_ROOT, "state")
@@ -97,7 +98,7 @@ def verify_pending(observations, max_age_days=4):
     assembled by the caller from SNOTEL, CoCoRaHS and the home gauge.
     """
     log = _load(FORECAST_LOG, {"forecasts": []})
-    today = _dt.date.today()
+    today = C.local_date()
     scored = []
 
     for fc in log["forecasts"]:
@@ -179,7 +180,7 @@ def update_calibration():
         "min_events_required": MIN_EVENTS_TO_CALIBRATE,
         "active": False,
         "offset_ft": 0.0,
-        "updated_at": _dt.datetime.now().isoformat(),
+        "updated_at": C.local_now().isoformat(),
     }
     if len(errors) >= MIN_EVENTS_TO_CALIBRATE:
         med = statistics.median(errors)

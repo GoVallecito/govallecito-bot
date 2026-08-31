@@ -10,6 +10,7 @@ import os, sys, tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 sys.path.insert(0, os.path.dirname(__file__))
 from test_end_to_end import fake_fetchers
+from wx import constants as C
 from wx import bundle as B, storm_watch as SW, verify as V
 from wx import run_forecast as RF, run_verify as RV, run_storm_watch as RSW
 from wx.sources.http import SourceResult
@@ -99,7 +100,8 @@ def test_verify_runner_scores_and_drafts():
         V.CALIBRATION = os.path.join(d, "cal.json")
         os.chdir(d)
         b = B.build(fetchers=_fakes())
-        b["local_date"] = (_dt.date.today() - _dt.timedelta(days=1)).isoformat()
+        # local, not UTC -- the code under test now reasons in Mountain Time
+        b["local_date"] = (C.local_date() - _dt.timedelta(days=1)).isoformat()
         V.record_forecast(b, {"vallecito": {"snow_low_in": 3.0, "snow_high_in": 7.0}})
         obs = {"vallecito": {"snow_in": 9.5, "sources": ["home gauge"]},
                "snow_line_observed_ft": 7600,

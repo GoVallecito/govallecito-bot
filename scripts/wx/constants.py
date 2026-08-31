@@ -181,3 +181,30 @@ EVENING_HOUR = 19
 USER_AGENT = ("govallecito-wx/1.0 (govallecito.com hyperlocal forecast; "
               "contact@govallecito.com)")
 REQUEST_TIMEOUT = 20
+
+
+# --- Local time ------------------------------------------------------------
+#
+# THIS EXISTS BECAUSE OF A REAL BUG. GitHub Actions runners are UTC. A job at
+# 03:40 UTC is 21:40 the PREVIOUS EVENING in Colorado, so date.today() had
+# already rolled over and CoCoRaHS was being asked for a day whose
+# observations do not exist yet -- observers file in the morning. It returned
+# an empty result that looked exactly like a broken adapter.
+#
+# Every date this product reasons about is a Mountain Time date: a snow day, an
+# observation date, a school-closure morning. Never use date.today() here.
+
+from datetime import datetime as _datetime  # noqa: E402
+from zoneinfo import ZoneInfo as _ZoneInfo  # noqa: E402
+
+_TZ = _ZoneInfo(TIMEZONE)
+
+
+def local_now():
+    """Timezone-aware now, in Mountain Time."""
+    return _datetime.now(_TZ)
+
+
+def local_date():
+    """Today's date as someone in Bayfield would name it."""
+    return local_now().date()
