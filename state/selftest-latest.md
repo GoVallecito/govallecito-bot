@@ -1,6 +1,6 @@
 # Self-test — live endpoint check
 
-Run: 2026-08-31T03:30:45+00:00
+Run: 2026-08-31T03:35:39+00:00
 Result: **12/16 sources reachable**
 
 ## The elevation thesis
@@ -41,6 +41,32 @@ Confirmed: Vallecito (COZ019) is in a different forecast zone than Durango (COZ0
 | Open-Meteo weminuche @ 10500ft | yes |  |
 | USGS streamflow | yes |  |
 | elevation_thesis | yes |  |
+
+## Endpoint probes
+
+Variants tried against the endpoints that failed. The one that returns 200 with real content is the shape the adapter should use.
+
+### Colorado DWR (CDSS)
+
+| Status | Variant | First bytes |
+|---|---|---|
+| 400 | raw + min/max-measurementDate (current code) | `"Error: \"measurementDate\" is not a valid URL query key"` |
+| 200 | raw + parameter=STORAGE + startDate/endDate mm/dd/yyyy | `{"PageNumber":1,"PageCount":1,"ResultCount":373,"ResultDateTime":"2026-08-30T21:35:48.1181222-06:00","ResultList":[{"abbrev":"VALRESCO","parameter":"S` |
+| 200 | raw + parameter=STORAGE + iso dates | `{"PageNumber":1,"PageCount":1,"ResultCount":373,"ResultDateTime":"2026-08-30T21:35:48.2743393-06:00","ResultList":[{"abbrev":"VALRESCO","parameter":"S` |
+| 200 | day + parameter=STORAGE | `{"PageNumber":1,"PageCount":1,"ResultCount":3,"ResultDateTime":"2026-08-30T21:35:48.4149574-06:00","ResultList":[{"abbrev":"VALRESCO","parameter":"STO` |
+| 200 | station metadata only (is the abbrev right?) | `{"PageNumber":1,"PageCount":1,"ResultCount":1,"ResultDateTime":"2026-08-30T21:35:48.6760228-06:00","ResultList":[{"division":7,"waterDistrict":31,"cou` |
+| 200 | hourly + parameter=STORAGE | `{"PageNumber":1,"PageCount":1,"ResultCount":93,"ResultDateTime":"2026-08-30T21:35:48.8010201-06:00","ResultList":[{"abbrev":"VALRESCO","parameter":"ST` |
+
+### CoCoRaHS
+
+| Status | Variant | First bytes |
+|---|---|---|
+| 200 | county=LP, mm/dd/yyyy (current code) | `ObservationDate,ObservationTime,EntryDateTime,StationNumber,StationName,Latitude,Longitude,TotalPrecipAmt,NewSnowDepth,NewSnowSWE,TotalSnowDepth,Total` |
+| 200 | county=LP, iso dates | `ObservationDate,ObservationTime,EntryDateTime,StationNumber,StationName,Latitude,Longitude,TotalPrecipAmt,NewSnowDepth,NewSnowSWE,TotalSnowDepth,Total` |
+| 200 | state only, no county | `ObservationDate,ObservationTime,EntryDateTime,StationNumber,StationName,Latitude,Longitude,TotalPrecipAmt,NewSnowDepth,NewSnowSWE,TotalSnowDepth,Total` |
+| 200 | county=LP, wider window (7 days) | `ObservationDate,ObservationTime,EntryDateTime,StationNumber,StationName,Latitude,Longitude,TotalPrecipAmt,NewSnowDepth,NewSnowSWE,TotalSnowDepth,Total` |
+| 200 | XML instead of CSV | `<?xml version="1.0" encoding="utf-8"?> \| <Cocorahs> \|   <DailyPrecipReports> \|     <DailyPrecipReport> \|       <ObservationDate>2026-08-30</Observ` |
+| 200 | ReportType=DailyPrecipReports | `ObservationDate,ObservationTime,EntryDateTime,StationNumber,StationName,Latitude,Longitude,TotalPrecipAmt,NewSnowDepth,NewSnowSWE,TotalSnowDepth,Total` |
 
 ## Needs attention
 
