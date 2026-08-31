@@ -253,3 +253,27 @@ def test_evening_runs_target_tomorrow_morning():
         now = _dt.datetime(2026, 8, 30, hour, tzinfo=tz)
         target = now.date() + _dt.timedelta(days=1) if now.hour >= 12 else now.date()
         assert (target - now.date()).days == offset, f"hour {hour}"
+
+
+def test_the_suite_does_not_write_into_the_real_repo():
+    """Regression guard for a genuinely nasty one.
+
+    _archive_draft resolved its path from __file__, so running the tests wrote
+    fixture drafts into the repo's own state/drafts/ and overwrote a real one.
+    The archive is what a person reads to judge the voice; silently seeding it
+    with stub text is worse than a crash.
+    """
+    import pathlib
+    import wx.run_forecast as RFmod
+    repo_state = pathlib.Path(__file__).resolve().parents[1] / "state" / "drafts"
+    before = sorted(p.name for p in repo_state.glob("*.md")) if repo_state.exists() else []
+    with tempfile.TemporaryDirectory() as d:
+        os.environ["WX_STATE_DIR"] = os.path.join(d, "state")
+        os.chdir(d)
+        try:
+            RFmod.run(slot="school_call", llm=stub_llm, first_30_days=False,
+                      dry_bundle=B.build(fetchers=_fakes()))
+        finally:
+            os.environ.pop("WX_STATE_DIR", None)
+    after = sorted(p.name for p in repo_state.glob("*.md")) if repo_state.exists() else []
+    assert before == after, f"the suite wrote into the repo: {set(after) - set(before)}"

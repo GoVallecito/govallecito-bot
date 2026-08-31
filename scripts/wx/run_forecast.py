@@ -260,9 +260,7 @@ def write_status(state, detail, bundle=None, slot=None, hint=None, draft=None):
     same treatment even more.
     """
     import os as _os
-    path = _os.path.join(
-        _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))),
-        "state", "forecast-status.md")
+    path = _os.path.join(_state_dir(), "forecast-status.md")
     L = [f"# Forecast run — {state}", ""]
     L.append(f"When: {C.local_now().isoformat(timespec='seconds')} (Mountain)")
     if slot:
@@ -303,6 +301,20 @@ def write_status(state, detail, bundle=None, slot=None, hint=None, draft=None):
         print(f"could not write status file: {exc}")
 
 
+def _state_dir():
+    """Where state files go.
+
+    Deliberately relative to the working directory, not to __file__. The
+    workflow runs from the repo root so this resolves identically there, but a
+    test running in a tmpdir no longer reaches back into the real repo. It did:
+    the suite wrote fixture drafts into state/drafts/ and overwrote a genuine
+    one, which is a much worse failure than it looks - the archive is the thing
+    a person reads to judge the voice.
+    """
+    import os as _os
+    return _os.environ.get("WX_STATE_DIR") or "state"
+
+
 def _archive_draft(text, bundle, slot, verdict):
     """Keep every draft in state/drafts/ so a week of them reads in one place.
 
@@ -311,8 +323,7 @@ def _archive_draft(text, bundle, slot, verdict):
     seven separate issues is a worse way to do it.
     """
     import os as _os
-    root = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
-    d = _os.path.join(root, "state", "drafts")
+    d = _os.path.join(_state_dir(), "drafts")
     name = f"{bundle.get('post_for_date', bundle.get('local_date'))}-{slot}.md"
     try:
         _os.makedirs(d, exist_ok=True)
