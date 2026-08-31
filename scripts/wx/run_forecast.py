@@ -46,6 +46,33 @@ def determine_slot(now=None, forced=None):
     return slot
 
 
+class LLMError(RuntimeError):
+    """A model-call failure, translated into something actionable."""
+
+    HINTS = {
+        401: ("The API rejected the key. Nothing on your side was changed by "
+              "storing it here - a secret is a read-only copy and cannot revoke "
+              "the original. Almost always this is the pasted VALUE: a trailing "
+              "newline, a leading space, a partial copy, or a key from a "
+              "different account. Re-paste it (select the whole value, no "
+              "surrounding whitespace). Do NOT regenerate a key other systems "
+              "share - that would break them; create an additional key instead."),
+        403: ("Authenticated but not permitted. The key is probably scoped to a "
+              "workspace without access to this model."),
+        404: ("Model not found. Check the WX_MODEL variable - the default is "
+              "claude-sonnet-4-5."),
+        429: ("Rate limited or out of credit. The key is VALID; this is a "
+              "quota or spend-limit issue, not an auth issue."),
+        400: ("The request was rejected as malformed. Usually the model name."),
+    }
+
+    def __init__(self, status, body, model):
+        self.status, self.body, self.model = status, body, model
+        hint = self.HINTS.get(status, "Unexpected response from the API.")
+        super().__init__(f"HTTP {status} calling model {model}. {hint}\n"
+                         f"API said: {body}")
+
+
 def _llm_from_env():
     """Anthropic by default. Returns a callable(messages) -> str.
 
@@ -54,10 +81,13 @@ def _llm_from_env():
     """
     import urllib.request
 
-    key = os.environ.get("ANTHROPIC_API_KEY")
+    # .strip() is not cosmetic. Secrets are stored byte-for-byte, and a
+    # trailing newline or leading space from a paste is the single most common
+    # cause of a 401 that looks like a bad key but is not.
+    key = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
     if not key:
         raise RuntimeError("ANTHROPIC_API_KEY is not set")
-    model = os.environ.get("WX_MODEL", "claude-sonnet-4-5")
+    model = (os.environ.get("WX_MODEL") or "claude-sonnet-4-5").strip()
 
     def call(messages):
         system = next(m["content"] for m in messages if m["role"] == "system")
@@ -70,8 +100,19 @@ def _llm_from_env():
             "https://api.anthropic.com/v1/messages", data=body,
             headers={"content-type": "application/json", "x-api-key": key,
                      "anthropic-version": "2023-06-01"})
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            payload = json.loads(resp.read().decode())
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                payload = json.loads(resp.read().decode())
+        except urllib.error.HTTPError as exc:
+            # Surface WHICH failure this is. A traceback ending in "401" tells
+            # you almost nothing; the API's own message distinguishes a bad key
+            # from a wrong model name from a spend limit. The response body
+            # never contains the key itself.
+            try:
+                body = exc.read().decode("utf-8", "replace")[:600]
+            except Exception:  # noqa: BLE001
+                body = ""
+            raise LLMError(exc.code, body, model) from None
         return "".join(b.get("text", "") for b in payload.get("content", []))
 
     return call
@@ -128,7 +169,13 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
                               "variables > Actions > Secrets. Nothing else is missing.")
             print(f"ABORT -- {exc}")
             return 0
-    text = CO.compose(bundle, llm, post_type=slot)
+    try:
+        text = CO.compose(bundle, llm, post_type=slot)
+    except LLMError as exc:
+        write_status(f"model call failed (HTTP {exc.status})", str(exc), bundle, slot,
+                     hint=LLMError.HINTS.get(exc.status, ""))
+        print(f"ABORT -- {exc}")
+        return 0
 
     verdict, reasons = G.evaluate(bundle, text, first_30_days=first_30_days,
                                   calibrated=calibrated)
