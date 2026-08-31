@@ -20,6 +20,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from wx import constants as C            # noqa: E402
+from wx import probe as PROBE           # noqa: E402
 from wx import snowline as SL            # noqa: E402
 from wx.sources import (caic, cdot, cocorahs, nws, openmeteo,   # noqa: E402
                         snotel, water)
@@ -142,6 +143,24 @@ def write_markdown(path="state/selftest-latest.md", crash=None):
         L.append(f"| {k} | {'yes' if v.get('ok') else 'NO'} | {detail} |")
     L.append("")
 
+    probes = FINDINGS.get("probes")
+    if probes and "error" not in probes:
+        L.append("## Endpoint probes")
+        L.append("")
+        L.append("Variants tried against the endpoints that failed. The one that "
+                 "returns 200 with real content is the shape the adapter should use.")
+        for src, variants in probes.items():
+            L.append("")
+            L.append(f"### {src}")
+            L.append("")
+            L.append("| Status | Variant | First bytes |")
+            L.append("|---|---|---|")
+            for name, r in variants.items():
+                head = str(r.get("head") or r.get("error") or "")[:150]
+                head = head.replace("|", "\\|").replace("`", "'")
+                L.append(f"| {r.get('status')} | {name} | `{head}` |")
+        L.append("")
+
     if bad:
         L.append("## Needs attention")
         L.append("")
@@ -232,6 +251,24 @@ def main():
               "Record this in constants.py.")
     else:
         print("  >> Unresolved. Expected out of season; re-run mid-Nov to mid-Apr.")
+
+    # Probe the two adapters that have never worked live. Cheap, and it turns
+    # "it returns 400" into "here is the URL shape that works."
+    needs_probe = [k for k in ("Colorado DWR reservoir", "CoCoRaHS reports")
+                   if not results.get(k, {}).get("ok", True)]
+    if needs_probe:
+        print(f"\n{'=' * 66}\nPROBING FAILED ENDPOINTS: {needs_probe}\n{'=' * 66}")
+        try:
+            FINDINGS["probes"] = PROBE.run_all()
+            for src, variants in FINDINGS["probes"].items():
+                print(f"\n{src}")
+                for name, r in variants.items():
+                    print(f"  [{r.get('status')}] {name}")
+                    if r.get("head"):
+                        print(f"        {r['head'][:160]}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"probe failed: {exc}")
+            FINDINGS["probes"] = {"error": str(exc)}
 
     os.makedirs("output", exist_ok=True)
     with open("output/selftest.json", "w") as fh:
