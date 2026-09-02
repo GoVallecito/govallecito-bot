@@ -1,24 +1,9 @@
-# Forecast run — held for review
+# Wednesday, 2026-09-02, school_call
 
-When: 2026-09-02T05:45:03-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: n/a | Alerts: none
 
-## Detail
+---
 
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/02/26 5:44am: Morning, its Wednesday.
 
 Dry roads for the morning run. No precipitation overnight and none expected through the school day, so the 501 and the 240 are both clear and dry right now. The districts decide by 6:30 but theres nothing weather-wise that would keep buses home today.
@@ -36,4 +21,3 @@ The passes are dry, Coal Bank, Molas, Red Mountain and Wolf Creek all clear. Che
 Grand Junction's discussion mentions a jet streak overhead that could theoretically spin up a shower Wednesday afternoon but all four models show zeros for us and I think they're right. Drier air moves in tomorrow.
 
 Anything different up your way this morning?
-```
