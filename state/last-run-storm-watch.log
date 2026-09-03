@@ -1,4 +1,8 @@
-=== storm watch @ 2026-09-03 13:46 MDT ===
-decision: fire=False -- below threshold (0.21in liquid / 0.0in snow in the window)
-  window 2026-09-05T00:00 -> 2026-09-07T23:00, 0.21in liquid / 0.0in snow, peak 2026-09-06T23:00
+=== storm watch @ 2026-09-03 17:59 MDT ===
+decision: fire=True -- new system peaking 2026-09-07 clears the threshold
+  window 2026-09-05T00:00 -> 2026-09-07T23:00, 1.25in liquid / 0.0in snow, peak 2026-09-07T18:00
+guardrails: REVIEW
+  - first-30-days policy: review everything
+[notify] labels do not exist in this repo; retrying without
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/4
 exit=0
