@@ -1,7 +1,3 @@
-=== Vallecito forecast: school_call @ 2026-09-04 05:45 MDT ===
-snow-line calibration: offset=0.0ft active=False
-ABORT -- preconditions not met, posting nothing:
-  - no forecast for durango
-  - no forecast for bayfield
-Wrote state/forecast-status.md
+2026-09-04 09:09 MDT is not a posting hour ([5, 19] local). Exiting.
+2026-09-04 09:09 MDT is not a posting hour ([5, 19] local). Exiting.
 exit=0
