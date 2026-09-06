@@ -1,25 +1,9 @@
-# Forecast run — held for review
+# Sunday, 2026-09-06, school_call
 
-When: 2026-09-06T05:21:57-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: n/a | Alerts: none
 
-## Detail
+---
 
-```
-mentions a burn scar -- debris flows here have been triggered by ordinary sub-two-year storms
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/06/26 5:21am: Morning, its Sunday.
 
 Dry and warm today, so this is a short one. No weather decisions for the week ahead yet but I'll walk what we're watching.
@@ -35,4 +19,3 @@ The gauge here at the house is sitting dry and I'm not expecting that to change 
 I'll have more tomorrow morning if that Monday moisture starts looking like it'll amount to anything up here.
 
 What are you seeing at your place this morning?
-```
