@@ -25,8 +25,16 @@ import os
 from . import constants as C
 from .sources import cocorahs, snotel
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-MANUAL_LOG = os.path.join(REPO_ROOT, "state", "home_gauge.json")
+# Overridable for tests; None means resolve from WX_STATE_DIR at call time.
+# Derived from __file__ this pointed at the live repo state whatever the
+# environment said, which is the same defect that let a test fixture overwrite
+# a real draft and, in verify.py, the snow line calibration.
+MANUAL_LOG = None
+
+
+def _manual_log():
+    return MANUAL_LOG or os.path.join(
+        os.environ.get("WX_STATE_DIR") or "state", "home_gauge.json")
 
 # Which CoCoRaHS station names belong to which forecast band. Matched
 # case-insensitively as substrings against the station name.
@@ -47,10 +55,11 @@ def read_home_gauge(date=None):
     hand-maintained fire_status.json the conditions bot already uses.
     """
     date = (date or C.local_date()).isoformat()
-    if not os.path.exists(MANUAL_LOG):
+    path = _manual_log()
+    if not os.path.exists(path):
         return None
     try:
-        with open(MANUAL_LOG) as fh:
+        with open(path) as fh:
             return (json.load(fh) or {}).get(date)
     except Exception as exc:  # noqa: BLE001
         print(f"[observations] home gauge unreadable: {exc}")

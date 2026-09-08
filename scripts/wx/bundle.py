@@ -53,6 +53,21 @@ def build(days=5, want_model_spread=True, calibration_offset_ft=0.0,
         "post_for_weekday": target.strftime("%A"),
         "post_for_stamp": target.strftime("%m/%d/%y"),
         "season": _season(now),
+        # The school call frame only makes sense on a school day. On 2026-09-06
+        # it ran on a Sunday and the post opened by fumbling for a reason to
+        # exist. The composer now knows what kind of day it is writing into.
+        "day_type": C.day_type(target),
+        # A post landing at 7:40 must not pretend it arrived at 5:45. Lateness
+        # is measured against the window the run is actually IN, not against
+        # the morning target: a 6pm run composing tomorrow's post is on time
+        # for the evening slot, and an earlier version called it late.
+        "is_late": _is_late(now.hour),
+        "composed_hour": now.hour,
+        # What the last few posts opened and closed with. Three drafts in a row
+        # opened "Morning, its <day>." and closed with a near identical
+        # question. Sameness across days is what makes an account read as a
+        # bot, and the model cannot avoid repeating what it cannot see.
+        "recent_posts": _recent_post_shapes(),
         "sources": {},
         "missing": [],
         "bands": {},
@@ -140,6 +155,47 @@ def build(days=5, want_model_spread=True, calibration_offset_ft=0.0,
     out["sources"]["caic"] = cz.to_dict()
     out["caic_zone"] = cz.data if cz.ok else None
 
+    return out
+
+
+def _is_late(hour):
+    """True only when the run is inside a posting window, past its start."""
+    for lo, hi in C.SLOT_WINDOWS.values():
+        if lo <= hour < hi:
+            return hour > lo
+    return False
+
+
+def _recent_post_shapes(n=6):
+    """First and last sentence of the last n archived drafts, newest first.
+
+    Read from state/drafts rather than kept in a separate file so it stays true
+    to what actually went out, and cwd-relative so the test suite cannot reach
+    a real draft.
+    """
+    import glob
+    import os as _os
+    root = _os.path.join(_os.environ.get("WX_STATE_DIR") or "state", "drafts")
+    out = []
+    for path in sorted(glob.glob(_os.path.join(root, "*.md")), reverse=True)[:n]:
+        try:
+            with open(path) as fh:
+                raw = fh.read()
+        except OSError:
+            continue
+        body = raw.split("---", 1)[-1].strip()
+        lines = [ln.strip() for ln in body.splitlines() if ln.strip()]
+        if not lines:
+            continue
+        opener = lines[0]
+        # Drop the timestamp so the model sees the greeting shape, not the clock.
+        if ":" in opener[:20]:
+            opener = opener.split(":", 2)[-1].strip()
+        out.append({
+            "date": _os.path.basename(path)[:10],
+            "opened": opener[:120],
+            "closed": lines[-1][:120],
+        })
     return out
 
 

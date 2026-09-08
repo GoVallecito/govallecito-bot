@@ -50,7 +50,11 @@ def review_requested(draft, verdict, reasons, bundle, slot="school_call"):
         return {"notified": False, "reason": "no GITHUB_REPOSITORY/GITHUB_TOKEN"}
 
     sl = (bundle.get("snow_line") or {}).get("representative_ft")
-    title = f"[{verdict}] {slot} draft — {bundle.get('local_date')}"
+    # post_for_date, not local_date. An evening run composes tomorrow's post,
+    # so labelling the issue with the run date filed the 2026-08-31 school call
+    # under 2026-08-30 and made the drafts folder and the issue list disagree.
+    for_date = bundle.get("post_for_date") or bundle.get("local_date")
+    title = f"[{verdict}] {slot} draft for {for_date}"
     if sl:
         title += f" (snow line ~{sl} ft)"
 
@@ -104,7 +108,7 @@ def _body(draft, verdict, reasons, bundle, slot):
     if alerts:
         L.append("### Active alerts")
         for a in alerts:
-            L.append(f"- **{a['event']}** ({', '.join(a.get('zones', []))}) — "
+            L.append(f"- **{a['event']}** ({', '.join(a.get('zones', []))}), "
                      f"expires {a.get('expires')}")
         L.append("")
 
@@ -130,3 +134,77 @@ def _body(draft, verdict, reasons, bundle, slot):
              "with the reason resolved. Close this issue either way so the "
              "review log stays meaningful.")
     return "\n".join(L)
+
+
+def miss_reported(slot, date_iso, streak=None):
+    """Open an issue saying a scheduled post did NOT happen.
+
+    The counterpart to review_requested. That one fires when a draft exists and
+    needs a human; this one fires when no draft exists at all, which was the
+    failure mode nobody saw for a week because it produced no error, no red X
+    and no output of any kind.
+    """
+    streak = streak or [date_iso]
+    repo, token = _repo(), _token()
+    lines = [
+        f"No `{slot}` post went out for **{date_iso}**.",
+        "",
+        "The posting window closed with no draft in `state/drafts/`. That means",
+        "either no scheduled run executed inside the window, or every run that",
+        "did execute aborted before composing.",
+        "",
+        "**Where to look, in order:**",
+        "",
+        "1. `state/last-run-forecast.log`, the last run's own output. If it says",
+        "   `outside every posting window`, no run landed inside it and this is a",
+        "   GitHub scheduling drop, not a code fault.",
+        "2. `state/forecast-status.md`, if it says `aborted, data unavailable`,",
+        "   a source was down and `Missing sources` names which one.",
+        "3. `state/selftest-latest.md`, which endpoints were reachable.",
+        "",
+    ]
+    if len(streak) > 1:
+        lines += [
+            f"**This is {len(streak)} misses in the last week:** "
+            + ", ".join(streak),
+            "",
+            "More than one in a week is a pattern, not bad luck. Widening the",
+            "posting window or adding cron entries is the lever.",
+            "",
+        ]
+    body = "\n".join(lines)
+    title = f"[miss] no {slot} went out for {date_iso}"
+
+    if not repo or not token:
+        print("=" * 66)
+        print(title)
+        print("=" * 66)
+        print(body)
+        return {"notified": False, "reason": "no GITHUB_REPOSITORY/GITHUB_TOKEN"}
+
+    def _post(with_labels):
+        fields = {"title": title, "body": body}
+        if with_labels:
+            fields["labels"] = ["wx-miss"]
+        req = urllib.request.Request(
+            f"{API}/repos/{repo}/issues", data=json.dumps(fields).encode(),
+            method="POST",
+            headers={"Authorization": f"Bearer {token}",
+                     "Accept": "application/vnd.github+json",
+                     "User-Agent": "govallecito-wx"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode())
+
+    try:
+        try:
+            issue = _post(True)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 422:
+                issue = _post(False)
+            else:
+                raise
+        print(f"[notify] opened miss issue #{issue.get('number')}")
+        return {"notified": True, "issue": issue.get("number")}
+    except Exception as exc:  # noqa: BLE001
+        print(f"[notify] could not open miss issue: {exc}")
+        return {"notified": False, "reason": str(exc)}

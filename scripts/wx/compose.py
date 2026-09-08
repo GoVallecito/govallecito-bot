@@ -43,7 +43,31 @@ def render_bundle(bundle, post_type="school_call"):
     A(f"COMPOSED AT: {bundle.get('generated_at')} (this is NOT necessarily the")
     A(f"  date the post is for -- an evening run writes tomorrow's post)")
     A(f"SEASON: {bundle.get('season')}")
+    A(f"DAY TYPE: {bundle.get('day_type')} (approximate calendar, hedge it)")
+    if bundle.get("day_type") != "school day" and post_type == "school_call":
+        A("  -> There is no school run to write about. Do NOT open with a bus,")
+        A("     a district decision, or the drive in. Write the same forecast")
+        A("     for whoever is actually out today: the drive to town, the boat")
+        A("     ramp, hunting camp, the trail, the yard work window.")
+    if bundle.get("is_late"):
+        A(f"RUNNING LATE: composed at hour {bundle.get('composed_hour')}, past the")
+        A("  5am target. Say so plainly in the first line, one short clause, no")
+        A("  apology and no explanation. 'Late start this morning,' and move on.")
     A("")
+
+    # Anti-repetition. Three consecutive drafts opened "Morning, its <day>."
+    # and closed with a near identical question to the reader.
+    recent = bundle.get("recent_posts") or []
+    if recent:
+        A("YOUR LAST FEW POSTS OPENED AND CLOSED LIKE THIS:")
+        for r in recent:
+            A(f"  {r.get('date')} opened: {r.get('opened')}")
+            A(f"  {r.get('date')} closed: {r.get('closed')}")
+        A("  -> Do not reuse any of these shapes. Not the same greeting")
+        A("     construction, not the same closing question. Sameness across")
+        A("     days is the tell that outs an account as automated, and it is a")
+        A("     worse one than any single sentence.")
+        A("")
 
     # --- alerts first: they change what kind of post this is ---
     alerts = bundle.get("alerts") or []

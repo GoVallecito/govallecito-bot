@@ -27,10 +27,31 @@ import os
 import statistics
 from . import constants as C
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-STATE_DIR = os.path.join(REPO_ROOT, "state")
-FORECAST_LOG = os.path.join(STATE_DIR, "forecast_log.json")
-CALIBRATION = os.path.join(STATE_DIR, "snowline_calibration.json")
+# THE SAME BUG THAT ONCE OVERWROTE A REAL DRAFT, still living here.
+#
+# These paths used to be derived from __file__, so they pointed at the real
+# repo state directory no matter what WX_STATE_DIR said. Anything that ran the
+# pipeline outside a workflow, the test suite included, wrote into the live
+# forecast log and, worse, into the live snow line calibration: the learned
+# offset behind the one number this product is named for. Resolution is now
+# cwd-relative and honours WX_STATE_DIR, matching ledger.py and run_forecast.
+#
+# The module-level names stay, as overrides, because the tests set them
+# directly. None means "work it out at call time."
+FORECAST_LOG = None
+CALIBRATION = None
+
+
+def _state_dir():
+    return os.environ.get("WX_STATE_DIR") or "state"
+
+
+def _forecast_log():
+    return FORECAST_LOG or os.path.join(_state_dir(), "forecast_log.json")
+
+
+def _calibration_path():
+    return CALIBRATION or os.path.join(_state_dir(), "snowline_calibration.json")
 
 # Below this many verified events the calibration stays off. Fitting an offset
 # to four observations would be worse than not fitting one -- it would look
@@ -73,7 +94,7 @@ def record_forecast(bundle, predicted_by_band, post_id=None, note=None):
     the ranges that actually appeared in the post, not the raw model numbers.
     We score what we published.
     """
-    log = _load(FORECAST_LOG, {"forecasts": []})
+    log = _load(_forecast_log(), {"forecasts": []})
     log["forecasts"].append({
         "id": f"{bundle['local_date']}-{len(log['forecasts'])}",
         "issued_at": bundle["generated_at"],
@@ -87,7 +108,7 @@ def record_forecast(bundle, predicted_by_band, post_id=None, note=None):
         "observed": None,
         "score": None,
     })
-    _save(FORECAST_LOG, log)
+    _save(_forecast_log(), log)
     return log["forecasts"][-1]["id"]
 
 
@@ -97,7 +118,7 @@ def verify_pending(observations, max_age_days=4):
     `observations` is {band_key: {"snow_in": x, "snow_line_observed_ft": y|None}}
     assembled by the caller from SNOTEL, CoCoRaHS and the home gauge.
     """
-    log = _load(FORECAST_LOG, {"forecasts": []})
+    log = _load(_forecast_log(), {"forecasts": []})
     today = C.local_date()
     scored = []
 
@@ -151,7 +172,7 @@ def verify_pending(observations, max_age_days=4):
         scored.append(fc)
 
     if scored:
-        _save(FORECAST_LOG, log)
+        _save(_forecast_log(), log)
     return scored
 
 
@@ -171,7 +192,7 @@ def update_calibration():
     used rather than the mean because a single blown event -- and there will be
     blown events -- should not move the constant much.
     """
-    log = _load(FORECAST_LOG, {"forecasts": []})
+    log = _load(_forecast_log(), {"forecasts": []})
     errors = [f["score"]["snow_line_error_ft"] for f in log["forecasts"]
               if f.get("verified") and (f.get("score") or {}).get("snow_line_error_ft") is not None]
 
@@ -188,20 +209,20 @@ def update_calibration():
         cal["offset_ft"] = round(max(-MAX_CALIBRATION_FT, min(MAX_CALIBRATION_FT, -med)), 1)
         cal["median_error_ft"] = round(med, 1)
         cal["mean_abs_error_ft"] = round(statistics.mean(abs(e) for e in errors), 1)
-    _save(CALIBRATION, cal)
+    _save(_calibration_path(), cal)
     return cal
 
 
 def current_calibration():
     """The offset to hand snowline.py, and whether it is trustworthy yet."""
-    cal = _load(CALIBRATION, {"active": False, "offset_ft": 0.0, "events": 0})
+    cal = _load(_calibration_path(), {"active": False, "offset_ft": 0.0, "events": 0})
     return (cal.get("offset_ft", 0.0) if cal.get("active") else 0.0,
             bool(cal.get("active")))
 
 
 def track_record(limit=None):
     """Public, cumulative honesty. Suitable for a pinned post or a site page."""
-    log = _load(FORECAST_LOG, {"forecasts": []})
+    log = _load(_forecast_log(), {"forecasts": []})
     verified = [f for f in log["forecasts"] if f.get("verified")]
     if limit:
         verified = verified[-limit:]

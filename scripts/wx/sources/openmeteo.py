@@ -17,6 +17,7 @@ from the response's own hourly_units block; assuming it cost us a 47,200 ft
 snow line once already.
 """
 
+import time
 from urllib.parse import urlencode
 
 from .. import constants as C
@@ -94,10 +95,23 @@ def fetch_band(band, days=5, models=None):
                             url=url, error=str(exc))
 
 
+# Open-Meteo's free tier throttles bursts. Four bands plus four spread models
+# is eight calls in well under a second, which is what earned the 429s that
+# lost 2026-09-04. A fifth of a second between calls costs the run under two
+# seconds total and removes the burst entirely. The retry in http.py is the
+# safety net; this is the thing that stops needing it.
+BURST_GAP_S = 0.2
+
+
 def fetch_all_bands(days=5, bands=None):
-    """One fetch per band. Returns {band_key: SourceResult}."""
+    """One fetch per band, gently spaced. Returns {band_key: SourceResult}."""
     bands = bands or C.BANDS
-    return {b["key"]: fetch_band(b, days=days) for b in bands}
+    out = {}
+    for i, b in enumerate(bands):
+        if i:
+            time.sleep(BURST_GAP_S)
+        out[b["key"]] = fetch_band(b, days=days)
+    return out
 
 
 def fetch_model_spread(band, days=5):
@@ -108,7 +122,12 @@ def fetch_model_spread(band, days=5):
     suffixes every variable name with the model, which is more brittle to parse
     than four clean payloads and gives no benefit here -- these are cheap calls.
     """
-    return {m: fetch_band(band, days=days, models=[m]) for m in MODELS}
+    out = {}
+    for i, m in enumerate(MODELS):
+        if i:
+            time.sleep(BURST_GAP_S)
+        out[m] = fetch_band(band, days=days, models=[m])
+    return out
 
 
 def summarize_hourly(payload, hours=48):

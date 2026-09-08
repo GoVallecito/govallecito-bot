@@ -1,13 +1,30 @@
 name: Vallecito Forecast
 
-# Hourly, like the existing conditions bot, and for the same reason: GitHub
-# Actions cron is fixed in UTC, but "5:45am" is a Mountain Time promise and
-# Mountain Time changes twice a year. run_forecast.py checks the clock in
-# America/Denver itself, so the ~22 non-posting runs a day are a few seconds of
-# no-op and the schedule stays correct forever with no YAML edits.
+# The clock is still checked in America/Denver inside run_forecast.py, so the
+# schedule survives both DST transitions with no YAML edits. What changed is
+# how many chances the morning post gets.
+#
+# MEASURED, 2026-08-31 to 2026-09-07: a plain `45 * * * *` did not run hourly.
+# It ran 4 to 7 times a day at arbitrary minutes (00:19, 04:55, 08:00, 10:56,
+# 13:31, 15:42, 17:21 on one representative day). GitHub defers and drops
+# scheduled runs under platform load, and a pending run in a shared concurrency
+# group gets evicted by the next one queued. The 5 o'clock hour was sampled on
+# four days of eight, and the school call went out on three.
+#
+# Two changes fix it together, and neither is sufficient alone:
+#   1. Many attempts clustered over the morning window below, avoiding :00
+#      where scheduler load is worst.
+#   2. A four hour posting WINDOW plus an idempotency ledger in the script, so
+#      any single surviving attempt produces the day's post and the rest are
+#      no-ops. See wx/ledger.py.
+#
+# 11:00-15:00 UTC covers 05:00-09:00 local in BOTH MDT (UTC-6) and MST (UTC-7),
+# which is why the range is wider than four hours.
 on:
   schedule:
-    - cron: "45 * * * *"
+    - cron: "5,20,35,50 11-15 * * *"   # morning window, both DST offsets
+    - cron: "5,35 1-6 * * *"           # evening window, both DST offsets
+    - cron: "45 * * * *"               # hourly heartbeat: miss alarm, storm work
   workflow_dispatch:
     inputs:
       slot:
@@ -89,5 +106,20 @@ jobs:
           git config user.name  "govallecito-wx"
           git config user.email "bot@govallecito.com"
           git add state/ || true
-          git diff --staged --quiet || git commit -m "wx: update forecast state [skip ci]"
-          git push || echo "nothing to push"
+          git diff --staged --quiet && { echo "no state change"; exit 0; }
+          git commit -m "wx: update forecast state [skip ci]"
+          # More attempts a day means more chances two runs finish close
+          # together and race on the push. A rejected push used to be swallowed
+          # by `|| echo`, which silently lost the ledger entry and would let the
+          # same morning post twice.
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "pushed on attempt $attempt"
+              exit 0
+            fi
+            echo "push rejected, rebasing and retrying ($attempt/5)"
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+            sleep $((attempt * 3))
+          done
+          echo "::error::could not push state after 5 attempts"
+          exit 1

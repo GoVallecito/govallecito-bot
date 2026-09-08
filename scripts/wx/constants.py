@@ -220,6 +220,82 @@ SCHOOL_CALL_MINUTE = 45
 SCHOOL_DECISION_DEADLINE = "06:30"
 EVENING_HOUR = 19
 
+# --- Posting WINDOWS, not posting hours ------------------------------------
+#
+# A slot used to require the local hour to equal SCHOOL_CALL_HOUR exactly. That
+# assumed GitHub's hourly cron fires hourly. Measured over 2026-08-31 to
+# 2026-09-07 it fired 4 to 7 times a day at arbitrary minutes, so the 5 o'clock
+# hour was sampled on only four of eight days and half the week silently
+# produced nothing.
+#
+# A window plus the ledger in wx/ledger.py fixes it: any surviving run inside
+# the window posts, and the ledger guarantees only the first one does.
+#
+# The upper bounds are editorial, not technical. A school call is worth reading
+# up to about 9am, after which the districts have already decided and the
+# school framing is dishonest. The evening look-ahead holds until 22:00.
+SCHOOL_CALL_WINDOW = (5, 9)     # inclusive of 5, exclusive of 9
+EVENING_WINDOW = (19, 22)
+
+SLOT_WINDOWS = {
+    "school_call": SCHOOL_CALL_WINDOW,
+    "evening": EVENING_WINDOW,
+}
+
+# A school call that lands after this hour says so in its own first line rather
+# than pretending it arrived at 5:45.
+LATE_AFTER_HOUR = 7
+
+# --- School calendar ------------------------------------------------------
+#
+# THE BUG THIS FIXES: on Sunday 2026-09-06 the school call went out anyway and
+# opened "No weather decisions for the week ahead yet," which is the model
+# noticing that the frame does not fit and fumbling for a way through it. A
+# post called the school call, addressed to parents deciding about a bus, makes
+# no sense on a Sunday.
+#
+# This is a heuristic, not a district calendar feed, and the prompt is told so.
+# It only needs to be right about the three cases that change the framing:
+# a school day, a weekend, and the long summer break.
+SCHOOL_YEAR_START = (8, 18)   # roughly, Bayfield 10-JT-R and Durango 9-R
+SCHOOL_YEAR_END = (5, 28)
+
+# Days school is out in session. Approximate on purpose; the post says
+# "if school is in today" rather than asserting a closure.
+SCHOOL_BREAKS = [
+    ((11, 24), (11, 28)),   # Thanksgiving week
+    ((12, 20), (1, 6)),     # winter break, wraps the year
+    ((3, 16), (3, 20)),     # spring break, approximate
+]
+FIXED_NO_SCHOOL = [(1, 1), (1, 19), (2, 16), (5, 25), (9, 7), (11, 11)]
+
+
+def day_type(d):
+    """school day | weekend | summer break | likely break, for a date object.
+
+    Deliberately hedged wording. The forecaster informs the school decision and
+    never announces one, so an approximate calendar is safe as long as the
+    language it drives is approximate too.
+    """
+    md = (d.month, d.day)
+    # Summer is checked before the weekday so a Saturday in July reads as
+    # "summer break" rather than "weekend"; in July the distinction is the
+    # whole point, because nobody is waiting on a bus either way.
+    if not (md >= SCHOOL_YEAR_START or md <= SCHOOL_YEAR_END):
+        return "summer break"
+    if d.weekday() >= 5:
+        return "weekend"
+    if md in FIXED_NO_SCHOOL:
+        return "likely break"
+    for start, end in SCHOOL_BREAKS:
+        if start <= end:
+            if start <= md <= end:
+                return "likely break"
+        elif md >= start or md <= end:   # wraps the new year
+            return "likely break"
+    return "school day"
+
+
 USER_AGENT = ("govallecito-wx/1.0 (govallecito.com hyperlocal forecast; "
               "contact@govallecito.com)")
 REQUEST_TIMEOUT = 20

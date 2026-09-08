@@ -45,7 +45,11 @@ FORBIDDEN_PATTERNS = [
 # somebody on a three-hour detour or at a pass that is actually shut. Allowed
 # only when live roads data is present in the bundle.
 ROAD_STATUS_CLAIMS = [
-    (r"\b(?:pass|passes|road|highway|550|160|240|501)\b[^.\n]{0,50}\b(?:is|are|'s)\s+(?:closed|open)\b",
+    # Named passes belong in this alternation too: "Red Mountain is closed"
+    # names no road noun at all, and that is how a local would actually write
+    # it.
+    (r"\b(?:pass|passes|road|highway|550|160|240|501|coal bank|molas|"
+     r"red mountain|wolf creek)\b[^.\n]{0,50}\b(?:is|are|'s)\s+(?:closed|open)\b",
      "states whether a road is open or closed"),
     (r"\b(?:is|are|'s)\s+(?:closed|open)\b[^.\n]{0,40}\b(?:pass|passes|550|160)\b",
      "states whether a road is open or closed"),
@@ -53,6 +57,31 @@ ROAD_STATUS_CLAIMS = [
     (r"\btraction law(?:'s| is)?\s*(?:on|in effect|up)\b", "asserts traction law status"),
     (r"\bCDOT has (?:closed|opened|lifted)\b", "asserts a CDOT action"),
     (r"\bthey(?:'re| are) doing control work\b", "asserts avalanche control is underway"),
+
+    # THE GAP THAT SHIPPED. Every pattern above keys on "open" or "closed", so
+    # the 2026-09-02 draft sailed through with "The passes are dry, Coal Bank,
+    # Molas, Red Mountain and Wolf Creek all clear." That is a road SURFACE
+    # claim about four passes with no CDOT data behind it, which is exactly the
+    # thing that gets someone over Coal Bank on black ice at 6am believing a
+    # weather page told them it was fine.
+    #
+    # Forecasting the surface is fine and is the whole point of passes.py.
+    # Asserting it in the present tense is not. The distinction the patterns
+    # draw is tense: "should stay dry" and "any ice would be early" pass;
+    # "are dry" and "all clear" do not.
+    (r"\b(?:pass|passes|road|roads|highway|550|160|240|501)\b[^.\n]{0,60}"
+     r"\b(?:is|are|'s|re)\s+(?:currently\s+)?"
+     r"(?:dry|wet|clear|bare|icy|slick|snowpacked|snow[- ]packed|"
+     r"plowed|sanded|passable|impassable|fine|good|clean)\b",
+     "states a present-tense road surface condition"),
+    (r"\b(?:all|both)\s+(?:clear|dry|open|passable)\b[^.\n]{0,60}"
+     r"\b(?:pass|passes|coal bank|molas|red mountain|wolf creek|550|160)\b",
+     "states a present-tense road surface condition"),
+    (r"\b(?:coal bank|molas|red mountain|wolf creek)\b[^.\n]{0,80}"
+     r"\b(?:all\s+)?(?:clear|dry|bare|icy|slick|snowpacked|snow[- ]packed)\b"
+     r"(?![^.\n]{0,40}\b(?:should|expect|likely|by|through|overnight|"
+     r"tonight|tomorrow|forecast)\b)",
+     "states a present-tense road surface condition"),
 ]
 
 # Saying Florida with first-syllable stress is the number one newcomer tell.

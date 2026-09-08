@@ -14,7 +14,7 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta as _timedelta
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,6 +31,8 @@ from wx import email_digest as ED   # noqa: E402
 from wx import verify as V          # noqa: E402
 
 TZ = ZoneInfo(C.TIMEZONE)
+# Kept for the tests and for anything that still wants the nominal hour, but
+# the clock check no longer uses it. See C.SLOT_WINDOWS and the comment there.
 SLOT_HOURS = {C.SCHOOL_CALL_HOUR: "school_call", C.EVENING_HOUR: "evening"}
 
 
@@ -46,20 +48,106 @@ def _enabled_slots():
     return {s.strip() for s in raw.split(",") if s.strip()}
 
 
-def determine_slot(now=None, forced=None):
+def slot_for_hour(hour):
+    """The slot whose WINDOW contains this local hour, or None.
+
+    Windows, not exact hours. The reason is in C.SLOT_WINDOWS: GitHub drops
+    most scheduled runs, so requiring hour == 5 lost half of the first week.
+    """
+    for slot, (lo, hi) in C.SLOT_WINDOWS.items():
+        if lo <= hour < hi:
+            return slot
+    return None
+
+
+def determine_slot(now=None, forced=None, ledger=None):
     forced = forced or os.environ.get("FORCE_SLOT")
     if forced in ("school_call", "evening", "storm_setup", "totals", "life_safety"):
         print(f"FORCE_SLOT={forced} -- skipping the clock check.")
         return forced
     now = now or datetime.now(TZ)
-    slot = SLOT_HOURS.get(now.hour)
-    if slot is not None and slot not in _enabled_slots():
-        print(f"{slot} is not in WX_SLOTS ({sorted(_enabled_slots())}); skipping.")
-        return None
+    slot = slot_for_hour(now.hour)
+
     if slot is None:
-        print(f"{now:%Y-%m-%d %H:%M %Z} is not a posting hour "
-              f"({sorted(SLOT_HOURS)} local). Exiting.")
+        windows = ", ".join(f"{k} {lo}:00-{hi}:00" for k, (lo, hi)
+                            in sorted(C.SLOT_WINDOWS.items()))
+        print(f"{now:%Y-%m-%d %H:%M %Z} is outside every posting window "
+              f"({windows} local). Exiting.")
+        _report_miss_if_needed(now, ledger=ledger)
+        return None
+
+    if slot not in _enabled_slots():
+        print(f"{slot} is not in WX_SLOTS ({sorted(_enabled_slots())}); skipping.")
+        # Still worth checking, or the 19:00-22:00 evening hours would be a
+        # blind spot for the morning miss alarm while the evening slot is off.
+        _report_miss_if_needed(now, ledger=ledger)
+        return None
+
+    # Idempotency. A four hour window means several runs can land inside it;
+    # exactly one of them may post. The ledger entry is written after a draft
+    # exists, so a run that aborts on missing data leaves the day open.
+    LG = _ledger(ledger)
+    target = _target_date(now)
+    if LG.done(target, slot):
+        prior = (LG.load().get(target) or {}).get(slot) or {}
+        print(f"{slot} for {target} already went out at {prior.get('at')}; "
+              f"nothing to do.")
+        return None
+
+    lo, hi = C.SLOT_WINDOWS[slot]
+    if now.hour > lo:
+        print(f"NOTE: running at {now:%H:%M}, inside the {lo}:00-{hi}:00 window "
+              f"but later than the {lo}:00 target. Posting anyway, flagged late.")
     return slot
+
+
+def _ledger(injected=None):
+    if injected is not None:
+        return injected
+    from wx import ledger as _lg
+    return _lg
+
+
+def _target_date(now):
+    """The date a post is FOR. Must match bundle.build's own rule exactly."""
+    from datetime import timedelta
+    target = now.date() + timedelta(days=1) if now.hour >= 12 else now.date()
+    return target.isoformat()
+
+
+def _report_miss_if_needed(now, ledger=None):
+    """Turn a silent miss into a signal, exactly once per day.
+
+    THE FAILURE THIS EXISTS FOR: between 2026-08-31 and 2026-09-07 the school
+    call went out on three days of eight. Nothing anywhere said so. Every run
+    exited zero, every workflow was green, and the absence of a post looked
+    identical to a day with nothing to say. Five missing mornings were only
+    found by counting files in state/drafts a week later.
+
+    A monitoring rule worth keeping: alert on the ABSENCE of the expected
+    thing, not only on the presence of an error. Errors were never the
+    problem here.
+    """
+    LG = _ledger(ledger)
+    slot = "school_call"
+    if slot not in _enabled_slots():
+        return
+    lo, hi = C.SLOT_WINDOWS[slot]
+    # Only report once the window has genuinely closed, and only for the rest
+    # of that day. A 2am run must not report the morning that has not happened.
+    if not (hi <= now.hour < 23):
+        return
+    today = now.date().isoformat()
+    if LG.done(today, slot) or LG.flagged(today, "miss_reported"):
+        return
+    streak = LG.missing_since(
+        (now.date() - _timedelta(days=7)).isoformat(), slot, today) + [today]
+    LG.flag(today, "miss_reported")
+    print(f"MISS: no {slot} went out for {today}. Recent misses: {streak}")
+    try:
+        N.miss_reported(slot, today, streak)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[notify] miss report failed: {exc}")
 
 
 class LLMError(RuntimeError):
@@ -207,6 +295,16 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
     with open(os.path.join("output", "draft.txt"), "w") as fh:
         fh.write(text)
     _archive_draft(text, bundle, slot, verdict)
+
+    # The day is now spent for this slot, whatever the verdict. A blocked or
+    # held draft still counts: the work was done and a second run inside the
+    # window must not compose a different post for the same morning. An abort
+    # before this line deliberately leaves the day open for a retry.
+    try:
+        _ledger().record(bundle.get("post_for_date") or bundle.get("local_date"),
+                         slot, note=verdict)
+    except Exception as exc:  # noqa: BLE001 -- never lose a post over bookkeeping
+        print(f"[ledger] record failed: {exc}")
     with open(os.path.join("output", "bundle.json"), "w") as fh:
         json.dump(bundle, fh, indent=2, default=str)
 
