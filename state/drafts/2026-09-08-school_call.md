@@ -1,25 +1,9 @@
-# Forecast run — blocked
+# Tuesday, 2026-09-08, school_call
 
-When: 2026-09-08T05:05:38-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `block` | Snow line: n/a | Alerts: none
 
-## Detail
+---
 
-```
-draft states a present-tense road surface condition with no live CDOT data behind it -- forecast the passes, link CDOT for status
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/08/26 5:04am: Its Tuesday and the bus run looks fine this morning.
 
 The gauge stayed dry overnight and the sky's clear from the house. No weather for the drive in anywhere in the county today, just a nice September morning turning into a warm afternoon.
@@ -39,4 +23,3 @@ The passes are dry. Coal Bank, Molas and Red Mountain all look good, and Wolf Cr
 Districts decide by 6:30 but I dont see anything that would change their plans this morning.
 
 How's the morning looking where you are?
-```
