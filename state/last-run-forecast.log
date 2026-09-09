@@ -1,16 +1,3 @@
-=== Vallecito forecast: school_call @ 2026-09-09 05:09 MDT ===
-snow-line calibration: offset=0.0ft active=False
-guardrails: BLOCK
-  - draft states a present-tense road surface condition with no live CDOT data behind it -- forecast the passes, link CDOT for status
-  - first-30-days policy: review everything
-BLOCK is about the wording, not the data. Rewriting once.
-guardrails after rewrite: BLOCK
-  - draft states a bare percentage ('1%'); this voice never gives one, it names which models disagree instead
-  - first-30-days policy: review everything
-Archived draft -> state/drafts/2026-09-09-school_call.md
-BLOCKED -- nothing published. Draft saved to output/draft.txt
-Wrote state/forecast-status.md
-staged for review -> site/weather/_pending/2026-09-09-morning-forecast-for-vallecito-bayfield-and-durango.md
-  promote with: python scripts/wx/promote_draft.py 2026-09-09
-Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/8
+school_call for 2026-09-09 already went out at 2026-09-09T05:10:27-06:00; nothing to do.
+school_call for 2026-09-09 already went out at 2026-09-09T05:10:27-06:00; nothing to do.
 exit=0
