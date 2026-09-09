@@ -1,26 +1,18 @@
-# Forecast run — blocked
+---
+title: "Morning forecast for Vallecito, Bayfield and Durango"
+date: "2026-09-09T05:09:39.044020-06:00"
+forDate: "2026-09-09"
+postType: "school_call"
+snowLineFt: null
+snowLineTrend: null
+bands: {}
+basinPercentOfMedian: null
+alerts: []
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-09-morning-forecast-for-vallecito-bayfield-and-durango"
+---
 
-When: 2026-09-09T05:10:27-06:00 (Mountain)
-Slot: `school_call`
-
-## Detail
-
-```
-draft states a bare percentage ('1%'); this voice never gives one, it names which models disagree instead
-first-30-days policy: review everything
-a rewrite was attempted and was blocked too
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/09/26 5:09am: The gauge stayed dry overnight and the morning drive down the 501 should be straightforward.
 
 Districts decide by 6:30 as always, but there's nothing in the weather to slow anybody down this morning. Durango and Bayfield both start cool (mid-50s to near 60F) and warm fast into the low-to-mid 80s this afternoon. Clear all day, light winds early, picking up a bit this afternoon but nothing that'll cause trouble.
@@ -36,4 +28,3 @@ All four models (Euro, GFS, ICON, GEM) agree we stay bone dry through tomorrow, 
 The Vallecito SNOTEL's still showing that trace from last week (0.1" SWE, 3" depth) but everything else is at zero. Animas at Durango running 165 cfs, Los Pinos above the lake at 26 cfs.
 
 What's the morning looking like at your place?
-```
