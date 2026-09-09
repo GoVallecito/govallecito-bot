@@ -1,5 +1,19 @@
 name: Vallecito Forecast
 
+# ---------------------------------------------------------------------------
+# SECRET TO CREATE: HEALTHCHECK_URL_FORECAST
+#
+# A healthchecks.io ping URL for this workflow. The heartbeat step at the very
+# bottom of the job curls it, and ONLY on success. That inverts the alarm: you
+# stop getting an email because the job stopped running or went red, instead of
+# hoping a failure email arrives. Create one check at healthchecks.io per
+# workflow, set its period + grace to a little more than this schedule's gap,
+# and store its ping URL as the repo secret named above.
+#
+# Until that secret exists the heartbeat step skips itself, so this workflow
+# stays green with nothing configured.
+# ---------------------------------------------------------------------------
+
 # The clock is still checked in America/Denver inside run_forecast.py, so the
 # schedule survives both DST transitions with no YAML edits. What changed is
 # how many chances the morning post gets.
@@ -123,3 +137,18 @@ jobs:
           done
           echo "::error::could not push state after 5 attempts"
           exit 1
+
+      # Heartbeat -- MUST stay the last step in this job.
+      #
+      # `if: success()` is the whole point: it does not run when any earlier
+      # step failed, and it obviously does not run when the schedule never
+      # fires at all. healthchecks.io then emails on the MISSING ping. This is
+      # the only signal that distinguishes "healthy and quiet" from "dead and
+      # quiet" -- GitHub sends no email for a schedule that simply stopped.
+      #
+      # The `secrets....!= ''` half only gates on the secret being configured,
+      # not on the result: curl runs with -f, so once the secret is set a
+      # non-2xx ping response fails this step and the job goes red.
+      - name: Heartbeat (healthchecks.io)
+        if: success() && secrets.HEALTHCHECK_URL_FORECAST != ''
+        run: curl -fsS -m 10 --retry 3 "${{ secrets.HEALTHCHECK_URL_FORECAST }}"
