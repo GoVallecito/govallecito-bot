@@ -1,0 +1,59 @@
+---
+// One page per forecast. This is the part that does the SEO work: a real,
+// dated URL tree under /weather/ instead of forty pages all linking to each
+// other from the same global nav.
+import { getFeed, describe, fmtDate, BYLINE, type Post } from "../../lib/wx";
+import WxPost from "./_WxPost.astro";
+
+export async function getStaticPaths() {
+  const feed = await getFeed();
+  return feed.posts.map((post: Post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props as { post: Post };
+const site = Astro.site ?? new URL("https://govallecito.com");
+const canonical = new URL(`/weather/${post.slug}/`, site);
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  headline: post.title,
+  datePublished: post.date,
+  description: describe(post),
+  author: { "@type": "Organization", name: BYLINE },
+  publisher: { "@type": "Organization", name: "GoVallecito" },
+  mainEntityOfPage: canonical.href,
+};
+---
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{post.title} | {BYLINE}</title>
+  <meta name="description" content={describe(post)} />
+  <link rel="canonical" href={canonical.href} />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content={post.title} />
+  <meta property="og:description" content={describe(post)} />
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</head>
+<body>
+<main class="wx">
+  <p class="wx-crumb"><a href="/weather/">{BYLINE}</a></p>
+  <WxPost post={post} heading="h1" />
+  <p class="wx-foot">
+    <a href="/weather/">Today's forecast</a> ·
+    <a href="/weather/archive/">Archive</a> ·
+    <a href="/weather/record/">Track record</a>
+  </p>
+  <p class="wx-disclaimer">
+    Forecast, not road status. Check
+    <a href="https://www.cotrip.org/" rel="noopener">COtrip</a> before you drive,
+    and the <a href="https://www.weather.gov/gjt/" rel="noopener">National Weather
+    Service</a> for warnings.
+  </p>
+</main>
+</body>
+</html>

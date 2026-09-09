@@ -136,6 +136,27 @@ def evaluate(bundle, draft_text, *, first_30_days=False, calibrated=False):
                                 "forecast the passes, link CDOT for status")
                 break
 
+    # The persona rule "never a percentage," which the prompt has always
+    # stated and nothing has ever enforced. The 2026-09-08 draft: "Pop's at 4%
+    # this afternoon which is basically nothing." A probability of
+    # precipitation expressed as a number is exactly the forecaster-voice tic
+    # this persona is built to avoid; uncertainty is supposed to be expressed
+    # by naming which models disagree.
+    #
+    # Two percentages are legitimate and must pass: percent of median, which is
+    # the standard snowpack unit and appears in the local-language list, and
+    # percent of full pool, which is how reservoir storage is reported.
+    for m in re.finditer(r"\d+(?:\.\d+)?\s*(?:%|percent)", draft_text or "",
+                         re.IGNORECASE):
+        tail = draft_text[m.end():m.end() + 30].lower()
+        if re.match(r"\s*(?:of\s+)?(?:median|average|full pool|capacity|normal)",
+                    tail):
+            continue
+        escalate(BLOCK, f"draft states a bare percentage ({m.group(0).strip()!r}); "
+                        "this voice never gives one, it names which models "
+                        "disagree instead")
+        break
+
     # Should be unreachable: sanitize.clean() runs first. If this fires, the
     # sanitizer has a gap worth knowing about rather than shipping past.
     from . import sanitize as _san
@@ -204,3 +225,55 @@ def require_or_abort(bundle):
         if not bundle.get("bands", {}).get(b, {}).get("ok"):
             problems.append(f"no forecast for {b}")
     return problems
+
+
+# --- self-correction -------------------------------------------------------
+#
+# A BLOCK is not one thing. Two of them mean the data is wrong and no amount of
+# rewriting will help. The rest mean the model wrote a sentence it was told not
+# to write, and it will almost always fix that if you show it the complaint.
+#
+# This distinction is what turns a blocked morning into a published one. On
+# 2026-09-08 the run landed on time, built a complete and accurate forecast,
+# and was blocked over a single sentence: "The passes are dry." Blocking was
+# right, the sentence was a road-status claim with no CDOT data behind it. But
+# the outcome was a silent morning, which is the failure the whole rebuild was
+# supposed to stop. One rewrite costs a few cents and about ten seconds.
+
+_DATA_BLOCK_PREFIXES = (
+    "required source(s) unavailable",
+    "forecast unavailable for band(s)",
+    "draft is empty",
+)
+
+
+def text_fixable(reasons):
+    """True when every reason is about the writing rather than the inputs."""
+    if not reasons:
+        return False
+    return not any(r.startswith(_DATA_BLOCK_PREFIXES) for r in reasons)
+
+
+def correction_note(reasons):
+    """The instruction handed back to the model on a rewrite.
+
+    Phrased as a specific edit, not as a scolding and not as a restatement of
+    the rules it already has. A model given "you violated rule 7" tends to
+    rewrite everything and lose the good parts; a model given "that one
+    sentence, here is why, change only it" keeps the post.
+    """
+    bullets = "\n".join(f"  - {r}" for r in reasons)
+    return (
+        "YOUR PREVIOUS DRAFT WAS REJECTED BY THE PUBLISHING GATE.\n\n"
+        "Write the post again. Keep everything that was right: the same "
+        "forecast, the same numbers, the same structure, the same voice. "
+        "Change only what these complaints name.\n\n"
+        f"{bullets}\n\n"
+        "On road and pass conditions specifically, if that is what was "
+        "flagged: you have weather data, not road data. Never write that a "
+        "pass or road IS dry, clear, icy, open or closed. Forecast it instead, "
+        "in the future or conditional, and point at CDOT for the status. "
+        "'Coal Bank should stay dry through the morning' is right. "
+        "'The passes are dry' is not.\n\n"
+        "Return only the post."
+    )

@@ -1,0 +1,62 @@
+---
+// The landing page: today's forecast, then links to the recent ones.
+//
+// Swap the <html>/<head> below for your site Layout component when you drop
+// this in. Everything inside <main> is the part that matters.
+import { getFeed, describe, fmtDate, BYLINE } from "../../lib/wx";
+import WxPost from "./_WxPost.astro";
+
+const feed = await getFeed();
+const [latest, ...rest] = feed.posts;
+const recent = rest.slice(0, 10);
+const canonical = new URL("/weather/", Astro.site ?? "https://govallecito.com");
+const description = latest
+  ? describe(latest)
+  : "Forecast by elevation for Vallecito Lake, Bayfield and Durango. Snow line in feet.";
+---
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{latest ? `${latest.title} | ${BYLINE}` : `${BYLINE} | Vallecito, Bayfield, Durango`}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical.href} />
+  <link rel="alternate" type="application/rss+xml" title={BYLINE} href="/weather/rss.xml" />
+</head>
+<body>
+<main class="wx">
+  <header class="wx-head">
+    <h1 class="wx-brand">{BYLINE}</h1>
+    <p class="wx-tagline">
+      Forecast by elevation for Vallecito Lake, Bayfield and Durango. The snow
+      line in feet, because the Durango forecast is not the Vallecito forecast.
+    </p>
+  </header>
+
+  {latest ? (
+    <>
+      <WxPost post={latest} heading="h1" />
+      {recent.length > 0 && (
+        <section class="wx-recent">
+          <h2>Recent</h2>
+          <ul>
+            {recent.map((p) => (
+              <li>
+                <a href={`/weather/${p.slug}/`}>{p.title}</a>
+                <span class="wx-date"> · {fmtDate(p.forDate)}</span>
+              </li>
+            ))}
+          </ul>
+          <p><a href="/weather/archive/">Every forecast</a> · <a href="/weather/record/">Track record</a></p>
+        </section>
+      )}
+    </>
+  ) : (
+    <p class="wx-empty">
+      No forecast is published yet. Live conditions are on the
+      <a href="/conditions"> conditions page</a>.
+    </p>
+  )}
+</main>
+</body>
+</html>

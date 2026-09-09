@@ -1,0 +1,75 @@
+name: Publish approved forecast
+
+# The approval step the review loop was missing.
+#
+# Guardrails hold a draft and open an issue. Until now the only way to act on
+# that issue was to switch WX_FIRST_30_DAYS off, which would have taken the
+# website and the Facebook page live in the same minute on the same untested
+# verdict. This workflow promotes one specific reviewed post to the website and
+# changes nothing else.
+#
+# Run it from the Actions tab: pick "Publish approved forecast", enter the date
+# from the issue title, run. Leave the date blank to just list what is staged.
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Date of the staged forecast, e.g. 2026-09-08. Blank to list."
+        required: false
+        default: ""
+
+concurrency:
+  group: govallecito-bot-state
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Promote
+        id: promote
+        run: |
+          set -e
+          if [ -z "${{ inputs.date }}" ]; then
+            python scripts/wx/promote_draft.py --list
+            echo "listed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python scripts/wx/promote_draft.py "${{ inputs.date }}"
+          echo "listed=false" >> "$GITHUB_OUTPUT"
+
+      - name: Commit
+        if: steps.promote.outputs.listed == 'false'
+        run: |
+          git config user.name  "govallecito-wx"
+          git config user.email "bot@govallecito.com"
+          git add site/ || true
+          git diff --staged --quiet && { echo "nothing changed"; exit 0; }
+          git commit -m "wx: publish approved forecast ${{ inputs.date }} [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            git push && exit 0
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+            sleep $((attempt * 3))
+          done
+          echo "::error::could not push after 5 attempts"
+          exit 1
+
+      - name: Ask the site to rebuild
+        if: steps.promote.outputs.listed == 'false'
+        env:
+          SITE_DEPLOY_HOOK: ${{ secrets.SITE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$SITE_DEPLOY_HOOK" ]; then
+            echo "SITE_DEPLOY_HOOK not set; the site will collect this on its next build."
+            exit 0
+          fi
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$SITE_DEPLOY_HOOK")
+          echo "deploy hook responded $code"

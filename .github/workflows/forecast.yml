@@ -105,7 +105,11 @@ jobs:
         run: |
           git config user.name  "govallecito-wx"
           git config user.email "bot@govallecito.com"
-          git add state/ || true
+          # site/ as well as state/: the forecaster writes the website's
+          # content into this repo's own tree, so publishing to govallecito.com
+          # is this push and needs no second repository's credential. The site
+          # build reads site/weather/feed.json from raw.githubusercontent.
+          git add state/ site/ || true
           git diff --staged --quiet && { echo "no state change"; exit 0; }
           git commit -m "wx: update forecast state [skip ci]"
           # More attempts a day means more chances two runs finish close
@@ -123,3 +127,28 @@ jobs:
           done
           echo "::error::could not push state after 5 attempts"
           exit 1
+
+      # A static site does not know the feed changed. This is the only piece
+      # of the site path that needs a secret, and it is a build hook URL, which
+      # can start a build and do nothing else. Netlify: Site settings > Build
+      # hooks. Cloudflare Pages: Settings > Builds > Deploy hooks. If it is not
+      # set, the site simply picks the post up on its next build.
+      - name: Ask the site to rebuild
+        if: always()
+        env:
+          SITE_DEPLOY_HOOK: ${{ secrets.SITE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$SITE_DEPLOY_HOOK" ]; then
+            echo "SITE_DEPLOY_HOOK not set; skipping rebuild ping."
+            echo "The site will pick up new forecasts on its next build."
+            exit 0
+          fi
+          if git diff --quiet HEAD~1 -- site/ 2>/dev/null; then
+            echo "site/ unchanged this run; no rebuild needed."
+            exit 0
+          fi
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$SITE_DEPLOY_HOOK")
+          echo "deploy hook responded $code"
+          # A failed rebuild ping must never fail the forecast: the post is
+          # already committed and the next build will collect it.
+          [ "$code" -ge 200 ] && [ "$code" -lt 400 ] || echo "::warning::deploy hook returned $code"

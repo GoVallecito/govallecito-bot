@@ -19,6 +19,17 @@ _RANGE = re.compile(r"(\d)\s*[—–]\s*(\d)")
 # A dash between a time and a time, same reasoning: 2pm-5pm.
 _TIME_RANGE = re.compile(r"(\d\s*(?:am|pm))\s*[—–]\s*(\d)", re.IGNORECASE)
 _DASH = re.compile(r"\s*[—–]\s*")
+# The double hyphen, which the model started producing once it could no longer
+# produce an em dash. The 2026-09-08 draft: "All the models agree on this one --
+# Euro, GFS, ICON and GEM". It learned it from the data brief, which used `--`
+# throughout its own annotations, and a model imitates the punctuation of its
+# context. The brief was cleaned; this is the guarantee.
+#
+# Range-safe like the em dash rules: "4--8" becomes "4-8", not "4, 8".
+_DOUBLE_TIME_RANGE = re.compile(r"(\d\s*(?:am|pm))\s*--\s*(\d)", re.IGNORECASE)
+_DOUBLE_RANGE = re.compile(r"(\d)\s*--\s*(\d)")
+_DOUBLE = re.compile(r"\s+--+\s+")
+_DOUBLE_TIGHT = re.compile(r"(?<=[A-Za-z0-9])--+(?=[A-Za-z0-9])")
 _TIDY = [
     (re.compile(r",\s*,"), ","),
     (re.compile(r",\s*([.!?])"), r"\1"),
@@ -34,6 +45,10 @@ def strip_dashes(text):
         return text
     text = _TIME_RANGE.sub(r"\1-\2", text)
     text = _RANGE.sub(r"\1-\2", text)
+    text = _DOUBLE_TIME_RANGE.sub(r"\1-\2", text)
+    text = _DOUBLE_RANGE.sub(r"\1-\2", text)
+    text = _DOUBLE.sub(", ", text)
+    text = _DOUBLE_TIGHT.sub(", ", text)
     # Everything else becomes a comma, which is what the dash was standing in
     # for in this voice almost every time: an aside or an apposition.
     text = _DASH.sub(", ", text)
@@ -64,6 +79,8 @@ def has_tells(text):
     found = []
     if re.search(r"[—–]", text or ""):
         found.append("em or en dash")
+    if re.search(r"(?<!\S)--+(?!\S)|(?<=[A-Za-z])--+(?=[A-Za-z])", text or ""):
+        found.append("double hyphen standing in for a dash")
     if re.search(r"[‘’“”…]", text or ""):
         found.append("smart quotes or ellipsis character")
     return found
