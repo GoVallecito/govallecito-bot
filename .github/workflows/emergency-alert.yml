@@ -1,5 +1,19 @@
 name: Emergency Alert Check
 
+# ---------------------------------------------------------------------------
+# SECRET TO CREATE: HEALTHCHECK_URL_EMERGENCY_ALERT
+#
+# A healthchecks.io ping URL for this workflow. The heartbeat step at the very
+# bottom of the job curls it, and ONLY on success. That inverts the alarm: you
+# stop getting an email because the job stopped running or went red, instead of
+# hoping a failure email arrives. Create one check at healthchecks.io per
+# workflow, set its period + grace to a little more than this schedule's gap,
+# and store its ping URL as the repo secret named above.
+#
+# Until that secret exists the heartbeat step skips itself, so this workflow
+# stays green with nothing configured.
+# ---------------------------------------------------------------------------
+
 # Checks for active flood/fire/evacuation/disaster conditions and posts
 # immediately if anything new is found -- see scripts/check_emergency.py for
 # the full detection logic and the honest version of what "immediately"
@@ -77,6 +91,12 @@ permissions:
 jobs:
   check-emergency:
     runs-on: ubuntu-latest
+    # Lifted to job level purely so the heartbeat step's `if` can test
+    # it. A step-level `if` cannot read the `secrets` context at all
+    # (GitHub rejects the file: "Unrecognized named-value: 'secrets'"),
+    # but it can read `env`.
+    env:
+      HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL_EMERGENCY_ALERT }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -143,3 +163,18 @@ jobs:
           done
           echo "::error::Could not push updated state after 5 attempts. A live emergency alert post from this run may now have NO record in post_history.json, and/or its dedup state may not be saved (risking a duplicate re-post next run) -- check the Page directly and consider manually reconciling state/post_history.json and state/emergency_alert_state.json."
           exit 1
+
+      # Heartbeat -- MUST stay the last step in this job.
+      #
+      # `if: success()` is the whole point: it does not run when any earlier
+      # step failed, and it obviously does not run when the schedule never
+      # fires at all. healthchecks.io then emails on the MISSING ping. This is
+      # the only signal that distinguishes "healthy and quiet" from "dead and
+      # quiet" -- GitHub sends no email for a schedule that simply stopped.
+      #
+      # The `env.HEALTHCHECK_URL != ''` half only gates on the secret being
+      # configured, not on the result: curl runs with -f, so once it is set a
+      # non-2xx ping response fails this step and the job goes red.
+      - name: Heartbeat (healthchecks.io)
+        if: success() && env.HEALTHCHECK_URL != ''
+        run: curl -fsS -m 10 --retry 3 "$HEALTHCHECK_URL"
