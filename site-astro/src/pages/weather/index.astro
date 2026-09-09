@@ -1,10 +1,16 @@
 ---
-// The landing page: today's forecast, then links to the recent ones.
+// The landing page.
+//
+// The forecast sits inside <div id="wx-live">. That id is load-bearing: the
+// Pages Function at functions/weather/index.ts finds it and swaps in the
+// current forecast at request time, so this page is right at 6am even though
+// the site itself only rebuilds every few hours. If the id is renamed or
+// removed, the function silently stops updating and this built version is what
+// visitors see, which is a graceful failure but a stale one.
 //
 // Swap the <html>/<head> below for your site Layout component when you drop
 // this in. Everything inside <main> is the part that matters.
-import { getFeed, describe, fmtDate, BYLINE } from "../../lib/wx";
-import WxPost from "./_WxPost.astro";
+import { getFeed, describe, fmtDate, postToHtml, BYLINE } from "../../lib/wx";
 
 const feed = await getFeed();
 const [latest, ...rest] = feed.posts;
@@ -33,29 +39,24 @@ const description = latest
     </p>
   </header>
 
-  {latest ? (
-    <>
-      <WxPost post={latest} heading="h1" />
-      {recent.length > 0 && (
-        <section class="wx-recent">
-          <h2>Recent</h2>
-          <ul>
-            {recent.map((p) => (
-              <li>
-                <a href={`/weather/${p.slug}/`}>{p.title}</a>
-                <span class="wx-date"> · {fmtDate(p.forDate)}</span>
-              </li>
-            ))}
-          </ul>
-          <p><a href="/weather/archive/">Every forecast</a> · <a href="/weather/record/">Track record</a></p>
-        </section>
-      )}
-    </>
-  ) : (
-    <p class="wx-empty">
-      No forecast is published yet. Live conditions are on the
-      <a href="/conditions"> conditions page</a>.
-    </p>
+  <div id="wx-live"
+       data-wx-generated={latest?.date ?? ""}
+       data-wx-source="build"
+       set:html={latest ? postToHtml(latest, "h1") : `<p class="wx-empty">No forecast is published yet. Live conditions are on the <a href="/conditions">conditions page</a>.</p>`} />
+
+  {recent.length > 0 && (
+    <section class="wx-recent">
+      <h2>Recent</h2>
+      <ul>
+        {recent.map((p) => (
+          <li>
+            <a href={`/weather/${p.slug}/`}>{p.title}</a>
+            <span class="wx-date"> · {fmtDate(p.forDate)}</span>
+          </li>
+        ))}
+      </ul>
+      <p><a href="/weather/archive/">Every forecast</a> · <a href="/weather/record/">Track record</a></p>
+    </section>
   )}
 </main>
 </body>

@@ -2,8 +2,7 @@
 // One page per forecast. This is the part that does the SEO work: a real,
 // dated URL tree under /weather/ instead of forty pages all linking to each
 // other from the same global nav.
-import { getFeed, describe, fmtDate, BYLINE, type Post } from "../../lib/wx";
-import WxPost from "./_WxPost.astro";
+import { getFeed, describe, postToHtml, BYLINE, type Post } from "../../lib/wx";
 
 export async function getStaticPaths() {
   const feed = await getFeed();
@@ -42,7 +41,7 @@ const jsonLd = {
 <body>
 <main class="wx">
   <p class="wx-crumb"><a href="/weather/">{BYLINE}</a></p>
-  <WxPost post={post} heading="h1" />
+  <div set:html={postToHtml(post, "h1")} />
   <p class="wx-foot">
     <a href="/weather/">Today's forecast</a> ·
     <a href="/weather/archive/">Archive</a> ·
