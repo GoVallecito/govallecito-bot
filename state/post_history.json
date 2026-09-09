@@ -827,8 +827,10 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": null,
+      "engagement_checked_at": "2026-09-09T14:05:54.238942+00:00",
+      "engagement_unavailable": true
     },
     {
       "post_id": "1138532512682553_122126351517360003",
@@ -841,8 +843,10 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": null,
+      "engagement_checked_at": "2026-09-09T14:05:54.704032+00:00",
+      "engagement_unavailable": true
     },
     {
       "post_id": "1138532512682553_122126545197360003",
