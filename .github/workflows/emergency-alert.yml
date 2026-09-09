@@ -91,6 +91,12 @@ permissions:
 jobs:
   check-emergency:
     runs-on: ubuntu-latest
+    # Lifted to job level purely so the heartbeat step's `if` can test
+    # it. A step-level `if` cannot read the `secrets` context at all
+    # (GitHub rejects the file: "Unrecognized named-value: 'secrets'"),
+    # but it can read `env`.
+    env:
+      HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL_EMERGENCY_ALERT }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -166,9 +172,9 @@ jobs:
       # the only signal that distinguishes "healthy and quiet" from "dead and
       # quiet" -- GitHub sends no email for a schedule that simply stopped.
       #
-      # The `secrets....!= ''` half only gates on the secret being configured,
-      # not on the result: curl runs with -f, so once the secret is set a
+      # The `env.HEALTHCHECK_URL != ''` half only gates on the secret being
+      # configured, not on the result: curl runs with -f, so once it is set a
       # non-2xx ping response fails this step and the job goes red.
       - name: Heartbeat (healthchecks.io)
-        if: success() && secrets.HEALTHCHECK_URL_EMERGENCY_ALERT != ''
-        run: curl -fsS -m 10 --retry 3 "${{ secrets.HEALTHCHECK_URL_EMERGENCY_ALERT }}"
+        if: success() && env.HEALTHCHECK_URL != ''
+        run: curl -fsS -m 10 --retry 3 "$HEALTHCHECK_URL"
