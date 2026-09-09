@@ -41,7 +41,7 @@ def render_bundle(bundle, post_type="school_call"):
     A(f"  -> Open with the stamp {bundle.get('post_for_stamp')} and, if you name")
     A(f"     the day, it is {bundle.get('post_for_weekday')}. Use no other weekday.")
     A(f"COMPOSED AT: {bundle.get('generated_at')} (this is NOT necessarily the")
-    A(f"  date the post is for -- an evening run writes tomorrow's post)")
+    A(f"  date the post is for, an evening run writes tomorrow's post)")
     A(f"SEASON: {bundle.get('season')}")
     A(f"DAY TYPE: {bundle.get('day_type')} (approximate calendar, hedge it)")
     if bundle.get("day_type") != "school day" and post_type == "school_call":
@@ -77,9 +77,9 @@ def render_bundle(bundle, post_type="school_call"):
             zones = ", ".join(a.get("zones", []))
             zone_note = ""
             if zones == C.ZONE_VALLECITO:
-                zone_note = "  [COZ019 ONLY -- Vallecito and up, NOT Durango/Bayfield]"
+                zone_note = "  [COZ019 ONLY, Vallecito and up, NOT Durango/Bayfield]"
             elif zones == C.ZONE_ANIMAS:
-                zone_note = "  [COZ022 ONLY -- Durango/Bayfield, NOT Vallecito]"
+                zone_note = "  [COZ022 ONLY, Durango/Bayfield, NOT Vallecito]"
             A(f"  - {a['event']} ({zones}){zone_note}")
             A(f"    {a.get('headline','')}")
             A(f"    onset {a.get('onset')}  expires {a.get('expires')}")
@@ -91,7 +91,7 @@ def render_bundle(bundle, post_type="school_call"):
     # --- the snow line: the signature number ---
     sl = bundle.get("snow_line")
     if sl:
-        A("SNOW LINE (derived, UNCALIBRATED HEURISTIC -- hedge it):")
+        A("SNOW LINE (derived, UNCALIBRATED HEURISTIC, hedge it):")
         A(f"  representative {sl['representative_ft']} ft, {sl['trend']} "
           f"({sl['start_ft']} -> {sl['end_ft']} ft)")
         A(f"  precipitating hours: {sl['hours_with_precip']}, "
@@ -114,7 +114,7 @@ def render_bundle(bundle, post_type="school_call"):
     for key in C.BAND_ORDER:
         b = bundle.get("bands", {}).get(key) or {}
         if not b.get("ok"):
-            A(f"  {key}: UNAVAILABLE -- do not forecast for this band")
+            A(f"  {key}: UNAVAILABLE. Do not forecast for this band")
             continue
         s = b.get("summary") or {}
         A(f"  {b['label']} ({b['elevation_ft']} ft, zone {b['nws_zone']}):")
@@ -171,7 +171,7 @@ def render_bundle(bundle, post_type="school_call"):
     A("")
 
     if bundle.get("pass_card"):
-        A("THE PASSES -- FORECAST ONLY. You do NOT know whether any road is open,")
+        A("THE PASSES, FORECAST ONLY. You do NOT know whether any road is open,")
         A("closed, or under chain law. There is no live road-status source. Say")
         A("what the passes are GETTING, then send people to CDOT for status.")
         A("The three US-550 passes close as a unit. 'The pass is closed'")
@@ -185,13 +185,13 @@ def render_bundle(bundle, post_type="school_call"):
     if obs:
         A("WHAT ACTUALLY FELL (for the totals post):")
         if obs.get("cocorahs_block"):
-            A("  Station reports, already ranked -- print these VERBATIM, in this order:")
+            A("  Station reports, already ranked, print these VERBATIM, in this order:")
             for line in obs["cocorahs_block"].splitlines():
                 A(f"    {line}")
         for item in obs.get("scored", []):
             for band, d in (item.get("score", {}).get("per_band") or {}).items():
                 A(f"  {band}: you called {d['predicted_range_in']}\", it came in "
-                  f"{d['observed_in']}\" -- {d['direction']}")
+                  f"{d['observed_in']}\", {d['direction']}")
         tr = obs.get("track_record") or {}
         if tr.get("verified_events"):
             A(f"  Track record so far: {tr['verified_events']} events, "
@@ -206,7 +206,7 @@ def render_bundle(bundle, post_type="school_call"):
 
     cz = bundle.get("caic_zone")
     if cz:
-        A(f"CAIC ZONE: {cz.get('zone_name')} -- link it, never interpret it.")
+        A(f"CAIC ZONE: {cz.get('zone_name')}, link it, never interpret it.")
         A("")
 
     missing = bundle.get("missing") or []
@@ -244,7 +244,7 @@ def build_messages(bundle, post_type="school_call", recent_posts=None,
             "districts decide by 6:30, so lead with what a parent driving the "
             "501 or the 240 needs. Give the snow line in feet. Walk the bands "
             "in order. Say plainly which routes are the question this morning, "
-            "and that the districts decide by 6:30 -- never announce a closure."),
+            "and that the districts decide by 6:30, never announce a closure."),
         "evening": (
             "Write the evening look. Pattern first, then the next 3-5 days. No "
             "snow amounts beyond day 3."),
@@ -261,7 +261,7 @@ def build_messages(bundle, post_type="school_call", recent_posts=None,
             "NWS product named and its exact valid times. Bound it "
             "geographically so people outside the box can relax. One plain "
             "imperative. Link the official product. Keep it under 200 words and "
-            "keep it flat -- no caps, no emoji, no exclamation points."),
+            "keep it flat, no caps, no emoji, no exclamation points."),
     }.get(post_type, "Write today's post.")
 
     parts.append("TASK: " + task)

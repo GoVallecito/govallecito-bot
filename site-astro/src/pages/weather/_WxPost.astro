@@ -1,0 +1,56 @@
+---
+// One forecast, rendered. Shared by the landing page and every dated page so
+// the two can never drift apart.
+import { bodyToHtml, fmtDate, fmtTime, BYLINE, type Post } from "../../lib/wx";
+
+interface Props { post: Post; heading?: "h1" | "h2" }
+const { post, heading = "h1" } = Astro.props;
+const bands = Object.values(post.bands ?? {}).filter((b) => b?.elevationFt);
+---
+<article class="wx-post">
+  {heading === "h1"
+    ? <h1>{post.title}</h1>
+    : <h2><a href={`/weather/${post.slug}/`}>{post.title}</a></h2>}
+
+  <p class="wx-meta">
+    <span>{fmtDate(post.forDate)}</span>
+    {post.date && <span> · posted {fmtTime(post.date)} MT</span>}
+    <span> · {BYLINE}</span>
+  </p>
+
+  {post.alerts && post.alerts.length > 0 && (
+    <p class="wx-alert">
+      Active National Weather Service alert: {post.alerts.join(", ")}.
+      <a href="https://www.weather.gov/gjt/" rel="noopener"> Official product</a>
+    </p>
+  )}
+
+  {post.snowLineFt && (
+    <p class="wx-snowline">
+      <strong>Snow line about {post.snowLineFt.toLocaleString()} ft</strong>
+      {post.snowLineTrend && <span>, {post.snowLineTrend}</span>}
+    </p>
+  )}
+
+  <div class="wx-body" set:html={bodyToHtml(post.body)} />
+
+  {bands.length > 0 && (
+    <table class="wx-bands">
+      <caption>By elevation</caption>
+      <thead><tr><th>Where</th><th>Elevation</th><th>Falling as</th></tr></thead>
+      <tbody>
+        {bands.map((b) => (
+          <tr>
+            <td>{b.label}</td>
+            <td>{b.elevationFt?.toLocaleString()} ft</td>
+            <td>{b.precipType ?? "dry"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+
+  {post.sources && post.sources.length > 0 && (
+    <p class="wx-sources">Sources: {post.sources.join(", ")}.</p>
+  )}
+</article>

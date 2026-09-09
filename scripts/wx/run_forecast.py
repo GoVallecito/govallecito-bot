@@ -26,6 +26,7 @@ from wx import guardrails as G      # noqa: E402
 from wx import notify as N         # noqa: E402
 from wx import publish as P         # noqa: E402
 from wx import sanitize as SAN     # noqa: E402
+from wx import site as SITE        # noqa: E402
 from wx import render_forecast_card as RC  # noqa: E402
 from wx import email_digest as ED   # noqa: E402
 from wx import verify as V          # noqa: E402
@@ -291,6 +292,34 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
     for r in reasons:
         print(f"  - {r}")
 
+    # One rewrite, when the gate objected to the writing rather than the data.
+    # See guardrails.text_fixable for why this exists: 2026-09-08 produced a
+    # complete, accurate, on-time forecast and published nothing because of one
+    # sentence. A silent morning is the exact failure this rebuild was for.
+    if verdict == G.BLOCK and G.text_fixable(reasons) and llm is not None:
+        print("BLOCK is about the wording, not the data. Rewriting once.")
+        try:
+            retry = SAN.clean(CO.compose(bundle, llm, post_type=slot,
+                                         extra_instruction=G.correction_note(reasons)))
+        except LLMError as exc:
+            print(f"  rewrite failed ({exc}); keeping the original draft")
+            retry = None
+        if retry:
+            v2, r2 = G.evaluate(bundle, retry, first_30_days=first_30_days,
+                                calibrated=calibrated)
+            print(f"guardrails after rewrite: {v2.upper()}")
+            for r in r2:
+                print(f"  - {r}")
+            if v2 != G.BLOCK:
+                print("rewrite cleared the gate")
+                text, verdict, reasons = retry, v2, r2
+            else:
+                # Keep the rewrite anyway: it is the model's better attempt and
+                # it is what a reviewer should be reading. Say plainly that two
+                # passes both failed, which is a different signal from one.
+                text, verdict = retry, v2
+                reasons = r2 + ["a rewrite was attempted and was blocked too"]
+
     os.makedirs("output", exist_ok=True)
     with open(os.path.join("output", "draft.txt"), "w") as fh:
         fh.write(text)
@@ -311,18 +340,29 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
     if verdict == G.BLOCK:
         print("BLOCKED -- nothing published. Draft saved to output/draft.txt")
         write_status("blocked", "\n".join(reasons), bundle, slot, draft=text)
+        _stage_for_site(text, bundle, slot, site_dir)
+        N.review_requested(text, verdict, reasons, bundle, slot=slot)
         return 0
     if verdict == G.REVIEW:
         print("HELD FOR REVIEW -- draft saved to output/draft.txt")
         # A review gate nobody sees is not a safety mechanism. Open an issue so
         # the held draft actually reaches a human.
         write_status("held for review", "\n".join(reasons), bundle, slot, draft=text)
+        _stage_for_site(text, bundle, slot, site_dir)
         N.review_requested(text, verdict, reasons, bundle, slot=slot)
         return 0
 
-    site_dir = site_dir or os.environ.get("WX_SITE_DIR")
-    if site_dir:
-        print(f"site post -> {P.write_site_post(text, bundle, site_dir, slot)}")
+    # The site write is best effort and comes first, so a failure here is
+    # visible in the log while the Facebook post still goes out. It writes into
+    # this repo's own tree, which the workflow commits, so publishing needs no
+    # second credential. See wx/site.py.
+    if os.environ.get("WX_SITE_PUBLISH", "true").strip().lower() != "false":
+        try:
+            paths = SITE.publish(text, bundle, slot, out_dir=site_dir)
+            print(f"site post -> {paths['post']}")
+            print(f"site feed -> {paths['feed']}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"[site] publish failed, posting anyway: {exc}")
 
     # The card is best-effort: a rendering failure must not cost the forecast.
     card = None
@@ -347,6 +387,22 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
                             post_id=result.get("id"))
     print(f"logged forecast {fid} for tomorrow's verification")
     return 0
+
+
+def _stage_for_site(text, bundle, slot, site_dir=None):
+    """Park a held or blocked draft where a human can promote it in one step.
+
+    Recomposing a held draft later would produce a different post from
+    different data, so the thing that gets reviewed has to be the thing that
+    gets published. Staging keeps them the same object.
+    """
+    try:
+        path = SITE.stage(text, bundle, slot, out_dir=site_dir)
+        print(f"staged for review -> {path}")
+        print("  promote with: python scripts/wx/promote_draft.py "
+              f"{bundle.get('post_for_date') or bundle.get('local_date')}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[site] could not stage draft: {exc}")
 
 
 def write_status(state, detail, bundle=None, slot=None, hint=None, draft=None):

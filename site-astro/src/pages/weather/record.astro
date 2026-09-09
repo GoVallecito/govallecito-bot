@@ -1,0 +1,83 @@
+---
+// The track record. Publishing your own misses is the whole positioning: this
+// page is the reason to believe the other ones.
+import { getVerifications, BYLINE } from "../../lib/wx";
+
+const all = await getVerifications();
+const scored = all.filter((f: any) => f?.verified && f?.score);
+const recent = [...scored].reverse().slice(0, 40);
+const withSnowLine = scored.filter(
+  (f: any) => f.snow_line_predicted_ft && f.observed?.snow_line_observed_ft,
+);
+const misses = withSnowLine.map((f: any) =>
+  Math.abs(f.snow_line_predicted_ft - f.observed.snow_line_observed_ft));
+const median = (xs: number[]) => {
+  if (!xs.length) return null;
+  const s = [...xs].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2);
+};
+const medianMiss = median(misses);
+---
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Track record | {BYLINE}</title>
+  <meta name="description" content="How the Vallecito elevation forecast has actually scored, including the misses." />
+  <link rel="canonical" href="https://govallecito.com/weather/record/" />
+</head>
+<body>
+<main class="wx">
+  <p class="wx-crumb"><a href="/weather/">{BYLINE}</a></p>
+  <h1>Track record</h1>
+  <p>
+    Every forecast here gets checked against what actually fell, and the result
+    is published whether it is flattering or not. A forecast nobody scores is
+    an opinion.
+  </p>
+
+  {scored.length === 0 ? (
+    <p class="wx-empty">
+      Nothing has been scored yet. Verification starts once forecasts have had
+      a storm to be measured against.
+    </p>
+  ) : (
+    <>
+      <ul class="wx-stats">
+        <li><strong>{scored.length}</strong> forecasts scored</li>
+        {medianMiss !== null && (
+          <li>Snow line off by a median of <strong>{medianMiss.toLocaleString()} ft</strong></li>
+        )}
+      </ul>
+      <table class="wx-record">
+        <thead>
+          <tr><th>Date</th><th>Snow line called</th><th>Observed</th><th>Off by</th></tr>
+        </thead>
+        <tbody>
+          {recent.map((f: any) => {
+            const obs = f.observed?.snow_line_observed_ft;
+            const pred = f.snow_line_predicted_ft;
+            const off = pred && obs ? Math.abs(pred - obs) : null;
+            return (
+              <tr>
+                <td>{f.valid_date}</td>
+                <td>{pred ? `${pred.toLocaleString()} ft` : "no call"}</td>
+                <td>{obs ? `${obs.toLocaleString()} ft` : "not observed"}</td>
+                <td>{off !== null ? `${off.toLocaleString()} ft` : ""}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </>
+  )}
+
+  <p class="wx-note">
+    The snow line here is a derived number, not a measured one, and it ships
+    uncalibrated until there are enough verified events to fit an offset
+    honestly. That is why this page exists before the number is good.
+  </p>
+</main>
+</body>
+</html>
