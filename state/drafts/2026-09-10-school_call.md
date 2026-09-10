@@ -1,27 +1,9 @@
-# Forecast run — blocked
+# Thursday, 2026-09-10, school_call
 
-When: 2026-09-10T05:07:20-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `block` | Snow line: n/a | Alerts: none
 
-## Detail
+---
 
-```
-draft states a present-tense road surface condition with no live CDOT data behind it -- forecast the passes, link CDOT for status
-draft states a bare percentage ('6%'); this voice never gives one, it names which models disagree instead
-first-30-days policy: review everything
-a rewrite was attempted and was blocked too
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/10/26 5:06am: The stake here is dry and the sky's clear, which is the story for the bus run this morning.
 
 Durango and the Animas Valley should see a straightforward morning, then a warm afternoon pushing near 90 under sun. Light winds early, picking up to 20mph gusts this afternoon. Tomorrow looks similar, just a tick cooler with a 6% pop late in the day that I dont think amounts to much.
@@ -39,4 +21,3 @@ The SNOTEL at Vallecito is sitting at 0.1" SWE and 4" depth, which is trace stuf
 The Grand Junction discussion has us under building high pressure with zonal flow keeping things dry through Friday. They're watching a moisture push for the weekend, but theres disagreement on timing and whether any frontal boundary holds together enough to actually fire anything. The ECENS is later and weaker than the GEFS, and the forcing question is still open. More on that tomorrow as it tightens up.
 
 Hows it looking on your drive this morning?
-```
