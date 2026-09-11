@@ -1,7 +1,4 @@
-=== storm watch @ 2026-09-11 02:01 MDT ===
-decision: fire=True -- new system peaking 2026-09-15 clears the threshold
-  window 2026-09-13T00:00 -> 2026-09-15T23:00, 0.86in liquid / 0.0in snow, peak 2026-09-15T15:00
-guardrails: REVIEW
-  - first-30-days policy: review everything
-Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/11
+=== storm watch @ 2026-09-11 13:38 MDT ===
+decision: fire=False -- already posted about the 2026-09-15 system and it has not materially escalated
+  window 2026-09-13T00:00 -> 2026-09-15T23:00, 0.98in liquid / 0.0in snow, peak 2026-09-15T18:00
 exit=0
