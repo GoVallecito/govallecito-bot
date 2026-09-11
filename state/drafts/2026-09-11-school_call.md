@@ -1,24 +1,9 @@
-# Forecast run — held for review
+# Friday, 2026-09-11, school_call
 
-When: 2026-09-11T05:05:57-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: n/a | Alerts: none
 
-## Detail
+---
 
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/11/26 5:04am: Morning, its Friday and the woodpile's still bone dry, which is the story for the whole county today.
 
 The bus run looks straightforward this morning. Durango and the Animas Valley start in the upper 50s, dry roads, then climb to the mid-80s this afternoon. Bayfield and up the Pine start low 50s and track the same pattern. Vallecito and the Florida start mid-50s, then push into the low 80s by afternoon.
@@ -36,4 +21,3 @@ Vallecito's still sitting at 22% of full pool and the SNOTEL up there is showing
 The Grand Junction discussion is watching SubTrop moisture trying to work north into the Four Corners this weekend, so things could get more interesting Saturday and Sunday, but today stays quiet.
 
 I'll have more later if anything changes.
-```
