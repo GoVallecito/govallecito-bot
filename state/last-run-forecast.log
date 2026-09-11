@@ -1,16 +1,3 @@
-=== Vallecito forecast: school_call @ 2026-09-11 05:04 MDT ===
-snow-line calibration: offset=0.0ft active=False
-guardrails: BLOCK
-  - draft states a bare percentage ('5%'); this voice never gives one, it names which models disagree instead
-  - first-30-days policy: review everything
-BLOCK is about the wording, not the data. Rewriting once.
-guardrails after rewrite: REVIEW
-  - first-30-days policy: review everything
-rewrite cleared the gate
-Archived draft -> state/drafts/2026-09-11-school_call.md
-HELD FOR REVIEW -- draft saved to output/draft.txt
-Wrote state/forecast-status.md
-staged for review -> site/weather/_pending/2026-09-11-morning-forecast-for-vallecito-bayfield-and-durango.md
-  promote with: python scripts/wx/promote_draft.py 2026-09-11
-Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/12
+school_call for 2026-09-11 already went out at 2026-09-11T05:05:57-06:00; nothing to do.
+school_call for 2026-09-11 already went out at 2026-09-11T05:05:57-06:00; nothing to do.
 exit=0
