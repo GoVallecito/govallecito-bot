@@ -1,26 +1,9 @@
-# Forecast run — blocked
+# Saturday, 2026-09-12, school_call
 
-When: 2026-09-12T05:17:24-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `block` | Snow line: 14400 | Alerts: none
 
-## Detail
+---
 
-```
-draft states a present-tense road surface condition with no live CDOT data behind it -- forecast the passes, link CDOT for status
-first-30-days policy: review everything
-a rewrite was attempted and was blocked too
-```
-
-## What the data looked like
-
-- Snow line: 14400
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/12/26 5:16am: The dog woke me early and the sky out the window is clear, which is the story for anyone heading down to town or out to the lake this morning.
 
 Durango and the Animas Valley (6,500') stay dry today with highs in the mid-80s. Breezy this afternoon but nothing that changes plans. Tomorrow afternoon brings a chance of storms, mainly after 6pm, and the GFS and Euro both show a quick hit of rain possible in the evening. The ICON and GEM keep us drier. Take that with a big grain of salt (the models cant agree on whether the moisture gets this far north).
@@ -36,4 +19,3 @@ The 550 north should stay dry through tomorrow. Coal Bank, Molas and Red Mountai
 Wolf Creek Pass runs the same, dry today and breezy, isolated storm chance tomorrow afternoon stays above the road.
 
 Whats the morning looking like out your way?
-```
