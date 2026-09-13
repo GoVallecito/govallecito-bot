@@ -1,24 +1,18 @@
-# Forecast run — held for review
+---
+title: "Snow line near 14,100 ft"
+date: "2026-09-13T06:51:18.170467-06:00"
+forDate: "2026-09-13"
+postType: "school_call"
+snowLineFt: 14100
+snowLineTrend: "rising"
+bands: {"durango": {"elevationFt": 6500, "precipType": "rain", "label": "Durango and the Animas Valley"}, "bayfield": {"elevationFt": 6900, "precipType": "rain", "label": "Bayfield and up the Pine"}, "vallecito": {"elevationFt": 7650, "precipType": "rain", "label": "Vallecito and the Florida"}, "weminuche": {"elevationFt": 10500, "precipType": "rain", "label": "The high Weminuche"}}
+basinPercentOfMedian: null
+alerts: []
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-13-snow-line-near-14100-ft"
+---
 
-When: 2026-09-13T06:51:45-06:00 (Mountain)
-Slot: `school_call`
-
-## Detail
-
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 14100
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/13/26 6:51am: Late start this morning. The gauge here is dry and the sky's still clear, which is the story for anyone heading out to the lake or running errands in town today.
 
 Durango and the Animas Valley stay dry through the day. Temps push into the low 80s this afternoon with some wind picking up, gusts to around 20mph by evening. There's a small chance of an isolated shower late but I wouldn't count on it.
@@ -34,4 +28,3 @@ Now, tomorrow night into Monday is where things get interesting. A deep trough d
 The 550 passes stay dry today, wet tomorrow night with maybe a couple inches at the very top of Red Mountain and Molas. Same for Wolf Creek, mostly rain at pass level with a dusting possible up high. That's the forecast, current road status is at cotrip.org.
 
 Anyone getting out on the water today or up on a trail?
-```

@@ -1,24 +1,9 @@
-# Forecast run — held for review
+# Sunday, 2026-09-13, school_call
 
-When: 2026-09-13T06:51:45-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: 14100 | Alerts: none
 
-## Detail
+---
 
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 14100
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/13/26 6:51am: Late start this morning. The gauge here is dry and the sky's still clear, which is the story for anyone heading out to the lake or running errands in town today.
 
 Durango and the Animas Valley stay dry through the day. Temps push into the low 80s this afternoon with some wind picking up, gusts to around 20mph by evening. There's a small chance of an isolated shower late but I wouldn't count on it.
@@ -34,4 +19,3 @@ Now, tomorrow night into Monday is where things get interesting. A deep trough d
 The 550 passes stay dry today, wet tomorrow night with maybe a couple inches at the very top of Red Mountain and Molas. Same for Wolf Creek, mostly rain at pass level with a dusting possible up high. That's the forecast, current road status is at cotrip.org.
 
 Anyone getting out on the water today or up on a trail?
-```

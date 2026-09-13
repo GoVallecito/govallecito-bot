@@ -1,6 +1,12 @@
-=== Vallecito forecast: school_call @ 2026-09-13 05:36 MDT ===
+NOTE: running at 06:51, inside the 5:00-9:00 window but later than the 5:00 target. Posting anyway, flagged late.
+=== Vallecito forecast: school_call @ 2026-09-13 06:51 MDT ===
 snow-line calibration: offset=0.0ft active=False
-ABORT -- preconditions not met, posting nothing:
-  - no forecast for vallecito
+guardrails: REVIEW
+  - first-30-days policy: review everything
+Archived draft -> state/drafts/2026-09-13-school_call.md
+HELD FOR REVIEW -- draft saved to output/draft.txt
 Wrote state/forecast-status.md
+staged for review -> site/weather/_pending/2026-09-13-snow-line-near-14100-ft.md
+  promote with: python scripts/wx/promote_draft.py 2026-09-13
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/14
 exit=0
