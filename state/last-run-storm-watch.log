@@ -1,4 +1,8 @@
-=== storm watch @ 2026-09-13 02:16 MDT ===
-decision: fire=False -- already posted about the 2026-09-16 system and it has not materially escalated
-  window 2026-09-15T00:00 -> 2026-09-17T23:00, 1.11in liquid / 0.0in snow, peak 2026-09-16T21:00
+=== storm watch @ 2026-09-13 13:25 MDT ===
+decision: fire=True -- the 2026-09-15 system escalated materially since the last post
+  window 2026-09-15T00:00 -> 2026-09-17T23:00, 1.73in liquid / 0.0in snow, peak 2026-09-15T00:00
+guardrails: REVIEW
+  - mentions a burn scar -- debris flows here have been triggered by ordinary sub-two-year storms
+  - first-30-days policy: review everything
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/15
 exit=0
