@@ -1,3 +1,6 @@
-2026-09-13 00:46 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
-2026-09-13 00:46 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
+=== Vallecito forecast: school_call @ 2026-09-13 05:36 MDT ===
+snow-line calibration: offset=0.0ft active=False
+ABORT -- preconditions not met, posting nothing:
+  - no forecast for vallecito
+Wrote state/forecast-status.md
 exit=0
