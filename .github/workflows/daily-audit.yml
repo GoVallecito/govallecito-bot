@@ -21,6 +21,8 @@ name: Daily audit
 # any run that lands before the 09:00 local window close, so in winter the
 # first entry exits and the second reports.
 on:
+  push:                     # TEMP: branch test only, reverted before review
+    branches: [daily-audit-lint]
   schedule:
     - cron: "15 15 * * *"
     - cron: "15 16 * * *"
@@ -61,6 +63,14 @@ jobs:
       # A linter that fails its own fixtures should not be grading drafts.
       - name: Linter self-test
         run: npm test
+
+      - name: TEMP branch test, miss path for 2026-09-07 (dry run)
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUDIT_DATE: "2026-09-07"
+          AUDIT_DRY_RUN: "1"
+        run: bash tools/daily-audit.sh
 
       - name: Audit
         env:
