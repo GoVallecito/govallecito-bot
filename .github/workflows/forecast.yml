@@ -86,7 +86,7 @@ jobs:
       # For tools/draft-lint.mjs. Zero npm dependencies, so no install step.
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Run the forecaster
         env:

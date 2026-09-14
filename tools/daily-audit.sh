@@ -47,12 +47,12 @@ assign() {
 }
 
 comment() {   # issue, body file
-  if [ -n "$DRY" ]; then echo "[dry run] would comment on #$1:"; echo; cat "$2"; return; fi
+  if [ -n "$DRY" ]; then echo "[dry run] would comment the report above on #$1"; return; fi
   gh issue comment "$1" --body-file "$2"
 }
 
 open_issue() {   # title, body file, label -> prints number
-  if [ -n "$DRY" ]; then echo "[dry run] would open issue: $1" >&2; echo >&2; cat "$2" >&2; echo 0; return; fi
+  if [ -n "$DRY" ]; then echo "[dry run] would open issue with the report above: $1" >&2; echo 0; return; fi
   gh issue create --title "$1" --body-file "$2" --label "$3" | sed 's#.*/##'
 }
 
@@ -72,7 +72,8 @@ last5=()
 for f in $(ls "$HIST"/*-"$SLOT".md 2>/dev/null | sort); do
   [[ "$(basename "$f" | cut -c1-10)" > "$DATE" ]] || last5+=("$f")
 done
-last5=("${last5[@]: -5}")
+# ${arr[@]: -5} expands to nothing when there are fewer than five.
+(( ${#last5[@]} <= 5 )) || last5=("${last5[@]:${#last5[@]}-5}")
 clean5=0
 for f in "${last5[@]}"; do
   node tools/draft-lint.mjs "$f" --date="$(basename "$f" | cut -c1-10)" --history="$HIST" >/dev/null && clean5=$((clean5 + 1))
@@ -163,7 +164,8 @@ while read -r sha; do
   [ -n "$sha" ] || continue
   body=$(git show "$sha:state/last-run-forecast.log" 2>/dev/null || true)
   runs=$((runs + 1))
-  grep -q "outside every posting window" <<<"$body" && outside=$((outside + 1))
+  # "not a posting hour" is the same exit from before the posting windows (2026-09-08).
+  grep -qE "outside every posting window|is not a posting hour" <<<"$body" && outside=$((outside + 1))
   grep -q "^Traceback" <<<"$body" && crashed=$((crashed + 1))
   grep -q "^=== Vallecito forecast: " <<<"$body" && composed=$((composed + 1))
 done < <(TZ=America/Denver git log --since="$DATE 00:00" --until="$DATE 23:59:59" --format=%H -- state/last-run-forecast.log)

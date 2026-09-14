@@ -58,7 +58,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       # A linter that fails its own fixtures should not be grading drafts.
       - name: Linter self-test
