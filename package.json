@@ -1,0 +1,11 @@
+{
+  "name": "govallecito-bot-tools",
+  "private": true,
+  "description": "Node tooling for the forecast bot. The bot itself is Python; see requirements.txt.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test tools/draft-lint.test.mjs"
+  }
+}
