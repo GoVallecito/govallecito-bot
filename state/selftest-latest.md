@@ -1,6 +1,6 @@
 # Self-test — live endpoint check
 
-Run: 2026-09-09T01:57:54+00:00
+Run: 2026-09-14T18:37:31+00:00
 Result: **14/16 sources reachable**
 
 ## The elevation thesis
@@ -8,10 +8,10 @@ Result: **14/16 sources reachable**
 
 | Band | Elevation requested (m) | Elevation used (m) | First-hour temp |
 |---|---|---|---|
-| Durango and the Animas Valley | 1981 | 1981.0 | 65.3 |
-| Bayfield and up the Pine | 2103 | 2103.0 | 62.9 |
-| Vallecito and the Florida | 2332 | 2332.0 | 61.4 |
-| The high Weminuche | 3200 | 3200.0 | 50.1 |
+| Durango and the Animas Valley | 1981 | 1981.0 | 63.3 |
+| Bayfield and up the Pine | 2103 | 2103.0 | 59.3 |
+| Vallecito and the Florida | 2332 | 2332.0 | 57.8 |
+| The high Weminuche | 3200 | 3200.0 | 46.9 |
 
 ## NWS zones
 | Point | Forecast zone | Fire zone | Grid |
