@@ -1,24 +1,18 @@
-# Forecast run — held for review
+---
+title: "Snow line near 13,700 ft"
+date: "2026-09-14T06:32:56.299757-06:00"
+forDate: "2026-09-14"
+postType: "school_call"
+snowLineFt: 13700
+snowLineTrend: "rising"
+bands: {"durango": {"elevationFt": 6500, "precipType": "rain", "label": "Durango and the Animas Valley"}, "bayfield": {"elevationFt": 6900, "precipType": "rain", "label": "Bayfield and up the Pine"}, "vallecito": {"elevationFt": 7650, "precipType": "rain", "label": "Vallecito and the Florida"}, "weminuche": {"elevationFt": 10500, "precipType": "rain", "label": "The high Weminuche"}}
+basinPercentOfMedian: null
+alerts: []
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-14-snow-line-near-13700-ft"
+---
 
-When: 2026-09-14T06:33:46-06:00 (Mountain)
-Slot: `school_call`
-
-## Detail
-
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 13700
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/14/26 6:33am: Running late this morning, the truck wouldn't start. Clear skies here at the house and the gauge is dry, which is the story for the bus run.
 
 Districts decide by 6:30 and the morning drive looks straightforward across the county. Durango and Bayfield should stay dry through the school run, and the 501 and the 240 are both fine. Vallecito and up the Florida same story, clear roads and dry pavement.
@@ -32,4 +26,3 @@ The 550 passes stay wet through the afternoon, mostly rain at pass level even up
 After the afternoon round clears out we get another push overnight into Tuesday morning, lighter and more scattered. Then another round Tuesday evening. The pattern holds through the end of the week, southwest flow aloft keeping moisture around and afternoon storms in the forecast every day.
 
 Did the morning drive give you anything different than this?
-```

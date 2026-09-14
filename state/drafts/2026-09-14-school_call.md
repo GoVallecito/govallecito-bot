@@ -1,24 +1,9 @@
-# Forecast run — held for review
+# Monday, 2026-09-14, school_call
 
-When: 2026-09-14T06:33:46-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: 13700 | Alerts: none
 
-## Detail
+---
 
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 13700
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/14/26 6:33am: Running late this morning, the truck wouldn't start. Clear skies here at the house and the gauge is dry, which is the story for the bus run.
 
 Districts decide by 6:30 and the morning drive looks straightforward across the county. Durango and Bayfield should stay dry through the school run, and the 501 and the 240 are both fine. Vallecito and up the Florida same story, clear roads and dry pavement.
@@ -32,4 +17,3 @@ The 550 passes stay wet through the afternoon, mostly rain at pass level even up
 After the afternoon round clears out we get another push overnight into Tuesday morning, lighter and more scattered. Then another round Tuesday evening. The pattern holds through the end of the week, southwest flow aloft keeping moisture around and afternoon storms in the forecast every day.
 
 Did the morning drive give you anything different than this?
-```
