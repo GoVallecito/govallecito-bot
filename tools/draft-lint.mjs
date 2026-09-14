@@ -1,0 +1,246 @@
+#!/usr/bin/env node
+// tools/draft-lint.mjs -- deterministic quality gate for the morning forecast draft.
+//
+// Zero dependencies, Node 20+. No network, no model. The same draft always
+// produces the same verdict, which is the whole reason this lives in CI rather
+// than in a scheduled model run.
+//
+//   node tools/draft-lint.mjs <draftfile> --date=YYYY-MM-DD [--history=state/drafts] [--json]
+//
+// Exit 0 = clean (warnings allowed), 1 = one or more FAILs, 2 = usage error.
+//
+// Reads both on-disk shapes the forecaster writes:
+//   site/weather/_pending/<date>-<slug>.md   front matter, one JSON value per key
+//   state/drafts/<date>-<slot>.md            "# Weekday, date, slot" header, then ---
+//
+// Every rule below is a rule from scripts/wx/prompts/system.md. Where the
+// wording here and the persona disagree, the persona wins and this file is wrong.
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+const WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS = ['January','February','March','April','May','June','July','August',
+                'September','October','November','December'];
+
+// The persona opens every post with this: `11/04/26 5:52am: Morning, its Wednesday.`
+const STAMP = /^(\d{2})\/(\d{2})\/(\d{2})\s+\d{1,2}:\d{2}\s*[ap]m:\s*/i;
+
+// Local proper nouns that turn a clause into a road/pass report. The bare
+// highway numbers come with the article because that is how the persona writes
+// them ("the 550", "the 501"), and without it "the 160 cfs" style numbers bite.
+const ROADS = [
+  'Coal Bank','Molas','Red Mountain','Wolf Creek','Cumbres','Lizard Head','Hesperus',
+  'US 160','US-160','Highway 160','the 160','US 550','US-550','Highway 550','the 550',
+  'CO 172','Highway 172','the 172','County Road 501','CR 501','the 501',
+  'County Road 500','CR 500','the 500','CR 240','the 240','Florida Road',
+  'Vallecito Road','Bayfield Parkway','Elmore',
+  'the pass','the passes','Middle Mountain Road','Missionary Ridge Road'
+];
+const ROAD_STATE = /(?:\b(?:is|are|remain|remains|sit|sits|stay|stays)|\w's)\s+(?:still\s+|both\s+|all\s+|already\s+|completely\s+)?(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\b/i;
+// A surface claim with no verb at all: "clear roads and dry pavement."
+const ROAD_NOUN = /\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?)\b/i;
+const HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|would|expect|expected|likely|probably|could|may|might|if|by (?:mid|late|early|noon|dark|the|\d)|watch for|look for|plan on|tonight|tomorrow|later|until|through (?:the )?(?:morning|afternoon|evening|day|night|weekend|school run)|this (?:afternoon|evening)|all day|forecast)\b/i;
+// A sentence that opens conditionally hedges every clause in it, including the
+// ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is slick."
+const CONDITIONAL_OPEN = /^(?:if|when|once|unless|should)\b/i;
+
+// Percent must carry a unit: "64% of median", "23% of full pool".
+const PCT = /(\d{1,3})\s*%/g;
+const PCT_OK_AFTER = /^\s*(of|below|above)\b/i;
+
+// "Exactly one concrete detail from your own morning: the gauge, the snow stake,
+// the drive, the dog, the woodpile, the truck, the yard, what the sky looked like
+// out the kitchen window." (system.md). The persona is written in the first
+// person throughout ("First person, constant"), so a pronoun is NOT a personal
+// detail and cannot be used to count them. These anchors are the persona's own
+// list. "the drive" is left out on purpose: "the morning drive looks
+// straightforward" is forecast copy in nearly every post.
+const PERSONAL = /\b(?:(?:rain |my |our |the )gauge|snow stake|(?:the |my )stake|woodpile|(?:the |my )truck|(?:the |my |our )dog|(?:the |my |our )yard|kitchen window|out the window|(?:at|from) the house|(?:the |my )porch|(?:the |my )deck)\b/i;
+// "the gauge" is also a stream gauge. Those sentences carry a flow unit.
+const STREAM_GAUGE = /\b(?:cfs|usgs|stream|river gauge|gage)\b/i;
+
+const UNKNOWABLE = [
+  /\bas we saw\b/i, /\blast night'?s\b/i, /\breports? of\b/i, /\beveryone'?s been\b/i,
+  /\bthe last (?:few|couple) (?:days|weeks|months)\b/i, /\bhas been the\b/i,
+  /\bdriest since\b/i, /\bwettest since\b/i, /\brecord\b/i, /\btrend(?:ing)?\b/i,
+  /\bpeople are saying\b/i, /\bword is\b/i, /\bI heard\b/i,
+  /\blast week\b/i, /\blately\b/i, /\ball month\b/i, /\bin years\b/i
+];
+
+// --- parsing ----------------------------------------------------------------
+
+function parseDraft(raw) {
+  raw = raw.replace(/\r\n/g, '\n');
+  const meta = {};
+  // site/weather/_pending: front matter, each value JSON (see scripts/wx/site.py write_post).
+  if (raw.startsWith('---\n')) {
+    const end = raw.indexOf('\n---', 3);
+    if (end !== -1) {
+      for (const line of raw.slice(4, end).split('\n')) {
+        const i = line.indexOf(':');
+        if (i < 0) continue;
+        const k = line.slice(0, i).trim(), v = line.slice(i + 1).trim();
+        try { meta[k] = JSON.parse(v); } catch { meta[k] = v; }
+      }
+      return { meta, body: raw.slice(raw.indexOf('\n', end + 1) + 1).trim() };
+    }
+  }
+  // state/drafts: "# Monday, 2026-09-14, school_call" / "Verdict: ... | Snow line: 13700 | ..." / ---
+  if (raw.startsWith('# ')) {
+    const sep = raw.indexOf('\n---\n');
+    if (sep !== -1) {
+      const head = raw.slice(0, sep);
+      const h = head.match(/^# [A-Za-z]+, (\d{4}-\d{2}-\d{2}), (\w+)/);
+      if (h) { meta.forDate = h[1]; meta.postType = h[2]; }
+      const sl = head.match(/Snow line: (\d+)/);
+      if (sl) meta.snowLineFt = Number(sl[1]);
+      return { meta, body: raw.slice(sep + 5).trim() };
+    }
+  }
+  return { meta, body: raw.trim() };
+}
+
+const sentences = t => t.replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/).filter(Boolean);
+const lines = t => t.split('\n').map(s => s.trim()).filter(Boolean);
+const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\s+/).filter(Boolean);
+const clauses = s => s.split(/,\s*(?:and|but)\s+|;\s*|\s+and\s+|\s+but\s+/i).filter(Boolean);
+const q = s => `"${s.trim()}"`;
+
+function jaccard(a, b) {
+  const A = new Set(norm(a)), B = new Set(norm(b));
+  if (!A.size || !B.size) return 0;
+  let hit = 0; for (const w of A) if (B.has(w)) hit++;
+  return hit / (A.size + B.size - hit);
+}
+
+const openingOf = body => (lines(body)[0] ?? '').replace(STAMP, '');
+const closingOf = body => { const L = lines(body); return L.length > 1 ? L[L.length - 1] : ''; };
+
+// --- rules ------------------------------------------------------------------
+
+function lint(raw, dateStr, historyDir) {
+  const { meta, body: text } = parseDraft(raw);
+  const fails = [], warns = [], S = sentences(text);
+
+  // 1. Em dashes and ASCII stand-ins.
+  for (const s of S) {
+    if (/[\u2014\u2013]/.test(s)) fails.push(['em-dash', `Contains an em/en dash: ${q(s)}`]);
+    else if (/\s--\s|\w--\w|\s--\w|\w--\s/.test(s)) fails.push(['em-dash', `Contains "--": ${q(s)}`]);
+  }
+
+  // 2. Present-tense road or pass conditions. Judged per clause, so a "should"
+  // in one half of a sentence cannot launder "the 501 is fine" in the other.
+  for (const s of S) {
+    const sentenceHedged = CONDITIONAL_OPEN.test(s);
+    for (const c of clauses(s)) {
+      if (sentenceHedged || HEDGE.test(c)) continue;
+      const hasRoad = ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
+      if ((hasRoad && ROAD_STATE.test(c)) || ROAD_NOUN.test(c)) {
+        fails.push(['road-status', `Present-tense road condition with no CDOT data: ${q(s)}`]);
+        break;
+      }
+    }
+  }
+
+  // 3. Exactly one personal detail, counted per sentence.
+  const personal = S.filter(s => PERSONAL.test(s) &&
+    !(/gauge/i.test(s.match(PERSONAL)[0]) && STREAM_GAUGE.test(s)));
+  if (personal.length === 0) fails.push(['personal-count', 'Zero personal details. Reads as a bot.']);
+  else if (personal.length > 1)
+    fails.push(['personal-count',
+      `${personal.length} personal details (need exactly 1):\n` +
+      personal.map(s => `    - ${q(s)}`).join('\n')]);
+
+  // 4. Bare percentages.
+  let m; PCT.lastIndex = 0;
+  while ((m = PCT.exec(text)) !== null) {
+    const tail = text.slice(m.index + m[0].length, m.index + m[0].length + 40);
+    if (!PCT_OK_AFTER.test(tail)) {
+      const ctx = text.slice(Math.max(0, m.index - 45), m.index + 45).replace(/\s+/g, ' ');
+      fails.push(['bare-percent', `Bare percentage "${m[0]}" with no unit: "...${ctx}..."`]);
+    }
+  }
+
+  // 5. Weekday must match the date. Only a weekday the post claims IS today
+  // counts; "another round Tuesday evening" in a Monday post is a forecast.
+  const [y, mo, d] = dateStr.split('-').map(Number);
+  const expected = WEEKDAYS[new Date(Date.UTC(y, mo - 1, d)).getUTCDay()];
+  const todayClaim = new RegExp(`\\b(?:it'?s|it is|today is|today'?s|happy)\\s+(${WEEKDAYS.join('|')})\\b`, 'gi');
+  for (const w of text.matchAll(todayClaim)) {
+    const said = WEEKDAYS.find(x => x.toLowerCase() === w[1].toLowerCase());
+    if (said !== expected)
+      fails.push(['weekday', `Post says ${q(w[0])}; ${dateStr} is a ${expected}.`]);
+  }
+
+  // 6. Date stamp. The numeric stamp opens every post; a spelled-out date is
+  // only checked in the opening line, since later ones are forecast dates.
+  const stamp = text.match(STAMP);
+  if (stamp && (Number(stamp[1]) !== mo || Number(stamp[2]) !== d || Number(stamp[3]) !== y % 100))
+    fails.push(['date-stamp', `Post is stamped ${stamp[0].trim()}; the draft is for ${dateStr}.`]);
+  const md = openingOf(text).match(new RegExp(`\\b(${MONTHS.join('|')})\\s+(\\d{1,2})\\b`, 'i'));
+  if (md) {
+    const mIdx = MONTHS.findIndex(x => x.toLowerCase() === md[1].toLowerCase()) + 1;
+    if (mIdx !== mo || Number(md[2]) !== d)
+      fails.push(['date-stamp', `Post is stamped ${md[0]}; the draft is for ${dateStr}.`]);
+  }
+
+  // 7. Snow line plausibility. Outside 5,000-14,000 ft fails unless the brief
+  // itself put it there: late-summer freezing levels really do sit above
+  // 14,000 ft (the 2026-09-12 brief said 14,400), and the draft's front matter
+  // carries the brief's number, so a quote of it is grounded, not a typo.
+  const briefFt = Number.isFinite(meta.snowLineFt) ? meta.snowLineFt : null;
+  for (const sm of text.matchAll(/snow[- ]?(?:line|level)\b[^.]{0,60}?(\d{1,2},\d{3}|\d{4,5})\s*(?:ft\b|feet\b|')/gi)) {
+    const ft = Number(sm[1].replace(',', ''));
+    if (ft >= 5000 && ft <= 14000) continue;
+    if (briefFt !== null && Math.abs(ft - briefFt) <= 1000) continue;
+    fails.push(['snow-line', `Snow line of ${ft.toLocaleString('en-US')} ft is outside 5,000-14,000 ft` +
+      (briefFt !== null ? ` and the brief said ${briefFt.toLocaleString('en-US')} ft` : '') + `: ${q(sm[0])}`]);
+  }
+
+  // 8. Claims the post cannot know. WARN, human judgment.
+  for (const s of S)
+    for (const p of UNKNOWABLE)
+      if (p.test(s)) { warns.push(['unknowable', `Possible unknowable claim: ${q(s)}`]); break; }
+
+  // 9. Repeated opening or closing line vs. the last week of the same slot.
+  const slot = meta.postType || 'school_call';
+  const open = openingOf(text), close = closingOf(text);
+  if (historyDir && existsSync(historyDir)) {
+    const prior = readdirSync(historyDir)
+      .filter(f => /^\d{4}-\d{2}-\d{2}-/.test(f) && f.endsWith(`-${slot}.md`) && f.slice(0, 10) < dateStr)
+      .sort().reverse().slice(0, 7);
+    for (const f of prior) {
+      const pb = parseDraft(readFileSync(join(historyDir, f), 'utf8')).body;
+      if (open && jaccard(open, openingOf(pb)) >= 0.6)
+        fails.push(['repeat-open', `Opening line repeats ${f}: ${q(open)}`]);
+      if (close && jaccard(close, closingOf(pb)) >= 0.6)
+        fails.push(['repeat-close', `Closing line repeats ${f}: ${q(close)}`]);
+    }
+  }
+
+  return { fails, warns, stats: { sentences: S.length, personal: personal.length, words: norm(text).length } };
+}
+
+function render(date, res) {
+  const pass = res.fails.length === 0;
+  const out = [`### Draft lint — ${date} — ${pass ? '✅ PASS' : '❌ ' + res.fails.length + ' FAIL'}`];
+  if (res.fails.length) out.push('\n**Must fix**\n' + res.fails.map(([k, v]) => `- \`${k}\` ${v}`).join('\n'));
+  if (res.warns.length) out.push('\n**Eyeball these**\n' + res.warns.map(([k, v]) => `- \`${k}\` ${v}`).join('\n'));
+  out.push(`\n_${res.stats.words} words, ${res.stats.sentences} sentences, ${res.stats.personal} personal._`);
+  return out.join('\n');
+}
+
+// --- CLI --------------------------------------------------------------------
+const args = process.argv.slice(2);
+const file = args.find(a => !a.startsWith('--'));
+const date = (args.find(a => a.startsWith('--date=')) || '').split('=')[1];
+const hist = (args.find(a => a.startsWith('--history=')) || '--history=state/drafts').split('=')[1];
+const asJson = args.includes('--json');
+if (!file || !/^\d{4}-\d{2}-\d{2}$/.test(date || '') || !existsSync(file)) {
+  console.error('usage: draft-lint.mjs <draftfile> --date=YYYY-MM-DD [--history=dir] [--json]');
+  process.exit(2);
+}
+const res = lint(readFileSync(file, 'utf8'), date, hist);
+const pass = res.fails.length === 0;
+console.log(asJson ? JSON.stringify({ date, pass, ...res }, null, 2) : render(date, res));
+process.exit(pass ? 0 : 1);

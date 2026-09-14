@@ -1,0 +1,70 @@
+name: Daily audit
+
+# The daily quality check on the school call, with no model, no external fetch
+# and no human approval in the loop.
+#
+# This replaces a scheduled Claude task that read the repo over
+# api.github.com and raw.githubusercontent.com. Each of those needed a per-URL
+# approval nobody was awake to give, so every 06:00 run died on
+# PROVENANCE_REQUIRED. The mechanical rules now live in tools/draft-lint.mjs;
+# the two that need judgment come out as WARNs to eyeball.
+#
+# What it does (tools/daily-audit.sh):
+#   - draft for today exists -> lint it, comment on its [review] issue
+#   - no draft -> classify why from today's committed run logs, open [miss]
+#   - reports feed.json and whether the review period looks ready to end
+#   - assigns the issue, so GitHub's own notification reaches phone and inbox
+#
+# Two crons plus idempotency, because GitHub drops scheduled runs (measured on
+# this repo: see the comment at the top of forecast.yml). 15:15 UTC is 09:15
+# MDT and 08:15 MST; 16:15 UTC is 10:15 MDT and 09:15 MST. The script skips
+# any run that lands before the 09:00 local window close, so in winter the
+# first entry exits and the second reports.
+on:
+  schedule:
+    - cron: "15 15 * * *"
+    - cron: "15 16 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Audit this date instead of today (YYYY-MM-DD)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Print the report only, write nothing to GitHub"
+        type: boolean
+        default: false
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: daily-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: a miss is diagnosed from every run log committed
+          # today, not just the last one, which the hourly heartbeat overwrites.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # A linter that fails its own fixtures should not be grading drafts.
+      - name: Linter self-test
+        run: npm test
+
+      - name: Audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUDIT_DATE: ${{ inputs.date }}
+          AUDIT_DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+        run: bash tools/daily-audit.sh
