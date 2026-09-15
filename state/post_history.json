@@ -933,6 +933,20 @@
       "alert_id": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122130445455360003",
+      "posted_at": "2026-09-15T13:58:59.258138+00:00",
+      "slot": "morning",
+      "hook_line": "Here's the morning read.",
+      "had_image": true,
+      "image_topic": "weather_forecast",
+      "fire_stage": 1,
+      "post_type": "daily",
+      "alert_category": null,
+      "alert_id": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
