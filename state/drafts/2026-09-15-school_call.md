@@ -1,24 +1,9 @@
-# Forecast run — held for review
+# Tuesday, 2026-09-15, school_call
 
-When: 2026-09-15T05:36:28-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: 14200 | Alerts: none
 
-## Detail
+---
 
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 14200
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/15/26 5:35am: Morning, its Tuesday. Gauge here caught 0.3" overnight and the sky's starting to clear, which is the story for the bus run.
 
 Districts decide by 6:30. The 501 and the 240 should be wet but straightforward this morning after that early rain. Durango and Bayfield got a quick shot before sunrise, then it shut off. No ice anywhere, no snow line issues, just wet pavement drying out as the sun gets it.
@@ -38,4 +23,3 @@ Today's dry and straightforward. Tomorrow's the question.
 The passes should be wet early from that overnight rain, then drying through the morning. Coal Bank, Molas and Red Mountain all stayed rain at pass level. Wolf Creek same story. Current closures and chain law: https://www.cotrip.org/
 
 What'd your gauge show overnight?
-```
