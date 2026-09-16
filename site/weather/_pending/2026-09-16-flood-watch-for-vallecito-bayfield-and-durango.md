@@ -1,25 +1,18 @@
-# Forecast run — held for review
+---
+title: "Flood Watch for Vallecito, Bayfield and Durango"
+date: "2026-09-16T05:21:10.013422-06:00"
+forDate: "2026-09-16"
+postType: "school_call"
+snowLineFt: 14050
+snowLineTrend: "rising"
+bands: {"durango": {"elevationFt": 6500, "precipType": "rain", "label": "Durango and the Animas Valley"}, "bayfield": {"elevationFt": 6900, "precipType": "rain", "label": "Bayfield and up the Pine"}, "vallecito": {"elevationFt": 7650, "precipType": "rain", "label": "Vallecito and the Florida"}, "weminuche": {"elevationFt": 10500, "precipType": "rain", "label": "The high Weminuche"}}
+basinPercentOfMedian: null
+alerts: ["Flood Watch"]
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-16-flood-watch-for-vallecito-bayfield-and-durango"
+---
 
-When: 2026-09-16T05:22:02-06:00 (Mountain)
-Slot: `school_call`
-
-## Detail
-
-```
-mentions a burn scar -- debris flows here have been triggered by ordinary sub-two-year storms
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 14050
-- Alerts: ['Flood Watch']
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/16/26 5:21am: The gauge here caught another 0.06" overnight and its still drizzling, which is the setup for the bus run this morning.
 
 Durango and the Animas Valley (6,500') woke up to light rain and should stay dry through the school run, then another round moves in tonight. The 160 into town looks fine for the morning commute.
@@ -39,4 +32,3 @@ Tonight into tomorrow is when this gets real. The heaviest rain looks like 6am t
 This morning's fine. Tomorrow morning is the question.
 
 What's the 501 or the 240 looking like on your end right now?
-```

@@ -1,25 +1,9 @@
-# Forecast run — held for review
+# Wednesday, 2026-09-16, school_call
 
-When: 2026-09-16T05:22:02-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: 14050 | Alerts: ['Flood Watch']
 
-## Detail
+---
 
-```
-mentions a burn scar -- debris flows here have been triggered by ordinary sub-two-year storms
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 14050
-- Alerts: ['Flood Watch']
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/16/26 5:21am: The gauge here caught another 0.06" overnight and its still drizzling, which is the setup for the bus run this morning.
 
 Durango and the Animas Valley (6,500') woke up to light rain and should stay dry through the school run, then another round moves in tonight. The 160 into town looks fine for the morning commute.
@@ -39,4 +23,3 @@ Tonight into tomorrow is when this gets real. The heaviest rain looks like 6am t
 This morning's fine. Tomorrow morning is the question.
 
 What's the 501 or the 240 looking like on your end right now?
-```
