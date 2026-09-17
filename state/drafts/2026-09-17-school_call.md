@@ -1,24 +1,9 @@
-# Forecast run — held for review
+# Thursday, 2026-09-17, school_call
 
-When: 2026-09-17T05:29:00-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: 14050 | Alerts: ['Flood Watch']
 
-## Detail
+---
 
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 14050
-- Alerts: ['Flood Watch']
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/17/26 5:28am: The snow stake here is still sitting at 5" and it started drizzling again about an hour ago, which is where we are for the bus run.
 
 Flood Watch is still on for Vallecito and Durango through tonight, issued by the Grand Junction office. The ground's saturated from the last couple days and we're getting more rain this morning, heaviest 6am to noon. Flash flooding is the concern, not snow.
@@ -38,4 +23,3 @@ The models are in tight agreement on timing (heaviest 6am to noon) but there's s
 I'll update this afternoon if the evening run changes anything for tomorrow.
 
 Is the 240 or the 501 showing any ponding on your end right now?
-```

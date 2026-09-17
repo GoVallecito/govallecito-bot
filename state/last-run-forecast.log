@@ -1,3 +1,11 @@
-2026-09-17 00:41 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
-2026-09-17 00:41 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
+=== Vallecito forecast: school_call @ 2026-09-17 05:28 MDT ===
+snow-line calibration: offset=0.0ft active=False
+guardrails: REVIEW
+  - first-30-days policy: review everything
+Archived draft -> state/drafts/2026-09-17-school_call.md
+HELD FOR REVIEW -- draft saved to output/draft.txt
+Wrote state/forecast-status.md
+staged for review -> site/weather/_pending/2026-09-17-flood-watch-for-vallecito-bayfield-and-durango.md
+  promote with: python scripts/wx/promote_draft.py 2026-09-17
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/23
 exit=0
