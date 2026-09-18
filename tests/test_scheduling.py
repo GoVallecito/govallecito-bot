@@ -428,3 +428,29 @@ def test_a_real_reading_reaches_the_brief_as_the_only_allowed_numbers():
     assert "precip_in: 0.42" in brief
     assert "ONLY numbers you may attribute" in brief
     assert "NO READING TODAY" not in brief
+
+
+def test_the_suppression_instruction_states_no_snow_line_figure():
+    """The mechanism is that the model is not shown the number.
+
+    An earlier version spelled out '14,050' inside the prohibition, which
+    hands the figure back and makes it salient. A negation is the weakest
+    instruction there is, so the branch must contain no figure at all.
+    """
+    import re
+    from wx import compose as CO
+    bundle = {
+        "post_for_weekday": "Tuesday", "post_for_date": "2026-09-08",
+        "post_for_stamp": "09/08/26", "generated_at": "2026-09-08T05:46:00",
+        "season": "fall", "day_type": "school day", "is_late": False,
+        "recent_posts": [], "alerts": [], "bands": {}, "missing": [],
+        "home_gauge": None,
+        "snow_line": {"representative_ft": 14050, "trend": "steady",
+                      "start_ft": 14000, "end_ft": 14100, "above_terrain": True,
+                      "hours_with_precip": 4, "first_precip_hour": "12:00",
+                      "last_precip_hour": "16:00"},
+    }
+    brief = CO.render_bundle(bundle, post_type="school_call")
+    assert "DO NOT STATE A SNOW LINE FIGURE" in brief
+    offenders = re.findall(r"\b1[0-9][,.]?\d{3}\b", brief)
+    assert not offenders, f"a snow-line figure leaked into the brief: {offenders}"

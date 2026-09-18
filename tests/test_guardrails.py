@@ -207,3 +207,19 @@ def test_saying_it_is_all_rain_instead_passes():
                                             "summits, no snow anywhere.",
                         calibrated=True)
     assert v == G.PASS, why
+
+
+def test_the_preposition_in_is_not_an_inch_abbreviation():
+    """Found by probing, not by a failure: every one of these was a BLOCK.
+
+    This persona writes in exactly the register that trips a bare "in" as a
+    unit, and the cost of the false positive is a blocked morning.
+    """
+    for ok in [
+        "The gauge has been dry since 5 in the evening.",
+        "Nothing in the gauge, and I was up at 4 in the morning.",
+        "The stake is bare, got up at 6 in the dark to look.",
+        "The gauge is empty, though theres 8 in the Weminuche tonight.",
+    ]:
+        v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + ok)
+        assert v == G.PASS, f"should have passed: {ok!r} -> {why}"

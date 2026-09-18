@@ -167,7 +167,10 @@ def review_requested(draft, verdict, reasons, bundle, slot="school_call"):
             print(f"[notify] attempt {attempt}/{NOTIFY_ATTEMPTS}: could not open "
                   f"issue: {exc}")
         if attempt < NOTIFY_ATTEMPTS:
-            time.sleep(NOTIFY_BACKOFF_S[attempt - 1])
+            # Indexed defensively: raising NOTIFY_ATTEMPTS without extending
+            # the tuple would otherwise throw IndexError out of a function
+            # whose contract is that it never raises.
+            time.sleep(NOTIFY_BACKOFF_S[min(attempt - 1, len(NOTIFY_BACKOFF_S) - 1)])
 
     print("=" * 66)
     print(f"REVIEW NEEDED ({verdict}) -- NO ISSUE WAS OPENED ({reason})")

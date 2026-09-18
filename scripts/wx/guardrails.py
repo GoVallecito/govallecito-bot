@@ -101,7 +101,12 @@ ROAD_STATUS_CLAIMS = [
 _GAUGE_WORD = r"(?:rain gauge|snow stake|gauge|guage|stake)"
 _FIGURE = (r"(?:\d+(?:\.\d+)?|a couple(?: of)?|a few|half an?|one|two|three|four|"
            r"five|six|seven|eight|nine|ten|eleven|twelve)")
-_INCHES = r'(?:"|inch(?:es)?|in\b)'
+# NOT a bare "in". It is the English preposition far more often than an inch
+# abbreviation, and this persona writes in exactly the register that trips it:
+# "nothing in the gauge, and I was up at 4 in the morning" matched, and the
+# consequence of a match is a BLOCK. Any decimal near the gauge is caught by
+# the unitless patterns below anyway, so dropping it costs almost nothing.
+_INCHES = r'(?:"|inch(?:es)?\b)'
 
 HOME_READING_PATTERNS = [
     re.compile(rf"\b{_GAUGE_WORD}\b[^.\n]{{0,60}}?({_FIGURE})\s*{_INCHES}", re.IGNORECASE),

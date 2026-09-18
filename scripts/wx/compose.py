@@ -100,12 +100,18 @@ def render_bundle(bundle, post_type="school_call"):
             # nobody stands on. Nine days of posts printed one, and to a local
             # reader a snow line above the summits reads as a broken
             # instrument even when the arithmetic behind it is right.
+            # No figure appears in this branch, deliberately, not even as an
+            # example of what not to write. The entire mechanism here is that
+            # the model is not shown the number; spelling it out inside a
+            # prohibition hands it back and makes it salient, and a negation
+            # is the weakest instruction there is.
             A("SNOW LINE: above every peak in the San Juans today.")
-            A("  -> DO NOT STATE A SNOW LINE FIGURE. Not in feet, not roughly,")
-            A("     not 'up around 14,000', not 'well above the peaks at")
-            A("     14,050'. There is no elevation here where this falls as")
-            A("     snow. Say plainly that it is all rain, everywhere, right to")
-            A("     the summits, and move on to what actually matters today.")
+            A("  -> DO NOT STATE A SNOW LINE FIGURE. Not in feet, not rounded,")
+            A("     not approximate, not 'well above the peaks'. You have not")
+            A("     been given the number and there is no elevation in this")
+            A("     forecast area where today's precipitation falls as snow.")
+            A("     Say plainly that it is all rain, everywhere, right to the")
+            A("     summits, and move on to what actually matters today.")
         else:
             A("SNOW LINE (derived, UNCALIBRATED HEURISTIC, hedge it):")
             A(f"  representative {sl['representative_ft']} ft, {sl['trend']} "
