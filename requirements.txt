@@ -1,3 +1,7 @@
 requests>=2.31
 Pillow>=10.0
 numpy>=1.26
+# Windows ships no IANA time zone database, so zoneinfo cannot resolve
+# America/Denver and constants.py fails at import. Linux runners (including
+# GitHub Actions) have one, hence the marker.
+tzdata>=2024.1; sys_platform == "win32"

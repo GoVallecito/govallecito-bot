@@ -371,7 +371,7 @@ def test_no_module_derives_a_state_path_from_its_own_location():
     pattern = re.compile(r"(STATE_DIR|_LOG|CALIBRATION|state\")\s*=\s*os\.path\.join\("
                          r"[^)]*(REPO_ROOT|__file__)")
     for path in root.rglob("*.py"):
-        src = path.read_text()
+        src = path.read_text(encoding="utf-8")
         for m in pattern.finditer(src):
             offenders.append(f"{path.name}: {m.group(0)[:70]}")
     assert not offenders, "state paths derived from __file__: " + "; ".join(offenders)
