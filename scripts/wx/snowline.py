@@ -50,8 +50,21 @@ INTENSITY_FT_PER_IN_HR = 2200.0
 MIN_OFFSET_FT = 200.0
 MAX_OFFSET_FT = 2500.0
 
-# The highest ground anybody around here stands on. Eolus, Windom and Sunlight
-# are a shade over 14,000 ft; the passes are 10,000 to 11,000.
+# Above this, the snow line is describing ground this audience never stands on.
+#
+# The test is not "is it above the highest peak." Eolus, Windom and Sunlight
+# are a shade over 14,000 ft and nobody reads a 5:45am school call from the
+# summit of one. What people actually stand on tops out at the passes: Red
+# Mountain 11,018 ft, Wolf Creek 10,850 ft, and the high Weminuche band this
+# forecaster publishes is 10,500 ft. A line above all of those means no snow
+# anywhere anyone is going, and saying it in feet adds nothing.
+#
+# 2026-09-18 is why this sits at 11,500 rather than at the peaks. The computed
+# line was 12,950 ft, fifty feet under an earlier 13,000 ft ceiling, so nothing
+# fired: the headline read "Snow line near 12,950 ft" while the frontmatter
+# marked every band including the Weminuche as rain. The model then rounded it
+# to "around 13,000" in the prose. A threshold set at the peaks is a threshold
+# that misses the days it exists for.
 #
 # THIS IS NOT A CLAMP AND IT CORRECTS NOTHING. The nine straight days of
 # 13,600-14,400 ft in September 2026, and the two consecutive 14,050s, look
@@ -66,7 +79,7 @@ MAX_OFFSET_FT = 2500.0
 # indistinguishable from a broken instrument. So the value is still computed,
 # still logged, still verified against -- and flagged, so the post can say
 # "rain to the summits" instead of printing it.
-TERRAIN_CEILING_FT = 13000
+TERRAIN_CEILING_FT = 11500
 
 
 def _f(x, default=None):

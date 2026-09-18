@@ -105,13 +105,15 @@ def render_bundle(bundle, post_type="school_call"):
             # the model is not shown the number; spelling it out inside a
             # prohibition hands it back and makes it salient, and a negation
             # is the weakest instruction there is.
-            A("SNOW LINE: above every peak in the San Juans today.")
+            A("SNOW LINE: higher today than anywhere anybody here goes.")
             A("  -> DO NOT STATE A SNOW LINE FIGURE. Not in feet, not rounded,")
-            A("     not approximate, not 'well above the peaks'. You have not")
-            A("     been given the number and there is no elevation in this")
-            A("     forecast area where today's precipitation falls as snow.")
-            A("     Say plainly that it is all rain, everywhere, right to the")
-            A("     summits, and move on to what actually matters today.")
+            A("     not approximate, not 'well up above the passes'. You have")
+            A("     not been given the number. It is above the passes, above")
+            A("     the Weminuche, above every road, trail and drainage anyone")
+            A("     is on today, so it is rain for all of them and the figure")
+            A("     tells a reader nothing. Say that plainly, all rain")
+            A("     everywhere including up high, and move on to what actually")
+            A("     matters today.")
         else:
             A("SNOW LINE (derived, UNCALIBRATED HEURISTIC, hedge it):")
             A(f"  representative {sl['representative_ft']} ft, {sl['trend']} "

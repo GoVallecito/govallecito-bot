@@ -197,7 +197,7 @@ def test_a_snow_line_figure_above_the_terrain_is_held_for_review():
                                             "today so its all rain.",
                         calibrated=True)
     assert v == G.REVIEW, why
-    assert any("above every peak" in r for r in why), why
+    assert any("above the passes" in r for r in why), why
 
 
 def test_saying_it_is_all_rain_instead_passes():

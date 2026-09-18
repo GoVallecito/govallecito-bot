@@ -263,9 +263,10 @@ def evaluate(bundle, draft_text, *, first_30_days=False, calibrated=False):
         if stated:
             escalate(REVIEW,
                      f"states a snow line of {stated} ft on a day the derived "
-                     "line sits above every peak in the San Juans; the post "
-                     "should say it is all rain to the summits rather than "
-                     "print a figure for ground nobody stands on")
+                     "line sits above the passes, the Weminuche and everywhere "
+                     "else anyone here goes; the post should say it is rain "
+                     "everywhere including up high, rather than print a figure "
+                     "for ground nobody stands on")
 
     if bundle.get("snow_line") and not calibrated:
         if not re.search(r"grain of salt|uncertain|could go either way|rough|best guess|not settled",
@@ -300,15 +301,26 @@ def _states_snow_beyond_3_days(text, bundle):
 
 
 def states_a_terrain_impossible_snow_line(text):
-    """A 13,000-19,999 ft figure sitting next to the words "snow line".
+    """An elevation figure at or above the terrain ceiling, next to "snow line".
 
-    Only meaningful on a day the bundle already flagged `above_terrain`; see
-    snowline.TERRAIN_CEILING_FT. The prompt tells the model not to print the
-    number at all, and this is the belt for those braces. REVIEW rather than
-    BLOCK: the figure is accurate, it is only useless, so the cost of a false
-    positive is one person glancing at a draft.
+    The range is read from snowline.TERRAIN_CEILING_FT rather than written out
+    here. An earlier version hardcoded 13,000-19,999 to match a 13,000 ft
+    ceiling, which is two copies of one number and therefore one lowering away
+    from silently checking the wrong thing. That is the same defect that let
+    publish._auto_title drift from its twin.
+
+    Only meaningful on a day the bundle already flagged `above_terrain`. The
+    prompt tells the model not to print a figure at all; this is the belt for
+    those braces, and it catches the rounding case too, where a line computed
+    just under the ceiling is written just over it. REVIEW rather than BLOCK:
+    the figure is accurate, it is only useless, so a false positive costs one
+    person one glance.
     """
-    for m in re.finditer(r"\b1[3-9][,.]?\d{3}\b", text or ""):
+    from . import snowline as _sl
+    for m in re.finditer(r"\b(\d{1,2}),?(\d{3})\b", text or ""):
+        value = int(m.group(1) + m.group(2))
+        if not (_sl.TERRAIN_CEILING_FT <= value <= 20000):
+            continue
         near = (text[max(0, m.start() - 60):m.end() + 60]).lower()
         if "snow line" in near or "snowline" in near or "snow-line" in near:
             return m.group(0)

@@ -141,12 +141,14 @@ def test_an_ordinary_line_is_not_flagged():
     assert s["representative_ft"] == 7200
 
 
-def test_the_ceiling_sits_below_the_peaks_but_above_the_passes():
-    # Wolf Creek is about 10,850 and Red Mountain about 11,000; the fourteeners
-    # are just over 14,000. The ceiling has to be above the first and below the
-    # second or it either gags real forecasts or never fires.
-    assert 11500 < SL.TERRAIN_CEILING_FT < 14000
-    assert SL.summarize(_series(11000))["above_terrain"] is False
+def test_the_ceiling_sits_above_the_passes_and_below_the_peaks():
+    """Red Mountain is 11,018 and Wolf Creek 10,850; the peaks are just over
+    14,000. The ceiling must clear the passes, or a real winter forecast for
+    the drive gets gagged, and stay well under the peaks, or it never fires on
+    the days it exists for. 2026-09-18 computed 12,950 and printed it."""
+    assert 11018 < SL.TERRAIN_CEILING_FT < 14000
+    assert SL.summarize(_series(11000))["above_terrain"] is False,         "a line at pass level is a real forecast for the drive"
+    assert SL.summarize(_series(12950))["above_terrain"] is True,         "the 2026-09-18 case, which a 13,000 ft ceiling missed by fifty feet"
 
 
 def test_the_headline_and_the_frontmatter_drop_the_figure():
