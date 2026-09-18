@@ -17,7 +17,7 @@ slug: "2026-09-09-morning-forecast-for-vallecito-bayfield-and-durango"
 
 Districts decide by 6:30 as always, but there's nothing in the weather to slow anybody down this morning. Durango and Bayfield both start cool (mid-50s to near 60F) and warm fast into the low-to-mid 80s this afternoon. Clear all day, light winds early, picking up a bit this afternoon but nothing that'll cause trouble.
 
-Up the Pine and around Vallecito we're starting in the upper 50s and topping out low 80s. Same deal, dry through the day. Pop values tick up to 1% late afternoon but that's just the models acknowledging September exists, not a real chance at anything.
+Up the Pine and around Vallecito we're starting in the upper 50s and topping out low 80s. Same deal, dry through the day. Pop values tick up a hair late afternoon but that's just the models acknowledging September exists, not a real chance at anything.
 
 The high country woke up around 50F and gets into the upper 60s today. Still dry up there, winds picking up a bit through the afternoon (gusts to 18-19mph) but nothing dramatic.
 
