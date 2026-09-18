@@ -250,7 +250,7 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
         # The dead-man switch firing is the case that most needs an explanation:
         # a silent 5:45am with no post and no reason is indistinguishable from
         # the agent being broken.
-        write_status("aborted — data unavailable", "\n".join(problems), bundle, slot,
+        write_status("aborted, data unavailable", "\n".join(problems), bundle, slot,
                      hint="No post went out, deliberately. A forecast built on "
                           "half its inputs is worse than silence at 5:45am. If "
                           "this repeats, check state/selftest-latest.md for which "
@@ -321,36 +321,23 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
                 reasons = r2 + ["a rewrite was attempted and was blocked too"]
 
     os.makedirs("output", exist_ok=True)
-    with open(os.path.join("output", "draft.txt"), "w") as fh:
+    with open(os.path.join("output", "draft.txt"), "w", encoding="utf-8") as fh:
         fh.write(text)
     _archive_draft(text, bundle, slot, verdict)
 
-    # The day is now spent for this slot, whatever the verdict. A blocked or
-    # held draft still counts: the work was done and a second run inside the
-    # window must not compose a different post for the same morning. An abort
-    # before this line deliberately leaves the day open for a retry.
-    try:
-        _ledger().record(bundle.get("post_for_date") or bundle.get("local_date"),
-                         slot, note=verdict)
-    except Exception as exc:  # noqa: BLE001 -- never lose a post over bookkeeping
-        print(f"[ledger] record failed: {exc}")
-    with open(os.path.join("output", "bundle.json"), "w") as fh:
+    with open(os.path.join("output", "bundle.json"), "w", encoding="utf-8") as fh:
         json.dump(bundle, fh, indent=2, default=str)
 
-    if verdict == G.BLOCK:
-        print("BLOCKED -- nothing published. Draft saved to output/draft.txt")
-        write_status("blocked", "\n".join(reasons), bundle, slot, draft=text)
-        _stage_for_site(text, bundle, slot, site_dir)
-        N.review_requested(text, verdict, reasons, bundle, slot=slot)
-        return 0
-    if verdict == G.REVIEW:
-        print("HELD FOR REVIEW -- draft saved to output/draft.txt")
-        # A review gate nobody sees is not a safety mechanism. Open an issue so
-        # the held draft actually reaches a human.
-        write_status("held for review", "\n".join(reasons), bundle, slot, draft=text)
-        _stage_for_site(text, bundle, slot, site_dir)
-        N.review_requested(text, verdict, reasons, bundle, slot=slot)
-        return 0
+    if verdict in (G.BLOCK, G.REVIEW):
+        return _hold_for_review(text, verdict, reasons, bundle, slot, site_dir)
+
+    # The day is now spent for this slot. On the publish path this stays where
+    # it always was, before the post goes out: a second run inside the window
+    # must not compose a different post for the same morning. An abort before
+    # this line deliberately leaves the day open for a retry. The held and
+    # blocked paths record their day inside _hold_for_review instead, and only
+    # once a human has actually been told.
+    _record_day(bundle, slot, verdict)
 
     # The site write is best effort and comes first, so a failure here is
     # visible in the log while the Facebook post still goes out. It writes into
@@ -389,6 +376,70 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
     return 0
 
 
+def _record_day(bundle, slot, verdict):
+    """Mark the slot done for the day the post was FOR."""
+    try:
+        _ledger().record(bundle.get("post_for_date") or bundle.get("local_date"),
+                         slot, note=verdict)
+    except Exception as exc:  # noqa: BLE001 -- never lose a post over bookkeeping
+        print(f"[ledger] record failed: {exc}")
+
+
+def _hold_for_review(text, verdict, reasons, bundle, slot, site_dir):
+    """Stage the draft, tell a human, and only then spend the day.
+
+    THE BUG THIS FIXES. The ledger entry used to be written before the notify
+    attempt, and the attempt's result was thrown away. So one failed POST spent
+    the slot permanently: every later run inside the window saw "already went
+    out" and did nothing, the workflow exited 0, and the only record of the
+    failure was a return value nobody read, in a log `tee` truncated 56 times a
+    day. 2026-09-16 and 09-17 each produced a draft no issue was opened for,
+    and nothing anywhere went red.
+
+    Two changes, and neither is sufficient alone. The day is spent only after a
+    human has been told, so the next run inside the window retries. And a
+    failure returns non-zero, which fails the step, which skips the
+    `if: success()` heartbeat, which is what makes healthchecks.io notice.
+    """
+    state = "blocked" if verdict == G.BLOCK else "held for review"
+    print(("BLOCKED -- nothing published" if verdict == G.BLOCK
+           else "HELD FOR REVIEW") + " -- draft saved to output/draft.txt")
+    # A review gate nobody sees is not a safety mechanism. Open an issue so the
+    # held draft actually reaches a human.
+    _stage_for_site(text, bundle, slot, site_dir)
+    result = N.review_requested(text, verdict, reasons, bundle, slot=slot) or {}
+    for_date = bundle.get("post_for_date") or bundle.get("local_date")
+
+    if not result.get("notified"):
+        why = result.get("reason") or "unknown"
+        # Outside Actions there is no GITHUB_TOKEN and there never was one. The
+        # draft has just been printed in full, there is nothing to retry and
+        # nothing to alarm about, so a local or dry run does not get to look
+        # like a fault. Inside Actions the token is always present, so a
+        # failure there is real and must go red.
+        if os.environ.get("GITHUB_ACTIONS") != "true":
+            print(f"[notify] not running under Actions ({why}); "
+                  "draft printed above rather than filed.")
+            write_status(state, "\n".join(reasons), bundle, slot, draft=text)
+            _record_day(bundle, slot, verdict)
+            return 0
+        write_status(f"{state}, NOT ANNOUNCED", "\n".join(reasons), bundle, slot,
+                     draft=text,
+                     hint=(f"The review issue for {for_date} could not be opened "
+                           f"({why}). The draft is in state/drafts/ and staged "
+                           f"in site/weather/_pending/, and the day has "
+                           f"deliberately NOT been marked done, so the next run "
+                           f"inside the window retries the notification. Check "
+                           f"Settings > Actions > Workflow permissions is "
+                           f"'Read and write'."))
+        print(f"::error::review issue for {for_date} was not opened: {why}")
+        return 1
+
+    write_status(state, "\n".join(reasons), bundle, slot, draft=text)
+    _record_day(bundle, slot, verdict)
+    return 0
+
+
 def _stage_for_site(text, bundle, slot, site_dir=None):
     """Park a held or blocked draft where a human can promote it in one step.
 
@@ -415,7 +466,7 @@ def write_status(state, detail, bundle=None, slot=None, hint=None, draft=None):
     """
     import os as _os
     path = _os.path.join(_state_dir(), "forecast-status.md")
-    L = [f"# Forecast run — {state}", ""]
+    L = [f"# Forecast run: {state}", ""]
     L.append(f"When: {C.local_now().isoformat(timespec='seconds')} (Mountain)")
     if slot:
         L.append(f"Slot: `{slot}`")
@@ -448,7 +499,7 @@ def write_status(state, detail, bundle=None, slot=None, hint=None, draft=None):
         L.append("```")
     try:
         _os.makedirs(_os.path.dirname(path), exist_ok=True)
-        with open(path, "w") as fh:
+        with open(path, "w", encoding="utf-8") as fh:
             fh.write("\n".join(L) + "\n")
         print(f"Wrote {path}")
     except Exception as exc:  # noqa: BLE001
@@ -481,7 +532,7 @@ def _archive_draft(text, bundle, slot, verdict):
     name = f"{bundle.get('post_for_date', bundle.get('local_date'))}-{slot}.md"
     try:
         _os.makedirs(d, exist_ok=True)
-        with open(_os.path.join(d, name), "w") as fh:
+        with open(_os.path.join(d, name), "w", encoding="utf-8") as fh:
             fh.write(f"# {bundle.get('post_for_weekday')}, "
                      f"{bundle.get('post_for_date')}, {slot}\n\n")
             fh.write(f"Verdict: `{verdict}` | Snow line: "

@@ -71,7 +71,7 @@ BUNDLE = {"missing": [], "bands": {"durango": {"ok": True}, "bayfield": {"ok": T
                                    "vallecito": {"ok": True}},
           "life_safety_alerts": [], "snow_line": None}
 BASE = ("11/04/26 5:52am: Morning, its Wednesday. Cold and clear down in the "
-        "Valley this morning and the stake at the house has an inch on it. "
+        "Valley this morning and the truck took three tries to turn over. "
         "How is it looking out your window up the Pine?")
 
 

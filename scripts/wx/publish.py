@@ -151,7 +151,7 @@ def _dry(target, text, ident):
     os.makedirs("output", exist_ok=True)
     stamp = C.local_now().strftime("%Y-%m-%d_%H%M%S")
     path = os.path.join("output", f"{stamp}_{target}.txt")
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         fh.write(text)
     print("=" * 66)
     print(f"DRY RUN -- nothing posted. Target: {target} {ident}")
@@ -185,7 +185,8 @@ def write_site_post(text, bundle, out_dir, post_type="school_call", title=None):
         "title": title,
         "date": bundle.get("generated_at"),
         "postType": post_type,
-        "snowLineFt": sl.get("representative_ft"),
+        # See site.front_matter: null when the line is above the terrain.
+        "snowLineFt": None if sl.get("above_terrain") else sl.get("representative_ft"),
         "snowLineTrend": sl.get("trend"),
         "bands": {k: {"elevationFt": v.get("elevation_ft"),
                       "precipType": v.get("precip_type")}
@@ -200,7 +201,7 @@ def write_site_post(text, bundle, out_dir, post_type="school_call", title=None):
 
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, f"{slug}.md")
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         fh.write("---\n")
         for k, v in fm.items():
             fh.write(f"{k}: {json.dumps(v)}\n")
@@ -211,13 +212,16 @@ def write_site_post(text, bundle, out_dir, post_type="school_call", title=None):
 
 
 def _auto_title(bundle, post_type):
-    sl = bundle.get("snow_line") or {}
-    alerts = bundle.get("alerts") or []
-    if alerts:
-        return f"{alerts[0]['event']} — Vallecito, Bayfield and Durango"
-    if sl.get("representative_ft"):
-        return f"Snow line near {sl['representative_ft']} ft — the morning call"
-    return {"school_call": "Morning forecast — Vallecito, Bayfield, Durango",
-            "evening": "Evening look — the next few days",
-            "totals": "What actually fell",
-            }.get(post_type, "Vallecito area forecast")
+    """A thin alias so existing callers do not change. The real one is in site.
+
+    This was a near-copy of site.auto_title and it drifted: four em dashes had
+    accumulated here while its twin had none, because only site.auto_title had
+    a test asserting the rule. These strings become page titles, <title> tags
+    and the slug, and site.py's own docstring says it plainly -- the
+    punctuation rule applies to the chrome as much as to the prose.
+
+    A second copy of a rule is a second place for the rule to rot, so there is
+    one copy now and both entry points reach it.
+    """
+    from . import site as _site
+    return _site.auto_title(bundle, post_type)

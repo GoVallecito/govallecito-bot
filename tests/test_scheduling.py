@@ -300,7 +300,8 @@ def test_the_brief_shows_the_model_its_own_recent_openers():
     }
     brief = CO.render_bundle(bundle, post_type="school_call")
     assert "Morning, its Sunday." in brief
-    assert "Do not reuse any of these shapes" in brief
+    assert "These exact sentences are forbidden" in brief
+    assert "A new opener, a new pivot, a new closing question" in brief
 
 
 def test_a_weekend_brief_drops_the_school_frame():
@@ -371,7 +372,7 @@ def test_no_module_derives_a_state_path_from_its_own_location():
     pattern = re.compile(r"(STATE_DIR|_LOG|CALIBRATION|state\")\s*=\s*os\.path\.join\("
                          r"[^)]*(REPO_ROOT|__file__)")
     for path in root.rglob("*.py"):
-        src = path.read_text()
+        src = path.read_text(encoding="utf-8")
         for m in pattern.finditer(src):
             offenders.append(f"{path.name}: {m.group(0)[:70]}")
     assert not offenders, "state paths derived from __file__: " + "; ".join(offenders)
@@ -390,3 +391,66 @@ def test_verify_writes_into_wx_state_dir():
         written = os.path.join(t.dir, "forecast_log.json")
         assert os.path.exists(written), os.listdir(t.dir)
         assert json.load(open(written))["forecasts"]
+
+
+# --- the gauge the post is allowed to quote --------------------------------
+
+def test_the_brief_says_out_loud_when_there_is_no_gauge_reading():
+    """An absence that is stated does not get filled in.
+
+    The 09-17 draft invented a 5 inch stake reading because the brief said
+    nothing at all about the gauge and the persona asks for exactly one
+    personal detail. Silence about the file was the bug.
+    """
+    from wx import compose as CO
+    bundle = {
+        "post_for_weekday": "Tuesday", "post_for_date": "2026-09-08",
+        "post_for_stamp": "09/08/26", "generated_at": "2026-09-08T05:46:00",
+        "season": "fall", "day_type": "school day", "is_late": False,
+        "recent_posts": [], "alerts": [], "bands": {}, "missing": [],
+        "home_gauge": None,
+    }
+    brief = CO.render_bundle(bundle, post_type="school_call")
+    assert "YOUR OWN GAUGE AND STAKE: NO READING TODAY." in brief
+    assert "must contain NO measurement" in brief
+
+
+def test_a_real_reading_reaches_the_brief_as_the_only_allowed_numbers():
+    from wx import compose as CO
+    bundle = {
+        "post_for_weekday": "Tuesday", "post_for_date": "2026-09-08",
+        "post_for_stamp": "09/08/26", "generated_at": "2026-09-08T05:46:00",
+        "season": "fall", "day_type": "school day", "is_late": False,
+        "recent_posts": [], "alerts": [], "bands": {}, "missing": [],
+        "home_gauge": {"precip_in": 0.42, "for_date": "2026-09-08"},
+    }
+    brief = CO.render_bundle(bundle, post_type="school_call")
+    assert "precip_in: 0.42" in brief
+    assert "ONLY numbers you may attribute" in brief
+    assert "NO READING TODAY" not in brief
+
+
+def test_the_suppression_instruction_states_no_snow_line_figure():
+    """The mechanism is that the model is not shown the number.
+
+    An earlier version spelled out '14,050' inside the prohibition, which
+    hands the figure back and makes it salient. A negation is the weakest
+    instruction there is, so the branch must contain no figure at all.
+    """
+    import re
+    from wx import compose as CO
+    bundle = {
+        "post_for_weekday": "Tuesday", "post_for_date": "2026-09-08",
+        "post_for_stamp": "09/08/26", "generated_at": "2026-09-08T05:46:00",
+        "season": "fall", "day_type": "school day", "is_late": False,
+        "recent_posts": [], "alerts": [], "bands": {}, "missing": [],
+        "home_gauge": None,
+        "snow_line": {"representative_ft": 14050, "trend": "steady",
+                      "start_ft": 14000, "end_ft": 14100, "above_terrain": True,
+                      "hours_with_precip": 4, "first_precip_hour": "12:00",
+                      "last_precip_hour": "16:00"},
+    }
+    brief = CO.render_bundle(bundle, post_type="school_call")
+    assert "DO NOT STATE A SNOW LINE FIGURE" in brief
+    offenders = re.findall(r"\b1[0-9][,.]?\d{3}\b", brief)
+    assert not offenders, f"a snow-line figure leaked into the brief: {offenders}"

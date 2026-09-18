@@ -36,11 +36,14 @@ def render(text, bundle, card_path=None):
     alerts = bundle.get("alerts") or []
 
     if alerts:
-        subject = f"{alerts[0]['event']} — {BR.SHORT}"
-    elif sl.get("representative_ft"):
-        subject = f"Snow line near {sl['representative_ft']:,} ft — {BR.SHORT}"
+        subject = f"{alerts[0]['event']}, {BR.SHORT}"
+    # Same terrain-ceiling rule as the page title and the issue title: if
+    # the post may not state the figure, the subject line is not the one
+    # place it survives. See snowline.TERRAIN_CEILING_FT.
+    elif sl.get("representative_ft") and not sl.get("above_terrain"):
+        subject = f"Snow line near {sl['representative_ft']:,} ft, {BR.SHORT}"
     else:
-        subject = f"{bundle.get('local_date')} — {BR.SHORT}"
+        subject = f"{bundle.get('local_date')}, {BR.SHORT}"
 
     lines = [text.strip(), ""]
 
@@ -144,6 +147,6 @@ def load_recipients():
         "state", "subscribers.txt")
     if not os.path.exists(path):
         return []
-    with open(path) as fh:
+    with open(path, encoding="utf-8") as fh:
         return [ln.strip() for ln in fh
                 if ln.strip() and not ln.strip().startswith("#")]

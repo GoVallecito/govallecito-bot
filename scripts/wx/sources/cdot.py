@@ -115,7 +115,7 @@ def format_pass_card(routes):
         lines.append(f"Short version: {', '.join(closed)} closed.")
     for meta in routes.values():
         seg = "; ".join(f"{h['segment']} {h['status']}" for h in meta["segments"])
-        line = f"{meta['label']} — {seg or meta['summary']}"
+        line = f"{meta['label']}: {seg or meta['summary']}"
         if meta["note"] and meta["summary"] in ("closed", "traction/chain law"):
             line += f" ({meta['note']})"
         lines.append(line)

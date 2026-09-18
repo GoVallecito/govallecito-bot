@@ -41,7 +41,7 @@ def test_no_module_uses_utc_today():
     for path in WX.rglob("*.py"):
         if path.name == "constants.py":
             continue          # defines the correct helpers
-        text = path.read_text()
+        text = path.read_text(encoding="utf-8")
         for n, line in enumerate(text.splitlines(), 1):
             if "date.today()" in line and "local_date" not in line:
                 offenders.append(f"{path.relative_to(WX)}:{n}: {line.strip()}")
@@ -54,7 +54,7 @@ def test_no_module_uses_naive_now():
     for path in WX.rglob("*.py"):
         if path.name == "constants.py":
             continue
-        for n, line in enumerate(path.read_text().splitlines(), 1):
+        for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             if "datetime.now()" in line and "local_now" not in line:
                 offenders.append(f"{path.relative_to(WX)}:{n}: {line.strip()}")
     assert not offenders, (

@@ -70,7 +70,7 @@ def write_markdown(path="state/selftest-latest.md", crash=None):
     ok = [k for k, v in results.items() if v.get("ok")]
     bad = [k for k, v in results.items() if not v.get("ok")]
 
-    L = ["# Self-test — live endpoint check", ""]
+    L = ["# Self-test: live endpoint check", ""]
     if crash:
         L.append("## The self-test itself crashed")
         L.append("")
@@ -88,7 +88,7 @@ def write_markdown(path="state/selftest-latest.md", crash=None):
     el = FINDINGS.get("elevation")
     L.append("## The elevation thesis")
     if not el:
-        L.append("**NOT EVALUATED** — Open-Meteo did not return usable data.")
+        L.append("**NOT EVALUATED**. Open-Meteo did not return usable data.")
     elif el["pass"]:
         L.append("**PASS.** The bands return different forecasts, so the "
                  "elevation parameter is being honoured and elevation-band "
@@ -105,7 +105,7 @@ def write_markdown(path="state/selftest-latest.md", crash=None):
         for b in C.BANDS:
             k = b["key"]
             L.append(f"| {b['label']} | {b['elevation_m']} | "
-                     f"{el['elevations'].get(k, '—')} | {el['temps'].get(k, '—')} |")
+                     f"{el['elevations'].get(k, '-')} | {el['temps'].get(k, '-')} |")
     L.append("")
 
     # --- the zone split this whole product depends on ---
@@ -165,15 +165,15 @@ def write_markdown(path="state/selftest-latest.md", crash=None):
         L.append("## Needs attention")
         L.append("")
         for k in bad:
-            L.append(f"- **{k}** — {results[k].get('error')}")
+            L.append(f"- **{k}**: {results[k].get('error')}")
         L.append("")
         L.append("A failure here is information, not a crash. CDOT without a key "
                  "and CAIC out of season are both expected.")
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(L) + "\n")
-    print(f"\nWrote {path} — committed by the workflow so it can be read "
+    print(f"\nWrote {path}, committed by the workflow so it can be read "
           f"without touching GitHub's logs.")
 
 
@@ -274,7 +274,7 @@ def main():
             FINDINGS["probes"] = {"error": str(exc)}
 
     os.makedirs("output", exist_ok=True)
-    with open("output/selftest.json", "w") as fh:
+    with open("output/selftest.json", "w", encoding="utf-8") as fh:
         json.dump(results, fh, indent=2)
     write_markdown()
 

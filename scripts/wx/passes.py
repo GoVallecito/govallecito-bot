@@ -87,14 +87,14 @@ def format_card(passes):
     unit = [passes[k] for k in C.US550_UNIT if k in passes]
     if unit:
         worst = max(unit, key=lambda p: p["snow_in"])
-        lines.append(f"US-550 north — Coal Bank, Molas and Red Mountain "
+        lines.append(f"US-550 north, Coal Bank, Molas and Red Mountain "
                      f"(they close as a unit): {_phrase(worst)} up high.")
         for p in unit:
             lines.append(f"    {p['name']}, {p['elevation_ft']:,} ft: {_phrase(p)}")
 
     wolf = passes.get("wolf_creek")
     if wolf:
-        lines.append(f"US-160 east — {wolf['name']}, {wolf['elevation_ft']:,} ft: "
+        lines.append(f"US-160 east, {wolf['name']}, {wolf['elevation_ft']:,} ft: "
                      f"{_phrase(wolf)}.")
 
     lines.append("")

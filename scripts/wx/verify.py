@@ -66,7 +66,7 @@ def _load(path, default):
     if not os.path.exists(path):
         return default
     try:
-        with open(path) as fh:
+        with open(path, encoding="utf-8") as fh:
             return json.load(fh)
     except Exception as exc:  # noqa: BLE001
         backup = path + ".corrupt-backup"
@@ -81,7 +81,7 @@ def _load(path, default):
 def _save(path, obj):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     tmp = f"{path}.tmp-{os.getpid()}"
-    with open(tmp, "w") as fh:
+    with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, indent=2)
         fh.write("\n")
     os.replace(tmp, path)

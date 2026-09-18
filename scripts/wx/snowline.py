@@ -50,6 +50,24 @@ INTENSITY_FT_PER_IN_HR = 2200.0
 MIN_OFFSET_FT = 200.0
 MAX_OFFSET_FT = 2500.0
 
+# The highest ground anybody around here stands on. Eolus, Windom and Sunlight
+# are a shade over 14,000 ft; the passes are 10,000 to 11,000.
+#
+# THIS IS NOT A CLAMP AND IT CORRECTS NOTHING. The nine straight days of
+# 13,600-14,400 ft in September 2026, and the two consecutive 14,050s, look
+# like a stuck default and are not: each was a genuine computed freezing level
+# minus a genuine melt offset, and the repeat values come from a 48-hour
+# averaging window overlapping a full day between runs inside one sustained
+# monsoon airmass. The math was fine.
+#
+# Reporting it was the defect. A snow line of 14,050 ft is above the highest
+# peak in the San Juans, so on an all-rain day the post states a number that
+# describes ground nobody stands on, and to a local reader that is
+# indistinguishable from a broken instrument. So the value is still computed,
+# still logged, still verified against -- and flagged, so the post can say
+# "rain to the summits" instead of printing it.
+TERRAIN_CEILING_FT = 13000
+
 
 def _f(x, default=None):
     try:
@@ -167,13 +185,18 @@ def summarize(series):
         trend = "rising"
     else:
         trend = "steady"
+    representative = int(round(sum(vals) / len(vals) / 50) * 50)
     return {
-        "representative_ft": int(round(sum(vals) / len(vals) / 50) * 50),
+        "representative_ft": representative,
         "start_ft": int(round(start / 50) * 50),
         "end_ft": int(round(end / 50) * 50),
         "min_ft": min(vals),
         "max_ft": max(vals),
         "trend": trend,
+        # True when the line sits above the terrain it is describing. The
+        # number stays; what changes is whether the post is allowed to say it.
+        # See TERRAIN_CEILING_FT.
+        "above_terrain": representative >= TERRAIN_CEILING_FT,
         "hours_with_precip": len(series),
         "first_precip_hour": series[0]["time"],
         "last_precip_hour": series[-1]["time"],

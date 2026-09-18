@@ -59,11 +59,91 @@ def read_home_gauge(date=None):
     if not os.path.exists(path):
         return None
     try:
-        with open(path) as fh:
+        with open(path, encoding="utf-8") as fh:
             return (json.load(fh) or {}).get(date)
     except Exception as exc:  # noqa: BLE001
         print(f"[observations] home gauge unreadable: {exc}")
         return None
+
+
+# A reading is only usable if it is actually from this morning. Past that a
+# stale number reads as a live observation, which is the same lie by a slower
+# route.
+HOME_GAUGE_MAX_AGE_H = 18
+
+# Nobody has snow on a stake at 7,650 ft in July. A depth field in these months
+# is a leftover from the spring or a typo, and a post that repeats it is
+# exactly the fabrication this is here to stop.
+NO_SNOW_MONTHS = (6, 7, 8, 9)
+SNOW_DEPTH_FIELDS = ("new_snow_in", "snow_depth_in", "stake_in")
+_QUOTABLE_FIELDS = SNOW_DEPTH_FIELDS + ("precip_in", "snow_line_observed_ft")
+
+
+def read_home_gauge_for_post(post_date_iso, now=None):
+    """The reading the post may quote from the gauge or the stake, or None.
+
+    WHY THIS IS NARROWER THAN read_home_gauge. That one serves verification,
+    which looks backwards and is happy with any entry it can find. This one
+    feeds the composer, which looks at a reader, and a wrong number there is a
+    different kind of wrong.
+
+    On 2026-09-17 a draft said the snow stake at the house was "still sitting
+    at 5 inches" on an all-rain day with the snow line at 14,000 ft. Nothing
+    was behind it: state/home_gauge.json is {} and always has been, and the
+    bundle carried no gauge value at all. The persona asks for exactly one
+    personal detail and tells the model to rotate which one, so when the
+    stake's turn came round the model supplied a plausible figure for it.
+
+    So: today's entry only, not stale, and no snow depth in the months when
+    there cannot be any. Returning None is the normal case and the composer is
+    told so in as many words, because an absence that is stated does not get
+    filled in and an absence that is merely implied does.
+    """
+    if not post_date_iso:
+        return None
+    try:
+        date = _dt.date.fromisoformat(str(post_date_iso))
+    except (TypeError, ValueError):
+        return None
+
+    entry = read_home_gauge(date)
+    if not isinstance(entry, dict) or not entry:
+        return None
+
+    now = now or C.local_now()
+    as_of = entry.get("as_of")
+    if as_of:
+        try:
+            stamp = _dt.datetime.fromisoformat(str(as_of))
+        except (TypeError, ValueError):
+            print(f"[observations] home gauge as_of unreadable ({as_of!r}); "
+                  "not quoting the reading")
+            return None
+        if stamp.tzinfo is None and now.tzinfo is not None:
+            stamp = stamp.replace(tzinfo=now.tzinfo)
+        elif stamp.tzinfo is not None and now.tzinfo is None:
+            now = now.replace(tzinfo=stamp.tzinfo)
+        age_h = (now - stamp).total_seconds() / 3600.0
+        if age_h > HOME_GAUGE_MAX_AGE_H or age_h < -1:
+            print(f"[observations] home gauge reading is {age_h:.1f}h old; "
+                  "not quoting it")
+            return None
+    # No as_of at all is fine: the entry is keyed by the date it is for, and
+    # that key is itself the freshness claim. as_of only ever narrows.
+
+    usable = dict(entry)
+    if date.month in NO_SNOW_MONTHS:
+        dropped = [k for k in SNOW_DEPTH_FIELDS if usable.get(k) is not None]
+        for k in dropped:
+            usable.pop(k, None)
+        if dropped:
+            print(f"[observations] dropped {dropped} from the home gauge: "
+                  f"no snow on a stake at 7,650 ft in month {date.month:02d}")
+
+    if not any(usable.get(k) is not None for k in _QUOTABLE_FIELDS):
+        return None
+    usable["for_date"] = date.isoformat()
+    return usable
 
 
 def _band_for_station(name):
