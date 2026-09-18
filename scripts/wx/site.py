@@ -83,9 +83,15 @@ def auto_title(bundle, post_type):
     alerts = bundle.get("alerts") or []
     if alerts:
         return f"{alerts[0]['event']} for Vallecito, Bayfield and Durango"
-    if sl.get("representative_ft"):
+    if sl.get("representative_ft") and not sl.get("above_terrain"):
         # Grouped, because this becomes a page title and a headline: "Snow line
         # near 11,200 ft" reads; "near 11200 ft" reads like a serial number.
+        #
+        # Skipped entirely when the line is above the terrain. This function is
+        # where "Snow line near 14,100 ft" came from, on a day whose own body
+        # said it was all rain, and it was the headline and the page title and
+        # the slug. The post is not allowed to state that number, so the
+        # headline generated from it cannot either.
         return f"Snow line near {int(sl['representative_ft']):,} ft"
     return {
         "school_call": "Morning forecast for Vallecito, Bayfield and Durango",
@@ -103,7 +109,9 @@ def front_matter(bundle, post_type, title):
         "date": bundle.get("generated_at"),
         "forDate": bundle.get("post_for_date") or bundle.get("local_date"),
         "postType": post_type,
-        "snowLineFt": sl.get("representative_ft"),
+        # null, not the figure, when the line is above the terrain: the post
+        # may not say the number, so the page must not print it either.
+        "snowLineFt": None if sl.get("above_terrain") else sl.get("representative_ft"),
         "snowLineTrend": sl.get("trend"),
         "bands": {k: {"elevationFt": v.get("elevation_ft"),
                       "precipType": v.get("precip_type"),
@@ -131,7 +139,7 @@ def write_post(text, bundle, post_type="school_call", title=None, out_dir=None):
 
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, f"{slug}.md")
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         fh.write("---\n")
         for k, v in fm.items():
             fh.write(f"{k}: {json.dumps(v)}\n")
@@ -148,7 +156,7 @@ def read_post(path):
     format honest: if write_post ever emits something read_post cannot read,
     the feed test fails immediately instead of the site silently losing a post.
     """
-    with open(path) as fh:
+    with open(path, encoding="utf-8") as fh:
         raw = fh.read()
     if not raw.startswith("---"):
         return None
@@ -197,7 +205,7 @@ def rebuild_feed(out_dir=None, limit=FEED_LIMIT):
     }
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, FEED_NAME)
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         json.dump(feed, fh, indent=2, sort_keys=False)
     return path
 

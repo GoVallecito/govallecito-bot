@@ -92,7 +92,7 @@ def run(llm=None, bundle_override=None, first_30_days=None):
         print(f"  - {r}")
 
     os.makedirs("output", exist_ok=True)
-    with open(os.path.join("output", "storm_draft.txt"), "w") as fh:
+    with open(os.path.join("output", "storm_draft.txt"), "w", encoding="utf-8") as fh:
         fh.write(text)
 
     if verdict == G.BLOCK:

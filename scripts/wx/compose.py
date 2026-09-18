@@ -26,7 +26,7 @@ PROMPT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "prompts")
 
 
 def load_system_prompt():
-    with open(os.path.join(PROMPT_DIR, "system.md")) as fh:
+    with open(os.path.join(PROMPT_DIR, "system.md"), encoding="utf-8") as fh:
         return fh.read()
 
 
@@ -63,10 +63,9 @@ def render_bundle(bundle, post_type="school_call"):
         for r in recent:
             A(f"  {r.get('date')} opened: {r.get('opened')}")
             A(f"  {r.get('date')} closed: {r.get('closed')}")
-        A("  -> Do not reuse any of these shapes. Not the same greeting")
-        A("     construction, not the same closing question. Sameness across")
-        A("     days is the tell that outs an account as automated, and it is a")
-        A("     worse one than any single sentence.")
+        A("  -> These exact sentences are forbidden. Do not reuse their")
+        A("     construction with different numbers or nouns swapped in.")
+        A("     A new opener, a new pivot, a new closing question, every day.")
         A("")
 
     # --- alerts first: they change what kind of post this is ---
@@ -90,12 +89,29 @@ def render_bundle(bundle, post_type="school_call"):
 
     # --- the snow line: the signature number ---
     sl = bundle.get("snow_line")
-    if sl:
-        A("SNOW LINE (derived, UNCALIBRATED HEURISTIC, hedge it):")
-        A(f"  representative {sl['representative_ft']} ft, {sl['trend']} "
-          f"({sl['start_ft']} -> {sl['end_ft']} ft)")
-        A(f"  precipitating hours: {sl['hours_with_precip']}, "
-          f"{sl['first_precip_hour']} to {sl['last_precip_hour']}")
+    if not sl:
+        A("SNOW LINE: no precipitation forecast, so no snow line. Do not state one.")
+        A("")
+    else:
+        if sl.get("above_terrain"):
+            # Accurate and useless. See snowline.TERRAIN_CEILING_FT: the figure
+            # is a real freezing level minus a real melt offset, but it sits
+            # above the highest peak in the San Juans, so it describes ground
+            # nobody stands on. Nine days of posts printed one, and to a local
+            # reader a snow line above the summits reads as a broken
+            # instrument even when the arithmetic behind it is right.
+            A("SNOW LINE: above every peak in the San Juans today.")
+            A("  -> DO NOT STATE A SNOW LINE FIGURE. Not in feet, not roughly,")
+            A("     not 'up around 14,000', not 'well above the peaks at")
+            A("     14,050'. There is no elevation here where this falls as")
+            A("     snow. Say plainly that it is all rain, everywhere, right to")
+            A("     the summits, and move on to what actually matters today.")
+        else:
+            A("SNOW LINE (derived, UNCALIBRATED HEURISTIC, hedge it):")
+            A(f"  representative {sl['representative_ft']} ft, {sl['trend']} "
+              f"({sl['start_ft']} -> {sl['end_ft']} ft)")
+            A(f"  precipitating hours: {sl['hours_with_precip']}, "
+              f"{sl['first_precip_hour']} to {sl['last_precip_hour']}")
         A("")
         types = bundle.get("precip_type_by_band") or {}
         A("PRECIP TYPE BY BAND:")
@@ -104,9 +120,6 @@ def render_bundle(bundle, post_type="school_call"):
             if t:
                 A(f"  {t['label']} ({t['elevation_ft']} ft): {t['precip_type']} "
                   f"[{t['feet_above_snow_line']:+d} ft vs line]")
-        A("")
-    else:
-        A("SNOW LINE: no precipitation forecast, so no snow line. Do not state one.")
         A("")
 
     # --- per-band forecast ---
@@ -145,6 +158,32 @@ def render_bundle(bundle, post_type="school_call"):
         A(f"  SWE {home['swe_in']}in, {home['pct_of_median']}% of median, "
           f"depth {home['snow_depth_in']}in, temp {home['temp_f']}F "
           f"(as of {home['as_of']})")
+    # The one personal number the post is allowed to use, and usually there
+    # is not one. 2026-09-17 said the snow stake at the house was "still
+    # sitting at 5 inches" on an all-rain day with the snow line at 14,000 ft.
+    # Nothing was behind it. The persona asks for exactly one detail from your
+    # own morning and tells you to rotate which one, so when the stake came up
+    # the model filled the hole. Saying the hole is there is the fix: an
+    # absence that is stated does not get filled in.
+    gauge = bundle.get("home_gauge")
+    if gauge:
+        A("YOUR OWN GAUGE AND STAKE (hand-entered for this morning). These are")
+        A("the ONLY numbers you may attribute to your gauge or your stake:")
+        for k, v in gauge.items():
+            if k == "for_date" or v is None:
+                continue
+            A(f"  {k}: {v}")
+        A("")
+    else:
+        A("YOUR OWN GAUGE AND STAKE: NO READING TODAY.")
+        A("  -> Nobody entered one, so you did not measure anything this")
+        A("     morning. Your one personal detail must contain NO measurement")
+        A("     today: the sky out the kitchen window, the drive, the dog, the")
+        A("     woodpile, the truck, the yard. Never an inch figure for the")
+        A("     stake and never a total for the gauge. Saying the gauge is dry")
+        A("     or empty is fine; putting a number on it is not.")
+        A("")
+
     basin = bundle.get("basin")
     if basin:
         A(f"BASIN ({basin['basin']}): {basin['pct_of_median']}% of median "

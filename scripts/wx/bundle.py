@@ -11,6 +11,7 @@ import datetime as _dt
 from zoneinfo import ZoneInfo
 
 from . import constants as C
+from . import observations as OB
 from . import passes as PASSES
 from . import snowline as SL
 from .sources import caic, cdot, nws, openmeteo, snotel, water
@@ -72,6 +73,13 @@ def build(days=5, want_model_spread=True, calibration_offset_ft=0.0,
         "missing": [],
         "bands": {},
     }
+
+    # The only number the post may attribute to the gauge or the stake, and
+    # None is the ordinary case: nobody has ever written into home_gauge.json.
+    # It is carried explicitly rather than left out, because the composer says
+    # "NO READING TODAY" out loud when it is missing. See
+    # observations.read_home_gauge_for_post.
+    out["home_gauge"] = OB.read_home_gauge_for_post(target.isoformat(), now=now)
 
     def record(key, result):
         out["sources"][key] = result.to_dict() if hasattr(result, "to_dict") else result
@@ -179,7 +187,7 @@ def _recent_post_shapes(n=6):
     out = []
     for path in sorted(glob.glob(_os.path.join(root, "*.md")), reverse=True)[:n]:
         try:
-            with open(path) as fh:
+            with open(path, encoding="utf-8") as fh:
                 raw = fh.read()
         except OSError:
             continue

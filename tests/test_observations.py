@@ -100,3 +100,70 @@ def test_notification_body_carries_the_draft_and_the_reason():
     assert "burn scar mentioned" in body
     assert "11/04/26 5:52am" in body
     assert "7200 ft" in body
+
+
+# --- what the POST is allowed to quote -------------------------------------
+#
+# read_home_gauge serves verification, which looks backwards and takes any
+# entry it finds. read_home_gauge_for_post serves the composer, which faces a
+# reader, so it is deliberately narrower. See its docstring for the 09-17
+# draft that made it necessary.
+
+def _with_gauge(entries):
+    """Point observations at a scratch home_gauge.json holding `entries`."""
+    import contextlib
+
+    @contextlib.contextmanager
+    def ctx():
+        prev = OB.MANUAL_LOG
+        with tempfile.TemporaryDirectory() as d:
+            OB.MANUAL_LOG = os.path.join(d, "home_gauge.json")
+            with open(OB.MANUAL_LOG, "w", encoding="utf-8") as fh:
+                json.dump(entries, fh)
+            try:
+                yield
+            finally:
+                OB.MANUAL_LOG = prev
+    return ctx()
+
+
+def test_no_entry_for_today_means_no_reading_to_quote():
+    with _with_gauge({}):
+        assert OB.read_home_gauge_for_post("2026-11-04") is None
+    with _with_gauge({"2026-11-03": {"new_snow_in": 6.0}}):
+        assert OB.read_home_gauge_for_post("2026-11-04") is None, \
+            "yesterday's reading is not this morning's"
+
+
+def test_a_reading_for_today_comes_through():
+    with _with_gauge({"2026-11-04": {"new_snow_in": 6.5, "precip_in": 0.41}}):
+        g = OB.read_home_gauge_for_post("2026-11-04")
+        assert g["new_snow_in"] == 6.5 and g["precip_in"] == 0.41
+        assert g["for_date"] == "2026-11-04"
+
+
+def test_a_stale_as_of_is_rejected():
+    now = _dt.datetime(2026, 11, 4, 5, 45, tzinfo=C._TZ)
+    fresh = (now - _dt.timedelta(hours=9)).isoformat()
+    stale = (now - _dt.timedelta(hours=30)).isoformat()
+    with _with_gauge({"2026-11-04": {"new_snow_in": 6.5, "as_of": fresh}}):
+        assert OB.read_home_gauge_for_post("2026-11-04", now=now) is not None
+    with _with_gauge({"2026-11-04": {"new_snow_in": 6.5, "as_of": stale}}):
+        assert OB.read_home_gauge_for_post("2026-11-04", now=now) is None
+
+
+def test_summer_never_has_snow_on_the_stake():
+    """Nobody has six inches on a stake at 7,650 ft in July.
+
+    The depth is dropped and the rest of the entry survives, so a real summer
+    rain total still reaches the post.
+    """
+    with _with_gauge({"2026-07-14": {"new_snow_in": 6.0, "precip_in": 0.55}}):
+        g = OB.read_home_gauge_for_post("2026-07-14")
+        assert "new_snow_in" not in g
+        assert g["precip_in"] == 0.55
+    with _with_gauge({"2026-07-14": {"new_snow_in": 6.0}}):
+        assert OB.read_home_gauge_for_post("2026-07-14") is None, \
+            "nothing quotable left once the impossible depth is dropped"
+    with _with_gauge({"2026-11-04": {"new_snow_in": 6.0}}):
+        assert OB.read_home_gauge_for_post("2026-11-04")["new_snow_in"] == 6.0

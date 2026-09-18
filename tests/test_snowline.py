@@ -113,3 +113,49 @@ def test_implausible_freezing_levels_are_refused():
 def test_result_records_which_unit_it_used():
     r = SL.snow_line_ft(7400, 33, 31, 0.05, units="ft")
     assert r["source_units"] == "ft"
+
+
+# --- above the terrain it describes ----------------------------------------
+#
+# Nine straight days in September 2026 reported a snow line of 13,600-14,400 ft
+# and two consecutive runs both said 14,050. That looks like a stuck default
+# and is not: each was a genuine freezing level minus a genuine melt offset,
+# and the repeats come from a 48-hour averaging window overlapping a full day
+# between runs inside one monsoon airmass. The math was right. Printing a
+# number above the highest peak in the San Juans was the defect.
+
+def _series(value_ft, n=12):
+    return [{"snow_line_ft": float(value_ft), "time": f"2026-09-16T{h:02d}:00"}
+            for h in range(n)]
+
+
+def test_a_line_above_the_peaks_is_flagged_not_clamped():
+    s = SL.summarize(_series(14050))
+    assert s["above_terrain"] is True
+    assert s["representative_ft"] == 14050, "the value is kept, only flagged"
+
+
+def test_an_ordinary_line_is_not_flagged():
+    s = SL.summarize(_series(7200))
+    assert s["above_terrain"] is False
+    assert s["representative_ft"] == 7200
+
+
+def test_the_ceiling_sits_below_the_peaks_but_above_the_passes():
+    # Wolf Creek is about 10,850 and Red Mountain about 11,000; the fourteeners
+    # are just over 14,000. The ceiling has to be above the first and below the
+    # second or it either gags real forecasts or never fires.
+    assert 11500 < SL.TERRAIN_CEILING_FT < 14000
+    assert SL.summarize(_series(11000))["above_terrain"] is False
+
+
+def test_the_headline_and_the_frontmatter_drop_the_figure():
+    from wx import site as SITE
+    bundle = {"snow_line": {"representative_ft": 14100, "trend": "steady",
+                            "above_terrain": True},
+              "alerts": [], "generated_at": "2026-09-13T06:51:00",
+              "post_for_date": "2026-09-13"}
+    title = SITE.auto_title(bundle, "school_call")
+    assert "14,100" not in title and "Snow line" not in title
+    fm = SITE.front_matter(bundle, "school_call", title)
+    assert fm["snowLineFt"] is None

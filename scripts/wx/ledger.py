@@ -51,7 +51,7 @@ def path():
 
 def load():
     try:
-        with open(path()) as fh:
+        with open(path(), encoding="utf-8") as fh:
             data = json.load(fh)
     except (OSError, ValueError):
         return {}
@@ -61,7 +61,7 @@ def load():
 def _save(data):
     try:
         os.makedirs(state_dir(), exist_ok=True)
-        with open(path(), "w") as fh:
+        with open(path(), "w", encoding="utf-8") as fh:
             json.dump(data, fh, indent=2, sort_keys=True)
     except OSError as exc:
         # A ledger write failure must never take down a post that already

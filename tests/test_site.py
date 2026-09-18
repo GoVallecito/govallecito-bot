@@ -257,3 +257,43 @@ def test_a_data_block_does_not_burn_a_second_model_call():
         finally:
             os.environ.pop("WX_STATE_DIR", None)
     assert len(calls) <= 1
+
+
+def test_the_other_title_builder_carries_no_em_dash_either():
+    """The gap that let four of them accumulate.
+
+    test_titles_carry_no_em_dash above covers site.auto_title. publish had a
+    near-copy, _auto_title, with no test at all, and it drifted to four em
+    dashes in strings that become page titles and slugs for the storm-watch
+    and totals posts. It now delegates, and this pins that it keeps doing so.
+    """
+    from wx import publish as P
+    for pt in ("school_call", "evening", "storm_setup", "totals", "life_safety"):
+        for b in (bundle(), bundle(snow=8100)):
+            t = P._auto_title(b, pt)
+            assert "\u2014" not in t and "\u2013" not in t, t
+            assert t == SITE.auto_title(b, pt), "one rule, one implementation"
+    alerted = bundle()
+    alerted["alerts"] = [{"event": "Winter Storm Warning"}]
+    assert "\u2014" not in P._auto_title(alerted, "school_call")
+
+
+def test_no_shipped_or_model_facing_string_carries_a_dash():
+    """A sweep, because the rule keeps getting re-broken one file at a time.
+
+    sanitize.py is exempt: those characters are what it exists to remove.
+    render_forecast_card draws an ellipsis glyph into a PNG, which is
+    typography, not prose.
+    """
+    import pathlib
+    root = pathlib.Path(__file__).resolve().parents[1] / "scripts" / "wx"
+    exempt = {"sanitize.py", "render_forecast_card.py"}
+    offenders = []
+    for path in sorted(root.rglob("*.py")):
+        if path.name in exempt:
+            continue
+        for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            for ch in ("\u2014", "\u2013", "\u2192", "\u2026"):
+                if ch in line:
+                    offenders.append(f"{path.name}:{n}: {line.strip()[:60]}")
+    assert not offenders, "dashes/arrows in wx source:\n  " + "\n  ".join(offenders)

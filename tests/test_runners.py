@@ -17,14 +17,19 @@ from wx import run_forecast as RF, run_verify as RV, run_storm_watch as RSW
 from wx.sources.http import SourceResult
 from test_storm_watch import payload
 
+# NOTE: the personal detail here is deliberately not a measurement. This
+# fixture used to end "about three inches on the stake," which is the exact
+# fabrication the 2026-09-17 draft shipped: a stake reading with nothing behind
+# it, on a run whose bundle carries no home_gauge. guardrails now BLOCKs that,
+# correctly, and the fixture was the thing at fault.
 CLEAN_DRAFT = (
     "11/04/26 5:52am: Morning, its Wednesday. Snow line sitting around 7,200ft "
     "and falling. Take that with a grain of salt (its been running low all "
     "night). Durango and the Valley are just wet. Up the Pine its slushy on the "
     "501. Vallecito and the Florida picked up a few inches and the 240 will be "
     "the slick one, it never gets sun through there. The districts decide by "
-    "6:30. At the house I have got about three inches on the stake. How is it "
-    "looking out your window?")
+    "6:30. At the house the woodpile is still buried and the dog wanted no "
+    "part of the yard. How is it looking out your window?")
 
 
 def stub_llm(messages):
@@ -255,6 +260,75 @@ def test_evening_runs_target_tomorrow_morning():
         assert (target - now.date()).days == offset, f"hour {hour}"
 
 
+def test_a_notify_failure_fails_the_run_and_leaves_the_day_open():
+    """THE 09-16/09-17 REGRESSION.
+
+    A held draft whose review issue never opened used to exit 0 and still spend
+    the slot in the ledger, so no later run inside the window retried and the
+    only trace was a return value nobody read. Exit 0 also let the
+    `if: success()` heartbeat ping healthchecks.io, so the dead-man alarm stayed
+    quiet about a morning nobody was ever told about.
+
+    Under Actions with no usable GitHub context the notify attempt fails, and
+    that must now be loud: non-zero, a NOT ANNOUNCED status, and no ledger
+    entry for the day.
+    """
+    os.environ["DRY_RUN"] = "true"
+    with tempfile.TemporaryDirectory() as d:
+        import wx.run_forecast as RFmod
+        from wx import ledger as LG
+        os.environ["WX_STATE_DIR"] = os.path.join(d, "state")
+        os.environ["GITHUB_ACTIONS"] = "true"
+        os.environ.pop("GITHUB_REPOSITORY", None)
+        os.environ.pop("GITHUB_TOKEN", None)
+        os.environ.pop("GH_TOKEN", None)
+        os.chdir(d)
+        real = RFmod.write_status
+        captured = {}
+        RFmod.write_status = lambda state, detail, *a, **k: captured.update(
+            state=state, hint=k.get("hint"))
+        try:
+            b = B.build(fetchers=_fakes())
+            # first_30_days holds everything, which is the whole point of it
+            rc = RFmod.run(slot="school_call", llm=stub_llm, first_30_days=True,
+                           dry_bundle=b, site_dir=os.path.join(d, "site"))
+            for_date = b.get("post_for_date") or b.get("local_date")
+            still_open = not LG.done(for_date, "school_call")
+        finally:
+            RFmod.write_status = real
+            os.environ.pop("WX_STATE_DIR", None)
+            os.environ.pop("GITHUB_ACTIONS", None)
+
+        assert rc == 1, "a notification that never reached a human must go red"
+        assert "NOT ANNOUNCED" in captured.get("state", "")
+        assert "retries the notification" in (captured.get("hint") or "")
+        assert still_open, "the day must stay open so the next run can retry"
+
+
+def test_a_local_run_without_github_context_is_not_a_failure():
+    """The counterpart. Outside Actions there is no token and never was one.
+
+    The draft is printed in full, there is nothing to retry and nothing to
+    alarm about, so `DRY_RUN=true python run_forecast.py` on a laptop must not
+    start looking like a broken pipeline.
+    """
+    os.environ["DRY_RUN"] = "true"
+    with tempfile.TemporaryDirectory() as d:
+        import wx.run_forecast as RFmod
+        os.environ["WX_STATE_DIR"] = os.path.join(d, "state")
+        os.environ.pop("GITHUB_ACTIONS", None)
+        os.environ.pop("GITHUB_REPOSITORY", None)
+        os.environ.pop("GITHUB_TOKEN", None)
+        os.chdir(d)
+        try:
+            rc = RFmod.run(slot="school_call", llm=stub_llm, first_30_days=True,
+                           dry_bundle=B.build(fetchers=_fakes()),
+                           site_dir=os.path.join(d, "site"))
+        finally:
+            os.environ.pop("WX_STATE_DIR", None)
+        assert rc == 0
+
+
 def test_the_suite_does_not_write_into_the_real_repo():
     """Regression guard for a genuinely nasty one.
 
@@ -277,3 +351,15 @@ def test_the_suite_does_not_write_into_the_real_repo():
             os.environ.pop("WX_STATE_DIR", None)
     after = sorted(p.name for p in repo_state.glob("*.md")) if repo_state.exists() else []
     assert before == after, f"the suite wrote into the repo: {set(after) - set(before)}"
+
+
+def test_the_bundle_always_carries_a_home_gauge_key():
+    """Present even when empty, because the composer branches on it.
+
+    state/home_gauge.json is {} in the real repo and has never had an entry, so
+    None is the ordinary value. What must not happen is the key being absent,
+    which is how the brief said nothing at all and the model filled the hole.
+    """
+    b = B.build(fetchers=_fakes())
+    assert "home_gauge" in b
+    assert b["home_gauge"] is None or isinstance(b["home_gauge"], dict)

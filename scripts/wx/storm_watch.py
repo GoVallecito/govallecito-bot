@@ -47,7 +47,7 @@ def _load():
     if not os.path.exists(STATE):
         return {"fired": {}}
     try:
-        with open(STATE) as fh:
+        with open(STATE, encoding="utf-8") as fh:
             return json.load(fh)
     except Exception:  # noqa: BLE001
         return {"fired": {}}
@@ -56,7 +56,7 @@ def _load():
 def _save(obj):
     os.makedirs(os.path.dirname(STATE), exist_ok=True)
     tmp = f"{STATE}.tmp-{os.getpid()}"
-    with open(tmp, "w") as fh:
+    with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, indent=2)
         fh.write("\n")
     os.replace(tmp, STATE)

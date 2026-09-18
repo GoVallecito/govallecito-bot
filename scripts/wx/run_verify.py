@@ -91,9 +91,9 @@ def run(llm=None, obs=None, bundle_override=None, first_30_days=None):
     print(f"guardrails: {verdict.upper()}")
 
     os.makedirs("output", exist_ok=True)
-    with open(os.path.join("output", "totals_draft.txt"), "w") as fh:
+    with open(os.path.join("output", "totals_draft.txt"), "w", encoding="utf-8") as fh:
         fh.write(text)
-    with open(os.path.join("output", "observations.json"), "w") as fh:
+    with open(os.path.join("output", "observations.json"), "w", encoding="utf-8") as fh:
         json.dump(observations, fh, indent=2, default=str)
 
     if verdict == G.BLOCK:

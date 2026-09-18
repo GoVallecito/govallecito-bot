@@ -16,7 +16,7 @@ front matter, and the site footer.
 
 NAME = "Up the Pine Weather"
 SHORT = "Up the Pine"
-TAGLINE = "Vallecito · Bayfield · Durango — by elevation"
+TAGLINE = "Vallecito · Bayfield · Durango, by elevation"
 SITE = "govallecito.com/weather"
 # What the honesty covenant reduces to on a card. Deliberately not a slogan.
 FOOTER_NOTE = "Ranges, not point values. Sources named. Misses posted."

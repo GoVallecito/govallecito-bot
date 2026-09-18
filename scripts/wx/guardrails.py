@@ -84,6 +84,72 @@ ROAD_STATUS_CLAIMS = [
      "states a present-tense road surface condition"),
 ]
 
+# A reading attributed to the gauge or the snow stake at the house.
+#
+# 2026-09-17: "the snow stake here is still sitting at 5 inches" on an all-rain
+# day with the snow line at 14,000 ft. state/home_gauge.json is {} and always
+# has been, so nobody had ever entered a reading and the bundle carried no
+# gauge value at all. The persona asks for exactly one personal detail and
+# tells the model to rotate which one; when the stake's turn came up the model
+# supplied a number for it, because a plausible number is what a language model
+# produces where a number is expected.
+#
+# The prompt now states the absence in as many words, which is the fix. This is
+# the backstop for the mornings it does not hold. A qualitative mention is
+# fine and the voice needs it -- "the gauge is dry," "nothing in it" -- so only
+# a FIGURE is caught.
+_GAUGE_WORD = r"(?:rain gauge|snow stake|gauge|guage|stake)"
+_FIGURE = (r"(?:\d+(?:\.\d+)?|a couple(?: of)?|a few|half an?|one|two|three|four|"
+           r"five|six|seven|eight|nine|ten|eleven|twelve)")
+_INCHES = r'(?:"|inch(?:es)?|in\b)'
+
+HOME_READING_PATTERNS = [
+    re.compile(rf"\b{_GAUGE_WORD}\b[^.\n]{{0,60}}?({_FIGURE})\s*{_INCHES}", re.IGNORECASE),
+    re.compile(rf"({_FIGURE})\s*{_INCHES}[^.\n]{{0,60}}?\b{_GAUGE_WORD}\b", re.IGNORECASE),
+    # A liquid total needs no unit and the persona's own example has none:
+    # "The gauge showed 0.12 overnight" is given as the model of a good
+    # personal detail. A decimal point is required precisely so this does not
+    # fire on the road numbers and elevations that surround it -- the 550, the
+    # 501, 7,200 ft -- which are integers every time.
+    re.compile(rf"\b{_GAUGE_WORD}\b[^.\n]{{0,30}}?(\d+\.\d+)", re.IGNORECASE),
+    re.compile(rf"(\d+\.\d+)[^.\n]{{0,30}}?\b{_GAUGE_WORD}\b", re.IGNORECASE),
+]
+
+
+def _gauge_supports(gauge, stated):
+    """Is `stated` a figure the hand-entered reading actually contains?"""
+    if not gauge:
+        return False
+    try:
+        value = float(stated)
+    except (TypeError, ValueError):
+        # A spelled number ("about three inches on the stake") is never treated
+        # as supported. If a real reading is behind it, a person can say so in
+        # ten seconds; the cost of the false positive is one glance.
+        return False
+    for key, v in gauge.items():
+        if key == "for_date" or v is None:
+            continue
+        try:
+            if abs(float(v) - value) < 0.05:
+                return True
+        except (TypeError, ValueError):
+            continue
+    return False
+
+
+def unsupported_home_reading(bundle, text):
+    """The offending phrase, or None. See HOME_READING_PATTERNS above."""
+    for pattern in HOME_READING_PATTERNS:
+        m = pattern.search(text or "")
+        if not m:
+            continue
+        if _gauge_supports(bundle.get("home_gauge"), m.group(1)):
+            continue
+        return m.group(0).strip()
+    return None
+
+
 # Saying Florida with first-syllable stress is the number one newcomer tell.
 #
 # CAREFUL: the persona writes the plain word "Florida" constantly and correctly
@@ -127,6 +193,13 @@ def evaluate(bundle, draft_text, *, first_30_days=False, calibrated=False):
             escalate(BLOCK, f"draft {why}")
     if FLORIDA_MISPRONUNCIATION.search(draft_text):
         escalate(BLOCK, "draft mispronounces Florida (it is fluh-REE-duh)")
+
+    stray = unsupported_home_reading(bundle, draft_text)
+    if stray:
+        escalate(BLOCK,
+                 f"draft attributes a reading to the gauge or stake ({stray!r}) "
+                 "that no hand-entered observation supports; there is nothing "
+                 "in state/home_gauge.json for this date")
 
     # Road status without a road-status source.
     if not bundle.get("roads"):
@@ -180,6 +253,15 @@ def evaluate(bundle, draft_text, *, first_30_days=False, calibrated=False):
     if _states_snow_beyond_3_days(draft_text, bundle):
         escalate(REVIEW, "appears to state snow amounts beyond day 3")
 
+    if (bundle.get("snow_line") or {}).get("above_terrain"):
+        stated = states_a_terrain_impossible_snow_line(draft_text)
+        if stated:
+            escalate(REVIEW,
+                     f"states a snow line of {stated} ft on a day the derived "
+                     "line sits above every peak in the San Juans; the post "
+                     "should say it is all rain to the summits rather than "
+                     "print a figure for ground nobody stands on")
+
     if bundle.get("snow_line") and not calibrated:
         if not re.search(r"grain of salt|uncertain|could go either way|rough|best guess|not settled",
                          draft_text, re.IGNORECASE):
@@ -210,6 +292,22 @@ def _states_snow_beyond_3_days(text, bundle):
         rf"{_DAY_WORDS}[^.\n]{{0,80}}\d+\s*(?:-\s*\d+)?\s*(?:\"|inch|inches)",
         re.IGNORECASE)
     return bool(reverse.search(text))
+
+
+def states_a_terrain_impossible_snow_line(text):
+    """A 13,000-19,999 ft figure sitting next to the words "snow line".
+
+    Only meaningful on a day the bundle already flagged `above_terrain`; see
+    snowline.TERRAIN_CEILING_FT. The prompt tells the model not to print the
+    number at all, and this is the belt for those braces. REVIEW rather than
+    BLOCK: the figure is accurate, it is only useless, so the cost of a false
+    positive is one person glancing at a draft.
+    """
+    for m in re.finditer(r"\b1[3-9][,.]?\d{3}\b", text or ""):
+        near = (text[max(0, m.start() - 60):m.end() + 60]).lower()
+        if "snow line" in near or "snowline" in near or "snow-line" in near:
+            return m.group(0)
+    return None
 
 
 def require_or_abort(bundle):
@@ -275,5 +373,10 @@ def correction_note(reasons):
         "in the future or conditional, and point at CDOT for the status. "
         "'Coal Bank should stay dry through the morning' is right. "
         "'The passes are dry' is not.\n\n"
+        "On your own gauge or snow stake specifically, if that is what was "
+        "flagged: there is no reading from either one today and you did not "
+        "measure anything. Keep your one personal detail, but make it "
+        "something you saw rather than something you measured. No inch figure "
+        "for the stake, no total for the gauge.\n\n"
         "Return only the post."
     )

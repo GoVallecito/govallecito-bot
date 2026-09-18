@@ -183,8 +183,9 @@ def test_full_run_publishes_when_clean(monkeypatch=None):
              "running low all night). Durango and the Valley are just wet. Up "
              "the Pine its slushy on the 501. Vallecito and the Florida picked "
              "up a few inches and the 240 will be the slick one. The districts "
-             "decide by 6:30. At the house I have got about three inches on the "
-             "stake. How is it looking out your window?")
+             "decide by 6:30. At the house the woodpile is still buried and "
+             "the dog wanted no part of the yard. How is it looking out your "
+             "window?")
     verdict, reasons = G.evaluate(b, draft, first_30_days=False, calibrated=False)
     assert verdict == G.PASS, reasons
     with tempfile.TemporaryDirectory() as d:

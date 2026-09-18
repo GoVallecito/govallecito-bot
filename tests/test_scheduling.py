@@ -300,7 +300,8 @@ def test_the_brief_shows_the_model_its_own_recent_openers():
     }
     brief = CO.render_bundle(bundle, post_type="school_call")
     assert "Morning, its Sunday." in brief
-    assert "Do not reuse any of these shapes" in brief
+    assert "These exact sentences are forbidden" in brief
+    assert "A new opener, a new pivot, a new closing question" in brief
 
 
 def test_a_weekend_brief_drops_the_school_frame():
@@ -390,3 +391,40 @@ def test_verify_writes_into_wx_state_dir():
         written = os.path.join(t.dir, "forecast_log.json")
         assert os.path.exists(written), os.listdir(t.dir)
         assert json.load(open(written))["forecasts"]
+
+
+# --- the gauge the post is allowed to quote --------------------------------
+
+def test_the_brief_says_out_loud_when_there_is_no_gauge_reading():
+    """An absence that is stated does not get filled in.
+
+    The 09-17 draft invented a 5 inch stake reading because the brief said
+    nothing at all about the gauge and the persona asks for exactly one
+    personal detail. Silence about the file was the bug.
+    """
+    from wx import compose as CO
+    bundle = {
+        "post_for_weekday": "Tuesday", "post_for_date": "2026-09-08",
+        "post_for_stamp": "09/08/26", "generated_at": "2026-09-08T05:46:00",
+        "season": "fall", "day_type": "school day", "is_late": False,
+        "recent_posts": [], "alerts": [], "bands": {}, "missing": [],
+        "home_gauge": None,
+    }
+    brief = CO.render_bundle(bundle, post_type="school_call")
+    assert "YOUR OWN GAUGE AND STAKE: NO READING TODAY." in brief
+    assert "must contain NO measurement" in brief
+
+
+def test_a_real_reading_reaches_the_brief_as_the_only_allowed_numbers():
+    from wx import compose as CO
+    bundle = {
+        "post_for_weekday": "Tuesday", "post_for_date": "2026-09-08",
+        "post_for_stamp": "09/08/26", "generated_at": "2026-09-08T05:46:00",
+        "season": "fall", "day_type": "school day", "is_late": False,
+        "recent_posts": [], "alerts": [], "bands": {}, "missing": [],
+        "home_gauge": {"precip_in": 0.42, "for_date": "2026-09-08"},
+    }
+    brief = CO.render_bundle(bundle, post_type="school_call")
+    assert "precip_in: 0.42" in brief
+    assert "ONLY numbers you may attribute" in brief
+    assert "NO READING TODAY" not in brief

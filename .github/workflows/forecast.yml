@@ -97,16 +97,34 @@ jobs:
           WX_SITE_DIR: ${{ vars.WX_SITE_DIR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p state
+          mkdir -p state state/logs
           # Capture the run's own output where it can be read from a plain
           # clone. GitHub's raw logs sit behind short-lived signed URLs, so an
           # import-time failure -- which happens before any in-script handler
           # exists -- was otherwise effectively unreadable.
+          #
+          # The dated file is the fix for the second half of that. This job
+          # runs about 56 times a day and `tee` truncates, so by the time
+          # anyone looked at last-run-forecast.log the run that actually had
+          # something to say had been overwritten many times over, including
+          # every run that failed to open a review issue. The day's log now
+          # accumulates under state/logs/ and survives; the flat file stays as
+          # the convenient "what happened last" pointer everything else, and
+          # the miss report, already names.
+          DAY_LOG="state/logs/forecast-$(TZ=America/Denver date +%Y-%m-%d).log"
           set +e
           python scripts/wx/run_forecast.py 2>&1 | tee state/last-run-forecast.log
           code=${PIPESTATUS[0]}
           set -e
           echo "exit=$code" >> state/last-run-forecast.log
+          {
+            echo "=== $(TZ=America/Denver date --iso-8601=seconds) run ${GITHUB_RUN_ID} ==="
+            cat state/last-run-forecast.log
+            echo
+          } >> "$DAY_LOG"
+          # Keep a fortnight. Long enough to review a bad week, short enough
+          # that the repo does not grow a log directory nobody prunes.
+          ls -1t state/logs/forecast-*.log 2>/dev/null | tail -n +15 | xargs -r rm -f
           exit $code
 
       # Always uploaded, including on a BLOCK or REVIEW verdict -- the held

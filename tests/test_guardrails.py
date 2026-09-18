@@ -143,3 +143,67 @@ def test_first_syllable_stress_gloss_still_blocks():
     ]:
         v, _ = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + bad)
         assert v == G.BLOCK, f"should have blocked: {bad!r}"
+
+
+# --- the gauge and the stake -----------------------------------------------
+#
+# 2026-09-17 shipped "the snow stake here is still sitting at 5 inches" on an
+# all-rain day with the snow line at 14,000 ft. state/home_gauge.json is {} and
+# always has been, so no reading existed anywhere; the persona asks for exactly
+# one personal detail and rotates which one, and the model filled the hole when
+# the stake's turn came round.
+
+def test_a_stake_or_gauge_reading_with_nothing_behind_it_is_blocked():
+    for bad in [
+        'The snow stake here is still sitting at 5" this morning.',
+        "At the house I have got about three inches on the stake.",
+        "The gauge showed 0.42 overnight.",
+        "Gauge here caught 0.3 out of that band.",
+        "Half an inch in the rain gauge at the house.",
+    ]:
+        v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + bad)
+        assert v == G.BLOCK, f"should have blocked: {bad!r} -> {why}"
+        assert any("gauge or stake" in r for r in why), why
+        # and it must be the kind of BLOCK the one-shot rewrite can fix
+        assert G.text_fixable(why), why
+
+
+def test_a_real_reading_is_allowed_and_a_wrong_one_is_not():
+    bundle = dict(GOOD_BUNDLE, home_gauge={"precip_in": 0.42,
+                                           "for_date": "2026-11-04"})
+    v, why = G.evaluate(bundle, GOOD_DRAFT + " The gauge caught 0.42 overnight.")
+    assert v == G.PASS, why
+    v, why = G.evaluate(bundle, GOOD_DRAFT + " The gauge caught 0.85 overnight.")
+    assert v == G.BLOCK, "a figure the reading does not contain is still invented"
+
+
+def test_the_gauge_can_still_be_mentioned_without_a_number():
+    # The voice needs this and it invents nothing. Only a FIGURE is the problem.
+    for ok in [
+        "The gauge here is dry and the sky is clear.",
+        "Nothing in the gauge this morning.",
+        "The stake is bare.",
+        "Vallecito and the Florida picked up a few inches overnight.",
+        "The 501 could see a couple inches by the 6:30 call.",
+    ]:
+        v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + ok)
+        assert v == G.PASS, f"should have passed: {ok!r} -> {why}"
+
+
+def test_a_snow_line_figure_above_the_terrain_is_held_for_review():
+    above = dict(GOOD_BUNDLE,
+                 snow_line={"representative_ft": 14050, "above_terrain": True})
+    v, why = G.evaluate(above, GOOD_DRAFT + " Snow line is up around 14,050 ft "
+                                            "today so its all rain.",
+                        calibrated=True)
+    assert v == G.REVIEW, why
+    assert any("above every peak" in r for r in why), why
+
+
+def test_saying_it_is_all_rain_instead_passes():
+    above = dict(GOOD_BUNDLE,
+                 snow_line={"representative_ft": 14050, "above_terrain": True})
+    v, why = G.evaluate(above, GOOD_DRAFT + " Its all rain today, right to the "
+                                            "summits, no snow anywhere.",
+                        calibrated=True)
+    assert v == G.PASS, why
