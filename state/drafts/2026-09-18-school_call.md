@@ -1,24 +1,9 @@
-# Forecast run — held for review
+# Friday, 2026-09-18, school_call
 
-When: 2026-09-18T05:02:30-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: 12950 | Alerts: none
 
-## Detail
+---
 
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 12950
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/18/26 5:01am: Morning, its Friday. The sky out the window here is still overcast and the gauge caught another 0.18" overnight, which is the tail end of what came through.
 
 Durango and the Animas Valley (6,500') are done with the wet stuff. The bus run should be dry and temps climbing through the 60s this morning. Clear sailing for anyone heading to town.
@@ -36,4 +21,3 @@ The SNOTEL at Vallecito is showing 4" of depth and 0.1" of SWE as of yesterday, 
 Drying trend holds through the weekend, then the GFS and Euro are hinting at another round of moisture early next week but they disagree on how much gets pulled north.
 
 How's the 240 or the 501 looking on your drive this morning?
-```

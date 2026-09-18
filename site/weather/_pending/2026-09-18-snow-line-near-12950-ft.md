@@ -1,24 +1,18 @@
-# Forecast run — held for review
+---
+title: "Snow line near 12,950 ft"
+date: "2026-09-18T05:01:39.174590-06:00"
+forDate: "2026-09-18"
+postType: "school_call"
+snowLineFt: 12950
+snowLineTrend: "falling"
+bands: {"durango": {"elevationFt": 6500, "precipType": "rain", "label": "Durango and the Animas Valley"}, "bayfield": {"elevationFt": 6900, "precipType": "rain", "label": "Bayfield and up the Pine"}, "vallecito": {"elevationFt": 7650, "precipType": "rain", "label": "Vallecito and the Florida"}, "weminuche": {"elevationFt": 10500, "precipType": "rain", "label": "The high Weminuche"}}
+basinPercentOfMedian: null
+alerts: []
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-18-snow-line-near-12950-ft"
+---
 
-When: 2026-09-18T05:02:30-06:00 (Mountain)
-Slot: `school_call`
-
-## Detail
-
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 12950
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/18/26 5:01am: Morning, its Friday. The sky out the window here is still overcast and the gauge caught another 0.18" overnight, which is the tail end of what came through.
 
 Durango and the Animas Valley (6,500') are done with the wet stuff. The bus run should be dry and temps climbing through the 60s this morning. Clear sailing for anyone heading to town.
@@ -36,4 +30,3 @@ The SNOTEL at Vallecito is showing 4" of depth and 0.1" of SWE as of yesterday, 
 Drying trend holds through the weekend, then the GFS and Euro are hinting at another round of moisture early next week but they disagree on how much gets pulled north.
 
 How's the 240 or the 501 looking on your drive this morning?
-```
