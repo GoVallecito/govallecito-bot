@@ -1,8 +1,36 @@
 {
-  "generatedAt": "2026-09-18T05:17:33-06:00",
-  "count": 2,
+  "generatedAt": "2026-09-18T05:17:52-06:00",
+  "count": 3,
   "truncated": false,
   "posts": [
+    {
+      "title": "Morning forecast for Vallecito, Bayfield and Durango",
+      "date": "2026-09-11T05:04:54.272697-06:00",
+      "forDate": "2026-09-11",
+      "postType": "school_call",
+      "snowLineFt": null,
+      "snowLineTrend": null,
+      "bands": {},
+      "basinPercentOfMedian": null,
+      "alerts": [],
+      "sources": [
+        "CAIC map-layer",
+        "CDOT",
+        "Colorado DWR (CDSS)",
+        "NRCS SNOTEL",
+        "NWS GJT AFD",
+        "NWS alerts",
+        "Open-Meteo bayfield",
+        "Open-Meteo durango",
+        "Open-Meteo vallecito",
+        "Open-Meteo weminuche",
+        "Pass forecast (Open-Meteo)",
+        "USGS NWIS"
+      ],
+      "generatedBy": "govallecito-wx",
+      "slug": "2026-09-11-morning-forecast-for-vallecito-bayfield-and-durango",
+      "body": "09/11/26 5:04am: Friday morning, and theres still not a drop on the woodpile. Dry is the whole story for the county today.\n\nThe bus run should be straightforward this morning. Durango and the Animas Valley start in the upper 50s and climb to the mid-80s this afternoon. Bayfield and up the Pine start low 50s and track the same pattern. Vallecito and the Florida start mid-50s, then push into the low 80s by afternoon.\n\nAll the models agree we stay dry through the day. The Euro, GFS, ICON and GEM all show zero precipitation through tonight and tomorrow, so theres no disagreement to hedge. A few afternoon clouds maybe, but nothing that develops.\n\nWind picks up this afternoon, gusts to 20-25mph in town and Bayfield, a bit less up the Florida. The high Weminuche stays breezy through the day, gusts 15-25 up there.\n\nThe 550 north should stay dry over Coal Bank, Molas and Red Mountain through the day. I'd expect Wolf Creek on the 160 to run the same. That's the forecast, not the road status, so check CDOT for current conditions and chain law: https://www.cotrip.org/\n\nDistricts decide by 6:30 as usual and I'd expect a clean drive in this morning.\n\nVallecito's still sitting at 22% of full pool and the SNOTEL up there is showing 0.1\" SWE with 3\" of depth, which is just trace stuff from whatever blew through earlier this week.\n\nThe Grand Junction discussion is watching SubTrop moisture trying to work north into the Four Corners this weekend, so things could get more interesting Saturday and Sunday, but today stays quiet.\n\nI'll have more later if anything changes."
+    },
     {
       "title": "Morning forecast for Vallecito, Bayfield and Durango",
       "date": "2026-09-10T05:06:14.189121-06:00",
