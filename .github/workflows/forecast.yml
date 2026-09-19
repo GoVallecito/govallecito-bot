@@ -83,6 +83,11 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
+      # For tools/draft-lint.mjs. Zero npm dependencies, so no install step.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - name: Run the forecaster
         env:
           DRY_RUN: ${{ inputs.dry_run || vars.DRY_RUN }}
@@ -126,6 +131,16 @@ jobs:
           # that the repo does not grow a log directory nobody prunes.
           ls -1t state/logs/forecast-*.log 2>/dev/null | tail -n +15 | xargs -r rm -f
           exit $code
+
+      # Deterministic lint of a held draft, prepended to the review issue the
+      # forecaster just opened and labelled lint-clean or lint-failed. Does
+      # nothing on runs that held no draft. Never fails the job and never
+      # suppresses the issue: a bad draft is still shown, labelled bad.
+      - name: Lint the held draft into its review issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash tools/lint-review-issue.sh state/last-run-forecast.log
 
       # Always uploaded, including on a BLOCK or REVIEW verdict -- the held
       # draft is the thing you most need to read when the gate stops something.
