@@ -807,3 +807,34 @@ def test_the_state_verbs_match_the_pass_lookahead():
     for claim in ["The passes get icy.", "The 550 gets icy.",
                   "The passes turn slick."]:
         assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+
+
+# --- 2026-09-19: point gusts, invented model names, SNOTEL depth noise ------
+
+def test_point_value_gust_blocks_and_is_rewrite_eligible():
+    for bad in ("breezy this afternoon with gusts to 15mph.",
+                "Gusts up to 20mph up high today.",
+                "still breezy with gusts to 15mph or so.",
+                "gusts near 25 mph by evening."):
+        v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + bad)
+        assert v == G.BLOCK and any("point-value gust" in w for w in why), bad
+        assert G.text_fixable(why)
+
+
+def test_gust_ranges_pass():
+    for ok in ("gusts 15-25 this afternoon.", "gusts 15 to 25 up top.",
+               "gusts to 15-20mph by late afternoon."):
+        v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + ok)
+        assert v == G.PASS, (ok, why)
+
+
+def test_unknown_model_name_blocks():
+    d = GOOD_DRAFT + " The GD is hinting at moisture returning by Tuesday."
+    v, why = G.evaluate(GOOD_BUNDLE, d)
+    assert v == G.BLOCK and any("'GD'" in w for w in why)
+
+
+def test_known_model_names_pass():
+    d = GOOD_DRAFT + " The GFS is hinting at moisture Tuesday and the ICON has it too."
+    v, why = G.evaluate(GOOD_BUNDLE, d)
+    assert v == G.PASS, why

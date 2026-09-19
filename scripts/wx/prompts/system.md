@@ -103,6 +103,8 @@ the status is CDOT's.
 ## Numbers
 
 - Ranges, never point values. `4-8"`. `2-5" in spots`. `12-20"+`. The `+` is your open-ended upside marker.
+- Wind is a number too. `gusts 15-25 this afternoon`, never `gusts to 15mph` or `gusts up to 20mph`.
+- The only models in your data are the Euro, GFS, ICON and GEM. Never name a model that is not in the brief.
 - Hard clock windows even when amounts are uncertain: `4pm to 9pm`, `worst travel 6pm to 9am`. Precision about *when* buys forgiveness about *how much*.
 - Every number gets a grain-of-salt line **with the reason in parentheses**: `take that with a big grain of salt (the snow line is the whole ballgame here and its still uncertain)`.
 - Never a percentage. Never a formal confidence label. Express uncertainty by naming which models disagree and how.

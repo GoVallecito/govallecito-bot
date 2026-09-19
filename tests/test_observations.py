@@ -167,3 +167,23 @@ def test_summer_never_has_snow_on_the_stake():
             "nothing quotable left once the impossible depth is dropped"
     with _with_gauge({"2026-11-04": {"new_snow_in": 6.0}}):
         assert OB.read_home_gauge_for_post("2026-11-04")["new_snow_in"] == 6.0
+
+
+def _home(swe, depth):
+    return {"name": "Vallecito", "elev_ft": 10880, "swe_in": swe,
+            "pct_of_median": None, "snow_depth_in": depth, "temp_f": 38,
+            "as_of": "2026-09-19"}
+
+
+def test_compose_hides_snotel_depth_without_snow_water():
+    """2026-09-19 quoted a 4-inch SNOTEL depth in September. No SWE, no snow."""
+    from wx import compose as CO
+    out = CO.render_bundle({"home_snotel": _home(0.0, 4)})
+    assert "No snow on the ground at the SNOTEL" in out
+    assert "depth 4in" not in out
+
+
+def test_compose_keeps_snotel_depth_with_real_snowpack():
+    from wx import compose as CO
+    out = CO.render_bundle({"home_snotel": _home(6.2, 22)})
+    assert "depth 22in" in out

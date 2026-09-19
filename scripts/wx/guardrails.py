@@ -475,6 +475,32 @@ HOME_READING_PATTERNS = [
 ]
 
 
+# A gust given as a single number. "gusts 15-25" and "gusts 15 to 25" pass;
+# "gusts to 15mph", "gusts up to 20", "gusts near 25 mph" do not.
+POINT_GUST = re.compile(
+    r"\bgust(?:s|ing)?\s+(?:(?:up\s+)?to|of|near|around|to\s+around|"
+    r"approaching|topping out (?:at|near))\s+(?:around\s+)?\d+(?!\d)"
+    r"(?!\s*(?:-|\u2013|to)\s*\d)\s*(?:mph)?",
+    re.IGNORECASE)
+
+# Every model name the bundle can carry, plus the non-model sources the voice
+# legitimately names in the same grammatical slot ("the NWS is calling for").
+MODEL_NAMES = {"EURO", "ECMWF", "GFS", "ICON", "GEM", "NAM", "HRRR", "NBM",
+               "RAP", "CMC", "UKMET", "NWS", "CDOT", "CAIC", "SNOTEL", "USGS",
+               "AFD", "NRCS", "CPC", "ECENS", "EPS", "GEFS", "GEPS",
+               "GDPS", "RDPS", "HREF", "SREF", "WPC", "SPC"}
+_MODEL_SLOT = re.compile(
+    r"\b[Tt]he\s+([A-Z]{2,6})\s+(?:is|are|has|was|keeps|shows|showing|wants|"
+    r"brings|hints|hinting|looks|cranks|cranking|puts|paints|runs|went|came)\b")
+
+
+def unknown_model_name(text):
+    for m in _MODEL_SLOT.finditer(text or ""):
+        if m.group(1).upper() not in MODEL_NAMES:
+            return m.group(1)
+    return None
+
+
 def _gauge_supports(gauge, stated):
     """Is `stated` a figure the hand-entered reading actually contains?"""
     if not gauge:
@@ -588,6 +614,24 @@ def evaluate(bundle, draft_text, *, first_30_days=False, calibrated=False):
                         "this voice never gives one, it names which models "
                         "disagree instead")
         break
+
+    # "Ranges, never point values" is in the persona's Numbers section and
+    # nothing enforced it. Every single draft reviewed 09-09 through 09-19 said
+    # "gusts to 15mph" / "gusts up to 20mph" somewhere and every one had to be
+    # hand-edited to "gusts 15-25" before it could publish. A point gust is
+    # the easiest thing a reader can prove wrong from their own porch.
+    m = POINT_GUST.search(draft_text or "")
+    if m:
+        escalate(BLOCK, f"draft gives a point-value gust ({m.group(0).strip()!r}); "
+                        "gusts are always a range, e.g. 'gusts 15-25'")
+
+    # 2026-09-19: "The GD is hinting at moisture returning by Tuesday." There
+    # is no GD. The bundle carries exactly the models in MODEL_NAMES, so a
+    # model the reader cannot look up is either a typo or an invention.
+    bad_model = unknown_model_name(draft_text)
+    if bad_model:
+        escalate(BLOCK, f"draft names a model ({bad_model!r}) that is not in the "
+                        "data; use Euro, GFS, ICON, GEM or the NWS discussion")
 
     # Should be unreachable: sanitize.clean() runs first. If this fires, the
     # sanitizer has a gap worth knowing about rather than shipping past.
@@ -753,5 +797,9 @@ def correction_note(reasons):
         "measure anything. Keep your one personal detail, but make it "
         "something you saw rather than something you measured. No inch figure "
         "for the stake, no total for the gauge.\n\n"
+        "On wind, if that is what was flagged: every gust figure is a range. "
+        "'Gusts 15-25 this afternoon' is right. 'Gusts to 15mph' is not.\n\n"
+        "On model names, if that is what was flagged: the only models in "
+        "your data are the Euro, GFS, ICON and GEM. Name one of those.\n\n"
         "Return only the post."
     )

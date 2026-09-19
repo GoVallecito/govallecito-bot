@@ -163,9 +163,23 @@ def render_bundle(bundle, post_type="school_call"):
     home = bundle.get("home_snotel")
     if home:
         A(f"HOME SNOTEL ({home['name']}, {home['elev_ft']} ft):")
-        A(f"  SWE {home['swe_in']}in, {home['pct_of_median']}% of median, "
-          f"depth {home['snow_depth_in']}in, temp {home['temp_f']}F "
-          f"(as of {home['as_of']})")
+        # 2026-09-19: "The Vallecito SNOTEL is showing 4\" on the ground still
+        # from earlier this week," after a week the snow line sat above every
+        # summit in the range. The ultrasonic depth sensor reads grass, frost
+        # heave and its own noise as a few inches all summer. Snow that
+        # actually lies on the ground has water in it, so a depth with no SWE
+        # behind it is not snow and must never reach the post as snow.
+        swe = home.get("swe_in")
+        depth = home.get("snow_depth_in")
+        if swe is None or swe < 0.1:
+            A(f"  No snow on the ground at the SNOTEL (no snow water). "
+              f"temp {home['temp_f']}F (as of {home['as_of']})")
+            A("  -> Do not quote a SNOTEL snow depth today. Any depth the "
+              "sensor shows without snow water is sensor noise.")
+        else:
+            A(f"  SWE {swe}in, {home['pct_of_median']}% of median, "
+              f"depth {depth}in, temp {home['temp_f']}F "
+              f"(as of {home['as_of']})")
     # The one personal number the post is allowed to use, and usually there
     # is not one. 2026-09-17 said the snow stake at the house was "still
     # sitting at 5 inches" on an all-rain day with the snow line at 14,000 ft.
