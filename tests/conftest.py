@@ -86,3 +86,13 @@ def restore_working_directory():
     yield
     target = before if os.path.isdir(before) else REPO_ROOT
     os.chdir(target)
+
+
+@pytest.fixture(autouse=True)
+def review_panel_off_by_default(monkeypatch):
+    """The review panel makes three model calls per round and expects JSON back.
+    The pre-panel tests drive the runner with a stub that returns post text for
+    every call, so they run with the panel off, exactly as the runner behaved
+    before it existed. tests/test_review_panel.py switches it on explicitly."""
+    monkeypatch.setenv("WX_REVIEW_PANEL", "false")
+    monkeypatch.delenv("GITHUB_EVENT_NAME", raising=False)

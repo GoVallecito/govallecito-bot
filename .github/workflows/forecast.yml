@@ -66,7 +66,9 @@ jobs:
     # but it can read `env`.
     env:
       HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL_FORECAST }}
-    timeout-minutes: 15
+    # 30, not 15: the review panel adds up to three rounds of four model
+    # calls (fact checker, editor, magistrate, reviser) to a morning run.
+    timeout-minutes: 30
     permissions:
       contents: write
       issues: write          # review-notification path
@@ -99,6 +101,13 @@ jobs:
           CDOT_API_KEY: ${{ secrets.CDOT_API_KEY }}
           WX_MODEL: ${{ vars.WX_MODEL }}
           WX_FIRST_30_DAYS: ${{ vars.WX_FIRST_30_DAYS }}
+          # Review panel (scripts/wx/review_panel.py). On by default: two
+          # reviewers and a magistrate replace the human for the WEBSITE only.
+          # Facebook and email still wait for WX_FIRST_30_DAYS=false.
+          WX_REVIEW_PANEL: ${{ vars.WX_REVIEW_PANEL }}
+          WX_REVIEW_MODEL: ${{ vars.WX_REVIEW_MODEL }}
+          WX_PANEL_MAX_ROUNDS: ${{ vars.WX_PANEL_MAX_ROUNDS }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
           WX_SITE_DIR: ${{ vars.WX_SITE_DIR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

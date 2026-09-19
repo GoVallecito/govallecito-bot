@@ -80,6 +80,36 @@ python scripts/wx/selftest.py              # live endpoints (needs open egress)
 FORCE_SLOT=school_call DRY_RUN=true python scripts/wx/run_forecast.py
 ```
 
+## The review panel (unattended website publishing)
+
+Every morning draft goes through a panel before it can reach govallecito.com:
+
+1. **Fact checker** reads the exact data brief the writer saw and flags every
+   claim the brief does not support (temps, gusts, timing, alerts, models,
+   SNOTEL, gauge readings, weekday, road tense).
+2. **Editor** reads the persona rulebook and recent posts and flags voice,
+   format and repetition problems.
+3. **Magistrate** reads both reports, the draft, the brief and the rule-gate
+   flags, and rules APPROVE, REVISE or REJECT. On REVISE the writer fixes only
+   what the magistrate listed and the loop runs again with fresh reviews.
+
+Only an APPROVE on the exact text publishes it, and the deterministic rule
+gate re-checks that text: the magistrate can never clear a hard BLOCK. A
+REJECT, or no approval after `WX_PANEL_MAX_ROUNDS` (default 3), falls back to
+the old path: staged in `site/weather/_pending/` and a review issue opened.
+Every round is written to `state/panel/<date>-<slot>.md`.
+
+The panel replaces the human for the **website only**. Facebook and email
+still wait for `WX_FIRST_30_DAYS=false`.
+
+| Repo variable | Default | Effect |
+|---|---|---|
+| `WX_REVIEW_PANEL` | `true` | `false` restores the human review gate |
+| `WX_REVIEW_MODEL` | same as `WX_MODEL` | model for the reviewers and magistrate |
+| `WX_PANEL_MAX_ROUNDS` | `3` | rounds before giving up and holding |
+
+A manual "Run workflow" with dry run on never publishes the site.
+
 ## Configuration
 
 | Name | Kind | Purpose |

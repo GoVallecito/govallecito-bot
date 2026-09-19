@@ -3,7 +3,9 @@ Orchestrator. The entry point GitHub Actions calls.
 
 FLOW
   slot check -> build bundle -> hard precondition gate -> compose -> guardrails
-  -> publish or hold -> log the forecast for tomorrow's verification
+  -> review panel (fact checker + editor -> magistrate, looping; see
+     review_panel.py) -> publish on approval, else hold for a human
+  -> log the forecast for tomorrow's verification
 
 Like the existing bot's main.py, this runs hourly and checks the clock itself
 in America/Denver rather than trusting a fixed UTC cron, so the 5:45am promise
@@ -30,6 +32,7 @@ from wx import site as SITE        # noqa: E402
 from wx import render_forecast_card as RC  # noqa: E402
 from wx import email_digest as ED   # noqa: E402
 from wx import verify as V          # noqa: E402
+from wx import review_panel as RP    # noqa: E402
 
 TZ = ZoneInfo(C.TIMEZONE)
 # Kept for the tests and for anything that still wants the nominal hour, but
@@ -178,7 +181,7 @@ class LLMError(RuntimeError):
                          f"API said: {body}")
 
 
-def _llm_from_env():
+def _llm_from_env(model=None, temperature=0.7):
     """Anthropic by default. Returns a callable(messages) -> str.
 
     Kept tiny and swappable on purpose -- everything upstream of this is
@@ -192,14 +195,14 @@ def _llm_from_env():
     key = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
     if not key:
         raise RuntimeError("ANTHROPIC_API_KEY is not set")
-    model = (os.environ.get("WX_MODEL") or "claude-sonnet-4-5").strip()
+    model = (model or os.environ.get("WX_MODEL") or "claude-sonnet-4-5").strip()
 
     def call(messages):
         system = next(m["content"] for m in messages if m["role"] == "system")
         user = [m for m in messages if m["role"] != "system"]
         body = json.dumps({
             "model": model, "max_tokens": 2000, "system": system,
-            "messages": user, "temperature": 0.7,
+            "messages": user, "temperature": temperature,
         }).encode()
         req = urllib.request.Request(
             "https://api.anthropic.com/v1/messages", data=body,
@@ -223,7 +226,8 @@ def _llm_from_env():
     return call
 
 
-def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None):
+def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None,
+        review_llm=None):
     now = datetime.now(TZ)
     slot = slot or determine_slot(now)
     if slot is None:
@@ -274,6 +278,15 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
                               "variables > Actions > Secrets. Nothing else is missing.")
             print(f"ABORT -- {exc}")
             return 0
+    if review_llm is None and RP.enabled():
+        try:
+            # Low temperature: reviewers and the magistrate should be the same
+            # judge every morning. WX_REVIEW_MODEL lets the panel run on a
+            # stronger model than the writer.
+            review_llm = _llm_from_env(model=os.environ.get("WX_REVIEW_MODEL"),
+                                       temperature=0.2)
+        except RuntimeError:
+            review_llm = llm
     try:
         text = CO.compose(bundle, llm, post_type=slot)
     except LLMError as exc:
@@ -320,6 +333,56 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
                 text, verdict = retry, v2
                 reasons = r2 + ["a rewrite was attempted and was blocked too"]
 
+    # --- the review panel ------------------------------------------------
+    # Two reviewers and a magistrate, looping, in place of a human. Only a
+    # data BLOCK skips it: a forecast missing a band or the alert feed cannot
+    # be fixed by editing, and the panel must not be asked to try.
+    panel = None
+    title = None
+    site_only = False
+    data_block = verdict == G.BLOCK and not G.text_fixable(reasons)
+    if RP.enabled() and not data_block:
+        print("review panel: fact checker + editor -> magistrate")
+        try:
+            panel = RP.run_panel(bundle, text, slot=slot, writer_llm=llm,
+                                 review_llm=review_llm or llm,
+                                 calibrated=calibrated,
+                                 recent_bodies=_recent_published_bodies(site_dir))
+        except Exception as exc:  # noqa: BLE001
+            # Up to a dozen API calls: a timeout or a dropped connection is
+            # likelier here than anywhere else in the run. Whatever it is, the
+            # draft still goes to a human rather than dying with the run.
+            why = getattr(exc, "status", None) or type(exc).__name__
+            print(f"review panel failed ({exc}); holding for a human")
+            panel = None
+            reasons = reasons + [f"review panel could not run: {why}"]
+            verdict = G.BLOCK if verdict == G.BLOCK else G.REVIEW
+        if panel is not None:
+            _write_panel_transcript(panel, bundle, slot)
+            text = panel["text"]
+            if panel["approved"]:
+                # Belt and braces: the exact approved text goes through the
+                # deterministic gate once more. The magistrate can clear the
+                # judgement calls; it can never clear a hard BLOCK.
+                v3, r3 = G.evaluate(bundle, text, first_30_days=False,
+                                    calibrated=calibrated)
+                if v3 == G.BLOCK:
+                    verdict = G.BLOCK
+                    reasons = r3 + ["magistrate approved, but the rule gate blocks "
+                                    "the approved text"]
+                else:
+                    print(f"MAGISTRATE APPROVED ({panel['reason']}); publishing "
+                          "to the website")
+                    verdict, reasons = G.PASS, [panel["reason"]] + r3
+                    title = panel.get("title") or None
+                    # The panel replaces the human for the website. Facebook and
+                    # email stay behind WX_FIRST_30_DAYS until that is flipped.
+                    site_only = first_30_days
+            else:
+                verdict = G.BLOCK if verdict == G.BLOCK else G.REVIEW
+                reasons = [f"review panel: {panel['reason']}"] + [
+                    r for r in reasons if not r.startswith("first-30-days")]
+
     os.makedirs("output", exist_ok=True)
     with open(os.path.join("output", "draft.txt"), "w", encoding="utf-8") as fh:
         fh.write(text)
@@ -330,6 +393,9 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
 
     if verdict in (G.BLOCK, G.REVIEW):
         return _hold_for_review(text, verdict, reasons, bundle, slot, site_dir)
+
+    if site_only:
+        return _publish_site_only(text, reasons, bundle, slot, title, site_dir)
 
     # The day is now spent for this slot. On the publish path this stays where
     # it always was, before the post goes out: a second run inside the window
@@ -343,13 +409,15 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
     # visible in the log while the Facebook post still goes out. It writes into
     # this repo's own tree, which the workflow commits, so publishing needs no
     # second credential. See wx/site.py.
-    if os.environ.get("WX_SITE_PUBLISH", "true").strip().lower() != "false":
+    if _site_publish_allowed():
         try:
-            paths = SITE.publish(text, bundle, slot, out_dir=site_dir)
+            paths = SITE.publish(text, bundle, slot, title=title, out_dir=site_dir)
             print(f"site post -> {paths['post']}")
             print(f"site feed -> {paths['feed']}")
         except Exception as exc:  # noqa: BLE001
             print(f"[site] publish failed, posting anyway: {exc}")
+    else:
+        print("site publish skipped (WX_SITE_PUBLISH=false or a manual dry run)")
 
     # The card is best-effort: a rendering failure must not cost the forecast.
     card = None
@@ -374,6 +442,76 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None)
                             post_id=result.get("id"))
     print(f"logged forecast {fid} for tomorrow's verification")
     return 0
+
+
+def _publish_site_only(text, reasons, bundle, slot, title, site_dir):
+    """The panel-approved path while Facebook is still gated: the website is
+    the whole publish, so the day is spent only once the post is really in the
+    feed. A skipped publish (manual dry run) leaves the day open for the real
+    scheduled run; a failed one falls back to a human so the approved text is
+    not lost."""
+    if not _site_publish_allowed():
+        print("MAGISTRATE APPROVED, but site publish is off for this run "
+              "(WX_SITE_PUBLISH=false or a manual dry run). Nothing published; "
+              "the day is left open.")
+        write_status("approved by review panel, NOT published (dry run)",
+                     "\n".join(reasons), bundle, slot, draft=text)
+        return 0
+    try:
+        paths = SITE.publish(text, bundle, slot, title=title, out_dir=site_dir)
+    except Exception as exc:  # noqa: BLE001
+        print(f"::error::site publish failed after approval: {exc}")
+        return _hold_for_review(text, G.REVIEW,
+                                [f"approved by the review panel, but the site "
+                                 f"publish failed: {exc}"] + reasons,
+                                bundle, slot, site_dir)
+    print(f"site post -> {paths['post']}")
+    print(f"site feed -> {paths['feed']}")
+    _record_day(bundle, slot, G.PASS)
+    write_status("published to website (approved by review panel)",
+                 "\n".join(reasons), bundle, slot, draft=text,
+                 hint="Facebook and email stay off until WX_FIRST_30_DAYS is "
+                      "set to false. The panel transcript is in state/panel/.")
+    try:
+        fid = V.record_forecast(bundle, _predicted_ranges(bundle), post_id=None)
+        print(f"logged forecast {fid} for tomorrow's verification")
+    except Exception as exc:  # noqa: BLE001 -- the post is out; bookkeeping only
+        print(f"[verify] could not log forecast: {exc}")
+    return 0
+
+
+def _site_publish_allowed():
+    if os.environ.get("WX_SITE_PUBLISH", "true").strip().lower() == "false":
+        return False
+    # A manual "Run workflow" defaults to dry_run=true. Scheduled runs read
+    # vars.DRY_RUN, which only governs Facebook and must not stop the site.
+    if (os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+            and (os.environ.get("DRY_RUN") or "true").strip().lower() == "true"):
+        return False
+    return True
+
+
+def _recent_published_bodies(site_dir=None, n=2):
+    """The last n published post bodies, newest first, for the editor."""
+    try:
+        import glob
+        d = site_dir or SITE.site_dir()
+        paths = sorted(glob.glob(os.path.join(d, "20*.md")), reverse=True)[:n]
+        return [SITE.read_post(p).get("body", "") for p in paths]
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def _write_panel_transcript(panel, bundle, slot):
+    d = os.path.join(_state_dir(), "panel")
+    name = f"{bundle.get('post_for_date') or bundle.get('local_date')}-{slot}.md"
+    try:
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, name), "w", encoding="utf-8") as fh:
+            fh.write(RP.transcript(panel, bundle, slot))
+        print(f"panel transcript -> {os.path.join(d, name)}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[panel] could not write transcript: {exc}")
 
 
 def _record_day(bundle, slot, verdict):
