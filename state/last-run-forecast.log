@@ -1,3 +1,18 @@
-2026-09-19 04:45 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
-2026-09-19 04:45 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
+NOTE: running at 07:29, inside the 5:00-9:00 window but later than the 5:00 target. Posting anyway, flagged late.
+=== Vallecito forecast: school_call @ 2026-09-19 07:29 MDT ===
+snow-line calibration: offset=0.0ft active=False
+guardrails: BLOCK
+  - draft states a present-tense road surface condition with no live CDOT data behind it -- forecast the passes, link CDOT for status
+  - draft states a bare percentage ('25%'); this voice never gives one, it names which models disagree instead
+  - first-30-days policy: review everything
+BLOCK is about the wording, not the data. Rewriting once.
+guardrails after rewrite: REVIEW
+  - first-30-days policy: review everything
+rewrite cleared the gate
+Archived draft -> state/drafts/2026-09-19-school_call.md
+HELD FOR REVIEW -- draft saved to output/draft.txt
+staged for review -> site/weather/_pending/2026-09-19-morning-forecast-for-vallecito-bayfield-and-durango.md
+  promote with: python scripts/wx/promote_draft.py 2026-09-19
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/26
+Wrote state/forecast-status.md
 exit=0
