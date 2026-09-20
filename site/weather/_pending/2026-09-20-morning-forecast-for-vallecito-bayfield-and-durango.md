@@ -1,24 +1,18 @@
-# Forecast run: held for review
+---
+title: "Morning forecast for Vallecito, Bayfield and Durango"
+date: "2026-09-20T05:08:11.124915-06:00"
+forDate: "2026-09-20"
+postType: "school_call"
+snowLineFt: null
+snowLineTrend: null
+bands: {}
+basinPercentOfMedian: null
+alerts: []
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-20-morning-forecast-for-vallecito-bayfield-and-durango"
+---
 
-When: 2026-09-20T05:08:57-06:00 (Mountain)
-Slot: `school_call`
-
-## Detail
-
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/20/26 5:08am: Sky's going pink over the ridge here and the woodpile's bone dry, which tells you where we're at after all that rain this week.
 
 Today's straightforward. Durango and the Animas Valley should see clear skies and mid-70s by afternoon, no precipitation at all. Bayfield and up the Pine same story, topping out around 74F with light winds this morning picking up to gusts around 20mph this afternoon. Vallecito and the Florida looking at upper 60s to low 70s, dry all day, maybe a touch breezier up high in the afternoon but nothing that'll slow anyone down.
@@ -32,4 +26,3 @@ The 160 and the 550 should be dry pavement all day. Same for the 501 and the 240
 Tuesday's when things get interesting again. GJT's watching a southwest flow setup that could bring moisture back in, but that's still two days out and the models haven't nailed down whether it tracks through here or stays south. I'll have more on that tomorrow once the overnight runs come in.
 
 What're you getting into today with the clear weather?
-```
