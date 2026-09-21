@@ -1,6 +1,6 @@
-# Self-test — live endpoint check
+# Self-test: live endpoint check
 
-Run: 2026-09-14T18:37:31+00:00
+Run: 2026-09-21T18:41:10+00:00
 Result: **14/16 sources reachable**
 
 ## The elevation thesis
@@ -8,10 +8,10 @@ Result: **14/16 sources reachable**
 
 | Band | Elevation requested (m) | Elevation used (m) | First-hour temp |
 |---|---|---|---|
-| Durango and the Animas Valley | 1981 | 1981.0 | 63.3 |
-| Bayfield and up the Pine | 2103 | 2103.0 | 59.3 |
-| Vallecito and the Florida | 2332 | 2332.0 | 57.8 |
-| The high Weminuche | 3200 | 3200.0 | 46.9 |
+| Durango and the Animas Valley | 1981 | 1981.0 | 55.3 |
+| Bayfield and up the Pine | 2103 | 2103.0 | 51.2 |
+| Vallecito and the Florida | 2332 | 2332.0 | 50.2 |
+| The high Weminuche | 3200 | 3200.0 | 41.9 |
 
 ## NWS zones
 | Point | Forecast zone | Fire zone | Grid |
@@ -44,7 +44,7 @@ Confirmed: Vallecito (COZ019) is in a different forecast zone than Durango (COZ0
 
 ## Needs attention
 
-- **CDOT road conditions** — CDOT_API_KEY not set -- free at data.cotrip.org
-- **CAIC zone for Vallecito** — only 1 polygon(s) published -- CAIC is out of season. Re-run mid-Nov to mid-Apr. Do NOT trust a point-in-polygon result against a single statewide shape.
+- **CDOT road conditions**: CDOT_API_KEY not set -- free at data.cotrip.org
+- **CAIC zone for Vallecito**: only 1 polygon(s) published -- CAIC is out of season. Re-run mid-Nov to mid-Apr. Do NOT trust a point-in-polygon result against a single statewide shape.
 
 A failure here is information, not a crash. CDOT without a key and CAIC out of season are both expected.
