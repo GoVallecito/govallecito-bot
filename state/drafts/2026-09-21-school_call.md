@@ -1,24 +1,9 @@
-# Forecast run: held for review
+# Monday, 2026-09-21, school_call
 
-When: 2026-09-21T05:07:46-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: 12500 | Alerts: none
 
-## Detail
+---
 
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 12500
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/21/26 5:06am: Morning, its Monday. Truck started right up here and the sky's clear, which is how we're starting the week.
 
 Dry roads for the bus run this morning. Durango and the Animas Valley woke up to clear skies and temps in the low 50s, should hit the mid-70s this afternoon with no rain. The 160 into town looks straightforward for the 6:30 call.
@@ -36,4 +21,3 @@ Right now it looks like 0.2-0.4" possible Tuesday afternoon through Tuesday nigh
 I'll have more on the Tuesday setup tomorrow morning once the overnight runs come in.
 
 Anybody noticing the leaves starting to turn up the drainage yet?
-```

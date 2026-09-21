@@ -1,24 +1,18 @@
-# Forecast run: held for review
+---
+title: "Morning forecast for Vallecito, Bayfield and Durango"
+date: "2026-09-21T05:06:53.475436-06:00"
+forDate: "2026-09-21"
+postType: "school_call"
+snowLineFt: null
+snowLineTrend: "rising"
+bands: {"durango": {"elevationFt": 6500, "precipType": "rain", "label": "Durango and the Animas Valley"}, "bayfield": {"elevationFt": 6900, "precipType": "rain", "label": "Bayfield and up the Pine"}, "vallecito": {"elevationFt": 7650, "precipType": "rain", "label": "Vallecito and the Florida"}, "weminuche": {"elevationFt": 10500, "precipType": "rain", "label": "The high Weminuche"}}
+basinPercentOfMedian: null
+alerts: []
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-21-morning-forecast-for-vallecito-bayfield-and-durango"
+---
 
-When: 2026-09-21T05:07:46-06:00 (Mountain)
-Slot: `school_call`
-
-## Detail
-
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 12500
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/21/26 5:06am: Morning, its Monday. Truck started right up here and the sky's clear, which is how we're starting the week.
 
 Dry roads for the bus run this morning. Durango and the Animas Valley woke up to clear skies and temps in the low 50s, should hit the mid-70s this afternoon with no rain. The 160 into town looks straightforward for the 6:30 call.
@@ -36,4 +30,3 @@ Right now it looks like 0.2-0.4" possible Tuesday afternoon through Tuesday nigh
 I'll have more on the Tuesday setup tomorrow morning once the overnight runs come in.
 
 Anybody noticing the leaves starting to turn up the drainage yet?
-```
