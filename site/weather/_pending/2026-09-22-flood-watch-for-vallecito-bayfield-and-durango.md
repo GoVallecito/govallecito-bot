@@ -1,24 +1,18 @@
-# Forecast run: held for review
+---
+title: "Flood Watch for Vallecito, Bayfield and Durango"
+date: "2026-09-22T05:23:51.854692-06:00"
+forDate: "2026-09-22"
+postType: "school_call"
+snowLineFt: null
+snowLineTrend: "rising"
+bands: {"durango": {"elevationFt": 6500, "precipType": "rain", "label": "Durango and the Animas Valley"}, "bayfield": {"elevationFt": 6900, "precipType": "rain", "label": "Bayfield and up the Pine"}, "vallecito": {"elevationFt": 7650, "precipType": "rain", "label": "Vallecito and the Florida"}, "weminuche": {"elevationFt": 10500, "precipType": "rain", "label": "The high Weminuche"}}
+basinPercentOfMedian: null
+alerts: ["Flood Watch"]
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-22-flood-watch-for-vallecito-bayfield-and-durango"
+---
 
-When: 2026-09-22T05:24:41-06:00 (Mountain)
-Slot: `school_call`
-
-## Detail
-
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 12500
-- Alerts: ['Flood Watch']
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/22/26 5:23am: Coffee's hot and the kitchen window's clear this morning, which is how we're starting Tuesday.
 
 Districts decide by 6:30 and the roads should be dry for the bus run. All rain today, everywhere, including up high in the Weminuche. The snow line's above every road and trail anybody here's on, so that's not the question this morning.
@@ -32,4 +26,3 @@ Vallecito and up the Florida get more. Afternoon storms start earlier, around 1p
 Today's the warm-up act. Take the 0.5" to 1.3" totals for the next 48 hours with a big grain of salt (the low's track is still uncertain and that decides who gets hammered), but Wednesday into Thursday is when this gets interesting.
 
 What's the inversion looking like from town this morning?
-```

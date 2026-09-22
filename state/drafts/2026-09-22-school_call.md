@@ -1,24 +1,9 @@
-# Forecast run: held for review
+# Tuesday, 2026-09-22, school_call
 
-When: 2026-09-22T05:24:41-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: 12500 | Alerts: ['Flood Watch']
 
-## Detail
+---
 
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 12500
-- Alerts: ['Flood Watch']
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/22/26 5:23am: Coffee's hot and the kitchen window's clear this morning, which is how we're starting Tuesday.
 
 Districts decide by 6:30 and the roads should be dry for the bus run. All rain today, everywhere, including up high in the Weminuche. The snow line's above every road and trail anybody here's on, so that's not the question this morning.
@@ -32,4 +17,3 @@ Vallecito and up the Florida get more. Afternoon storms start earlier, around 1p
 Today's the warm-up act. Take the 0.5" to 1.3" totals for the next 48 hours with a big grain of salt (the low's track is still uncertain and that decides who gets hammered), but Wednesday into Thursday is when this gets interesting.
 
 What's the inversion looking like from town this morning?
-```
