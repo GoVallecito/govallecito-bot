@@ -1,24 +1,18 @@
-# Forecast run: held for review
+---
+title: "Flood Watch for Vallecito, Bayfield and Durango"
+date: "2026-09-23T05:20:32.788245-06:00"
+forDate: "2026-09-23"
+postType: "school_call"
+snowLineFt: null
+snowLineTrend: "steady"
+bands: {"durango": {"elevationFt": 6500, "precipType": "rain", "label": "Durango and the Animas Valley"}, "bayfield": {"elevationFt": 6900, "precipType": "rain", "label": "Bayfield and up the Pine"}, "vallecito": {"elevationFt": 7650, "precipType": "rain", "label": "Vallecito and the Florida"}, "weminuche": {"elevationFt": 10500, "precipType": "rain", "label": "The high Weminuche"}}
+basinPercentOfMedian: null
+alerts: ["Flood Watch", "Flood Watch"]
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-23-flood-watch-for-vallecito-bayfield-and-durango"
+---
 
-When: 2026-09-23T05:21:24-06:00 (Mountain)
-Slot: `school_call`
-
-## Detail
-
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 12750
-- Alerts: ['Flood Watch', 'Flood Watch']
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/23/26 5:20am: Morning, its Wednesday. The yard's still wet from yesterday and the sky's trying to decide what it wants to do, which is about right for what we're dealing with on the bus run.
 
 Districts decide by 6:30 and the 501 or the 240 should be fine for the morning drive. We're under a Flood Watch from Grand Junction through Thursday morning for all zones, but the timing today puts the heavier stuff after lunch, not before it. This morning looks mostly dry with just scattered light showers possible, and its all rain everywhere including up high in the Weminuche. No snow line to worry about.
@@ -34,4 +28,3 @@ The high Weminuche gets the same rain, not snow, with nearly half an inch possib
 Tomorrow's the heavier day with another round building late afternoon into evening, but that's a tomorrow problem.
 
 Seeing any fog in the valley bottoms on your drive this morning?
-```

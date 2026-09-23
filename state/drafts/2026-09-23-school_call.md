@@ -1,24 +1,9 @@
-# Forecast run: held for review
+# Wednesday, 2026-09-23, school_call
 
-When: 2026-09-23T05:21:24-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: 12750 | Alerts: ['Flood Watch', 'Flood Watch']
 
-## Detail
+---
 
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 12750
-- Alerts: ['Flood Watch', 'Flood Watch']
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/23/26 5:20am: Morning, its Wednesday. The yard's still wet from yesterday and the sky's trying to decide what it wants to do, which is about right for what we're dealing with on the bus run.
 
 Districts decide by 6:30 and the 501 or the 240 should be fine for the morning drive. We're under a Flood Watch from Grand Junction through Thursday morning for all zones, but the timing today puts the heavier stuff after lunch, not before it. This morning looks mostly dry with just scattered light showers possible, and its all rain everywhere including up high in the Weminuche. No snow line to worry about.
@@ -34,4 +19,3 @@ The high Weminuche gets the same rain, not snow, with nearly half an inch possib
 Tomorrow's the heavier day with another round building late afternoon into evening, but that's a tomorrow problem.
 
 Seeing any fog in the valley bottoms on your drive this morning?
-```
