@@ -25,9 +25,7 @@ const MONTHS = ['January','February','March','April','May','June','July','August
 // The persona opens every post with this: `11/04/26 5:52am: Morning, its Wednesday.`
 const STAMP = /^(\d{2})\/(\d{2})\/(\d{2})\s+\d{1,2}:\d{2}\s*[ap]m:\s*/i;
 
-// Local proper nouns that turn a clause into a road/pass report. The bare
-// highway numbers come with the article because that is how the persona writes
-// them ("the 550", "the 501"), and without it "the 160 cfs" style numbers bite.
+// Local proper nouns that turn a clause into a road/pass report.
 const ROADS = [
   'Coal Bank','Molas','Red Mountain','Wolf Creek','Cumbres','Lizard Head','Hesperus',
   'US 160','US-160','Highway 160','the 160','US 550','US-550','Highway 550','the 550',
@@ -36,6 +34,14 @@ const ROADS = [
   'Vallecito Road','Bayfield Parkway','Elmore',
   'the pass','the passes','Middle Mountain Road','Missionary Ridge Road'
 ];
+// A bare route number, which the list above only caught when it carried its
+// article. The article was there because "the 160 cfs" style numbers bite:
+// this persona writes elevations as "(6,500')" and flows as "running 160 cfs",
+// and a word boundary sits on both sides of the number in each. Excluding
+// those two contexts directly is what lets the number go bare -- nothing may
+// run into it from the left, which is what the comma in "6,500" does, and no
+// unit may follow it. Mirrors guardrails._ROUTE; the two are meant to agree.
+const ROUTE_NUMBER = /(?<![\d,])\b(?:550|160|172|240|500|501)\b(?!\s*(?:cfs|ft|feet|af|%|,\d|['"]))/i;
 const ROAD_STATE = /(?:\b(?:is|are|remain|remains|sit|sits|stay|stays)|\w's)\s+(?:still\s+|both\s+|all\s+|already\s+|completely\s+)?(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\b/i;
 // A surface claim with no verb at all: "clear roads and dry pavement."
 //
@@ -144,7 +150,8 @@ function lint(raw, dateStr, historyDir) {
     const sentenceHedged = CONDITIONAL_OPEN.test(s);
     for (const c of clauses(s)) {
       if (sentenceHedged || HEDGE.test(c)) continue;
-      const hasRoad = ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
+      const hasRoad = ROUTE_NUMBER.test(c) ||
+        ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
       if ((hasRoad && ROAD_STATE.test(c)) || ROAD_NOUN.test(c)) {
         fails.push(['road-status', `Present-tense road condition with no CDOT data: ${q(s)}`]);
         break;

@@ -38,7 +38,7 @@ const cases = {
   'em-dash-unicode.md': 'em-dash',
   'road-status.md': 'road-status',       // shipped 2026-09-08: "The passes are dry."
   // shipped 2026-09-21: a surface claim with the verb left out, and about a
-  // valley road rather than a pass. Issue #32.
+  // valley road rather than a pass. Issue #30.
   'road-status-adjective.md': 'road-status',
   'personal-zero.md': 'personal-count',
   'personal-two.md': 'personal-count',
@@ -63,7 +63,7 @@ for (const [file, key] of Object.entries(cases)) {
 // header rule applies -- where this file and system.md disagree, the persona
 // wins and this file is wrong.
 test('"enough to wet pavement" is a forecast, not a road report', () => {
-  // "wet" as an infinitive verb. Issue #33.
+  // "wet" as an infinitive verb. Issue #32.
   const r = run('road-status-infinitive.md');
   assert.equal(r.code, 0);
   assert.deepEqual(r.fails, []);
@@ -71,7 +71,7 @@ test('"enough to wet pavement" is a forecast, not a road report', () => {
 
 test("\"I'd plan for wet roads\" is the phrasing system.md asks for", () => {
   // system.md gives "I'd expect dry pavement by the 6:30 call" as the correct
-  // repair, and this file used to fail it. Issue #34.
+  // repair, and this file used to fail it. Issue #33.
   const r = run('road-status-hedged.md');
   assert.equal(r.code, 0);
   assert.deepEqual(r.fails, []);

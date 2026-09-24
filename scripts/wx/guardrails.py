@@ -39,6 +39,23 @@ FORBIDDEN_PATTERNS = [
     (r"\blake[- ]effect\b", "lake-effect at Vallecito is physically wrong here"),
 ]
 
+# Route numbers.
+#
+# A bare 550 or 160 is not automatically a road. This persona writes elevations
+# as "(6,500')" and flows as "running 160 cfs", and a word boundary sits on
+# both sides of the number in each case, so `\b501\b` matched them. That is how
+# "Durango and the Animas Valley (6,500') stay dry today" -- a weather sentence
+# with no road in it at all -- read as a road-status claim.
+#
+# tools/draft-lint.mjs solved this by requiring the article ("the 550"), which
+# is how the persona usually writes it. That costs the unadorned "550 is
+# closed", so instead the number stays bare and the two numeric contexts are
+# excluded directly: nothing may run into it from the left, which is what the
+# comma in "6,500" does, and no unit may follow it. US-550, CR 501 and "the
+# 160" all still match.
+_ROUTE = (r"(?<![\d,])(?:550|160|172|240|500|501)"
+          r'(?!\s*(?:cfs|ft|feet|af|%|,\d|[\'"]))')
+
 # Live road-status claims. We forecast the passes; we never report their state.
 # CDOT's public feed documentation has been withdrawn, so there is no source
 # behind a sentence like "Red Mountain is closed" -- and a wrong one sends
@@ -48,10 +65,10 @@ ROAD_STATUS_CLAIMS = [
     # Named passes belong in this alternation too: "Red Mountain is closed"
     # names no road noun at all, and that is how a local would actually write
     # it.
-    (r"\b(?:pass|passes|road|highway|550|160|240|501|coal bank|molas|"
-     r"red mountain|wolf creek)\b[^.\n]{0,50}\b(?:is|are|'s)\s+(?:closed|open)\b",
+    (rf"\b(?:pass|passes|road|highway|{_ROUTE}|coal bank|molas|"
+     rf"red mountain|wolf creek)\b[^.\n]{{0,50}}\b(?:is|are|'s)\s+(?:closed|open)\b",
      "states whether a road is open or closed"),
-    (r"\b(?:is|are|'s)\s+(?:closed|open)\b[^.\n]{0,40}\b(?:pass|passes|550|160)\b",
+    (rf"\b(?:is|are|'s)\s+(?:closed|open)\b[^.\n]{{0,40}}\b(?:pass|passes|{_ROUTE})\b",
      "states whether a road is open or closed"),
     (r"\bchain law(?:'s| is| are)?\s*(?:on|in effect|up)\b", "asserts chain law status"),
     (r"\btraction law(?:'s| is)?\s*(?:on|in effect|up)\b", "asserts traction law status"),
@@ -69,13 +86,13 @@ ROAD_STATUS_CLAIMS = [
     # Asserting it in the present tense is not. The distinction the patterns
     # draw is tense: "should stay dry" and "any ice would be early" pass;
     # "are dry" and "all clear" do not.
-    (r"\b(?:pass|passes|road|roads|highway|550|160|240|501)\b[^.\n]{0,60}"
+    (rf"\b(?:pass|passes|road|roads|highway|{_ROUTE})\b[^.\n]{{0,60}}"
      r"\b(?:is|are|'s|re)\s+(?:currently\s+)?"
      r"(?:dry|wet|clear|bare|icy|slick|snowpacked|snow[- ]packed|"
      r"plowed|sanded|passable|impassable|fine|good|clean)\b",
      "states a present-tense road surface condition"),
-    (r"\b(?:all|both)\s+(?:clear|dry|open|passable)\b[^.\n]{0,60}"
-     r"\b(?:pass|passes|coal bank|molas|red mountain|wolf creek|550|160)\b",
+    (rf"\b(?:all|both)\s+(?:clear|dry|open|passable)\b[^.\n]{{0,60}}"
+     rf"\b(?:pass|passes|coal bank|molas|red mountain|wolf creek|{_ROUTE})\b",
      "states a present-tense road surface condition"),
     (r"\b(?:coal bank|molas|red mountain|wolf creek)\b[^.\n]{0,80}"
      r"\b(?:all\s+)?(?:clear|dry|bare|icy|slick|snowpacked|snow[- ]packed)\b"
@@ -107,19 +124,12 @@ ROAD_STATUS_CLAIMS = [
 _SURFACE = (r"dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|"
             r"greasy|sanded|passable|impassable|fine|good|clean")
 _ROAD_NOUN = r"roads?|pavement|highways?|blacktop"
-# The bare route numbers carry their article, exactly as draft-lint.mjs does
-# and for the reason its comment gives: "the 550" is how the persona writes a
-# road, and a naked 550 also appears inside "(6,500')" and "running 160 cfs".
-# An earlier cut of this list used naked numbers and flagged "Durango and the
-# Animas Valley (6,500') stay dry today," which is a weather sentence with no
-# road in it at all.
-_ROAD_NAME = (r"pass|passes|coal bank|molas|red mountain|wolf creek|cumbres|"
-              r"lizard head|hesperus|florida road|vallecito road|"
-              r"bayfield parkway|elmore|middle mountain road|"
-              r"missionary ridge road|"
-              r"us[-\s]?(?:550|160|172)|highway\s+(?:550|160|172)|"
-              r"c[or][-\s]?(?:172|240|500|501)|county road\s+(?:500|501)|"
-              r"the\s+(?:550|160|172|240|500|501)")
+# Route numbers come from _ROUTE, so this rule and the ones above agree about
+# what counts as a road and neither of them reads an elevation as one.
+_ROAD_NAME = (rf"pass|passes|coal bank|molas|red mountain|wolf creek|cumbres|"
+              rf"lizard head|hesperus|florida road|vallecito road|"
+              rf"bayfield parkway|elmore|middle mountain road|"
+              rf"missionary ridge road|{_ROUTE}")
 
 # "clear roads", "dry pavement" -- a condition with no verb at all.
 #

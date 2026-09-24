@@ -286,7 +286,7 @@ def test_present_tense_road_claims_block():
 
 def test_forecasting_the_roads_still_passes():
     """The gate must not block the thing the product exists to do."""
-    for ok in ROAD_FORECASTS:
+    for ok in ROAD_FORECASTS + ROAD_NON_CLAIMS:
         assert G.present_tense_road_claim(ok) is None, f"false positive: {ok!r}"
         v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + ok)
         assert v == G.PASS, f"should have passed: {ok!r} -> {why}"
@@ -295,14 +295,25 @@ def test_forecasting_the_roads_still_passes():
 def test_a_number_that_is_not_a_route_is_not_a_road():
     """An elevation and a flow reading are not highways.
 
-    Asserted against the detector, not evaluate(): the older flat patterns in
-    ROAD_STATUS_CLAIMS still carry bare route numbers and still fire on "160
-    cfs ... is clear". That predates this fix and errs toward a rewrite rather
-    than a bad post, so it is left alone here; the rule added for the
-    2026-09-21..24 drafts must not repeat the mistake.
+    `\\b501\\b` matches inside "(6,500')" -- the comma is a word boundary -- and
+    `\\b160\\b` matches "running 160 cfs". Both read as road-status claims and
+    both would have blocked a morning over a sentence with no road in it. The
+    route number stays bare so "550 is closed" is still caught; the two numeric
+    contexts are excluded instead. Asserted on the flat patterns as well as the
+    detector, because the bug was in the flat patterns first.
     """
+    import re
     for ok in ROAD_NON_CLAIMS:
         assert G.present_tense_road_claim(ok) is None, f"false positive: {ok!r}"
+        for pattern, why in G.ROAD_STATUS_CLAIMS:
+            assert not re.search(pattern, ok, re.IGNORECASE), f"{why}: {ok!r}"
+
+
+def test_a_bare_route_number_is_still_a_road():
+    """The exclusion must not cost the unadorned forms."""
+    for claim in ["550 is closed.", "US-550 is closed.", "CR 501 is slick.",
+                  "160 is icy over the top.", "The 501 is fine."]:
+        assert G.present_tense_road_claim(claim), f"missed: {claim!r}"
 
 
 def test_a_conditional_opener_hedges_the_clauses_after_it():
