@@ -149,8 +149,17 @@ _ROAD_STATE_CLAIM = re.compile(
     rf"(?:still\s+|both\s+|all\s+|already\s+|completely\s+)?"
     rf"(?:{_SURFACE})\b", re.IGNORECASE)
 
-# CLOSURES ARE NOT HEDGEABLE, and they are the one road rule that ignores both
-# the hedge tiers and the conditional opener below.
+# CLOSURES ARE NOT HEDGEABLE. This is the one road rule the hedge tiers below
+# do not apply to.
+#
+# The conditional opener still exempts it, deliberately. "If CDOT has closed
+# the 550, the detour through Pagosa is long" does not claim the 550 is closed,
+# and a sentence that opens on "if" is contingent all the way through. The cost
+# is that a reader-addressed conditional with a flat closure after it --
+# "If you are heading north, Red Mountain is closed" -- is exempt too, because
+# nothing here can tell that apart from "If that band sets up, ...". That is a
+# known gap rather than an oversight; closing it needs a rule about who the
+# conditional addresses, not about roads.
 #
 # A surface forecast is a weather claim: we have the weather, so "Coal Bank
 # should stay rain at pass level" is ours to make and hedging is exactly what
@@ -235,20 +244,21 @@ def road_status_claim(text):
     clause, so a "should" in one half of a sentence cannot launder "the 501 is
     fine" in the other.
 
-    CLOSURE_CLAIMS is the exception and runs first, unhedged. Surface is
-    weather and is ours to forecast; a gate being down is CDOT's decision and
-    is not ours to predict at all.
+    CLOSURE_CLAIMS is the exception: the hedge tiers do not apply to it, though
+    the conditional opener still does. Surface is weather and is ours to
+    forecast; a gate being down is CDOT's decision and is not ours to predict
+    at all.
     """
     for sentence in _SENTENCE_SPLIT.split((text or "").replace("\n", " ")):
         sentence = sentence.strip()
         if not sentence:
             continue
-        # Before the hedges and before the conditional opener: see CLOSURE_CLAIMS.
+        if _CONDITIONAL_OPEN.search(sentence):
+            continue
+        # Ahead of the hedge tiers, which do not apply to it: see CLOSURE_CLAIMS.
         for pattern, why in CLOSURE_CLAIMS:
             if re.search(pattern, sentence, re.IGNORECASE):
                 return sentence, why
-        if _CONDITIONAL_OPEN.search(sentence):
-            continue
         for clause in _CLAUSE_SPLIT.split(sentence):
             if not clause or _clause_is_hedged(clause):
                 continue

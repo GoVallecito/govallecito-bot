@@ -50,8 +50,8 @@ const ROAD_STATE = /(?:\b(?:is|are|remain|remains|sit|sits|stay|stays)|\w's)\s+(
 // will do rather than reporting what the road is. An infinitive is never a
 // present-tense claim. 2026-09-22 failed on that sentence.
 const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?)\b/i;
-// A CLOSURE is not hedgeable, and it is the one road claim that ignores the
-// hedges and the conditional opener below. A surface forecast is a weather
+// A CLOSURE is not hedgeable: it is the one road claim the hedges below do not
+// apply to. The conditional opener still exempts it. A surface forecast is a weather
 // claim, so hedging is what makes it honest; whether a gate is down is CDOT's
 // decision, there is no feed for it, and "Wolf Creek will likely be closed"
 // reads at 5:45am like "Wolf Creek is closed". Chain law and traction law are
@@ -166,9 +166,10 @@ function lint(raw, dateStr, historyDir) {
 
   // 2. Road and pass conditions. Judged per clause, so a "should" in one half
   // of a sentence cannot launder "the 501 is fine" in the other. A closure is
-  // checked first and is not hedgeable -- see CLOSURE.
+  // checked first and the hedges do not apply to it -- see CLOSURE. A
+  // conditional opener still exempts the whole sentence, closures included.
   for (const s of S) {
-    const sentenceHedged = CONDITIONAL_OPEN.test(s);
+    if (CONDITIONAL_OPEN.test(s)) continue;
     for (const c of clauses(s)) {
       const hasRoad = ROUTE_NUMBER.test(c) ||
         ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
@@ -176,7 +177,7 @@ function lint(raw, dateStr, historyDir) {
         fails.push(['road-status', `Road closure claim with no CDOT data: ${q(s)}`]);
         break;
       }
-      if (sentenceHedged || hedged(c)) continue;
+      if (hedged(c)) continue;
       if ((hasRoad && ROAD_STATE.test(c)) || ROAD_NOUN.test(c)) {
         fails.push(['road-status', `Present-tense road condition with no CDOT data: ${q(s)}`]);
         break;
