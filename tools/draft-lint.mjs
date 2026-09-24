@@ -50,12 +50,24 @@ const ROAD_STATE = /(?:\b(?:is|are|remain|remains|sit|sits|stay|stays)|\w's)\s+(
 // will do rather than reporting what the road is. An infinitive is never a
 // present-tense claim. 2026-09-22 failed on that sentence.
 const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?)\b/i;
-// system.md gives "I'd expect dry pavement by the 6:30 call" as the CORRECT
-// repair, so `'d` and "plan for" have to count as hedges; without them this
-// file failed the very phrasing the persona prescribes. 2026-09-23 failed on
-// "I'd plan for wet roads and maybe some ponding by the afternoon commute."
-// Per the header: where this file and the persona disagree, this file is wrong.
-const HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|expected|likely|probably|could|may|might|if|by (?:mid|late|early|noon|dark|the|\d)|watch for|look for|plan (?:on|for)|tonight|tomorrow|later|until|through (?:the )?(?:morning|afternoon|evening|day|night|weekend|school run)|this (?:afternoon|evening)|all day|forecast)\b/i;
+// Hedges, in two tiers, because they are not all the same thing.
+//
+// A MODAL turns the clause into a forecast outright. system.md gives "I'd
+// expect dry pavement by the 6:30 call" as the CORRECT repair, so `'d` and
+// "plan for" have to count; without them this file failed the very phrasing
+// the persona prescribes. 2026-09-23 failed on "I'd plan for wet roads and
+// maybe some ponding by the afternoon commute." Per the header: where this
+// file and the persona disagree, this file is wrong.
+const MODAL_HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|expected|likely|probably|could|may|might|if|watch for|look for|plan (?:on|for)|forecast)\b/i;
+// A TIME WINDOW only says when. On its own it does not make a present
+// indicative into a forecast: "The passes are dry through the morning" asserts
+// that they are dry right now, and a reader can drive up and disprove it,
+// which is the persona's own test. "should be dry through the morning" is
+// still fine, on the modal.
+const TIME_HEDGE = /\b(by (?:mid|late|early|noon|dark|the|\d)|tonight|tomorrow|later|until|through (?:the )?(?:morning|afternoon|evening|day|night|weekend|school run)|this (?:afternoon|evening)|all day)\b/i;
+const PRESENT_INDICATIVE = /(?:\b(?:is|are|'s|re)|\w's)\b/i;
+const hedged = c => MODAL_HEDGE.test(c) ||
+  (TIME_HEDGE.test(c) && !PRESENT_INDICATIVE.test(c));
 // A sentence that opens conditionally hedges every clause in it, including the
 // ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is slick."
 const CONDITIONAL_OPEN = /^(?:if|when|once|unless|should)\b/i;
@@ -149,7 +161,7 @@ function lint(raw, dateStr, historyDir) {
   for (const s of S) {
     const sentenceHedged = CONDITIONAL_OPEN.test(s);
     for (const c of clauses(s)) {
-      if (sentenceHedged || HEDGE.test(c)) continue;
+      if (sentenceHedged || hedged(c)) continue;
       const hasRoad = ROUTE_NUMBER.test(c) ||
         ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
       if ((hasRoad && ROAD_STATE.test(c)) || ROAD_NOUN.test(c)) {

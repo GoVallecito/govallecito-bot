@@ -156,15 +156,37 @@ _ROAD_STATE_CLAIM = re.compile(
     rf"(?:still\s+|both\s+|all\s+|already\s+|completely\s+)?"
     rf"(?:{_SURFACE})\b", re.IGNORECASE)
 
-# The persona's own correct forms, plus the ordinary future. system.md lists
-# "should", "I'd expect" and "looks like it'll" as the required repairs, so all
-# three have to count as hedges or the gate contradicts the prompt.
-_HEDGE = re.compile(
+# Hedges, in two tiers, because they are not all the same thing.
+#
+# A MODAL turns the clause into a forecast outright. system.md lists "should",
+# "I'd expect" and "looks like it'll" as the required repairs, so all three
+# have to count or the gate contradicts the prompt.
+_MODAL_HEDGE = re.compile(
     r"\b(?:should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|expected|"
-    r"likely|probably|could|may|might|if|by (?:mid|late|early|noon|dark|the|\d)|"
-    r"watch for|look for|plan (?:on|for)|tonight|tomorrow|later|until|"
+    r"likely|probably|could|may|might|if|watch for|look for|plan (?:on|for)|"
+    r"forecast)\b", re.IGNORECASE)
+
+# A TIME WINDOW only says when, and on its own it does not make a present
+# indicative into a forecast. "The passes are dry through the morning" asserts
+# that they are dry, right now, and a reader can drive up and disprove it --
+# which is the persona's test. Treating "through the morning" as a hedge
+# outright is a hole: the flat patterns have always blocked that sentence, and
+# running them through an undifferentiated hedge list would have opened it.
+# "should be dry through the morning" is still fine, on the modal.
+_TIME_HEDGE = re.compile(
+    r"\b(?:by (?:mid|late|early|noon|dark|the|\d)|tonight|tomorrow|later|until|"
     r"through (?:the )?(?:morning|afternoon|evening|day|night|weekend|school run)|"
-    r"this (?:afternoon|evening)|all day|forecast)\b", re.IGNORECASE)
+    r"this (?:afternoon|evening)|all day)\b", re.IGNORECASE)
+
+_PRESENT_INDICATIVE = re.compile(r"(?:\b(?:is|are|'s|re)|\w's)\b", re.IGNORECASE)
+
+
+def _clause_is_hedged(clause):
+    """Is this clause a forecast rather than a report?"""
+    if _MODAL_HEDGE.search(clause):
+        return True
+    return bool(_TIME_HEDGE.search(clause)
+                and not _PRESENT_INDICATIVE.search(clause))
 
 # A sentence that opens conditionally hedges every clause in it, including the
 # ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is
@@ -176,11 +198,17 @@ _CLAUSE_SPLIT = re.compile(r",\s*(?:and|but)\s+|;\s*|\s+and\s+|\s+but\s+",
                            re.IGNORECASE)
 
 
-def present_tense_road_claim(text):
-    """The offending sentence, or None.
+def road_status_claim(text):
+    """(sentence, why) for the first road-status claim, or (None, None).
 
-    Judged per clause, so a "should" in one half of a sentence cannot launder
-    "the 501 is fine" in the other.
+    One clause walk for both rule sets. ROAD_STATUS_CLAIMS used to be matched
+    flat against the whole draft, which made it the only road rule in the
+    project with no notion of tense: it blocked "If that band sets up, the 550
+    is icy by 6am", a forecast, and it blocked "expect chain law up on Red
+    Mountain by morning", which is the phrasing constants.py holds up as the
+    honest product. Both now pass on the modal, and everything is judged per
+    clause, so a "should" in one half of a sentence cannot launder "the 501 is
+    fine" in the other.
     """
     for sentence in _SENTENCE_SPLIT.split((text or "").replace("\n", " ")):
         sentence = sentence.strip()
@@ -189,13 +217,16 @@ def present_tense_road_claim(text):
         if _CONDITIONAL_OPEN.search(sentence):
             continue
         for clause in _CLAUSE_SPLIT.split(sentence):
-            if not clause or _HEDGE.search(clause):
+            if not clause or _clause_is_hedged(clause):
                 continue
+            for pattern, why in ROAD_STATUS_CLAIMS:
+                if re.search(pattern, clause, re.IGNORECASE):
+                    return sentence, why
             if (_ROAD_NOUN_CLAIM.search(clause)
                     or _ROAD_TELEGRAPHIC_CLAIM.search(clause)
                     or _ROAD_STATE_CLAIM.search(clause)):
-                return sentence
-    return None
+                return sentence, "states a present-tense road surface condition"
+    return None, None
 
 
 # A reading attributed to the gauge or the snow stake at the house.
@@ -322,19 +353,11 @@ def evaluate(bundle, draft_text, *, first_30_days=False, calibrated=False):
 
     # Road status without a road-status source.
     if not bundle.get("roads"):
-        road_why = None
-        for pattern, why in ROAD_STATUS_CLAIMS:
-            if re.search(pattern, draft_text, re.IGNORECASE):
-                road_why = why
-                break
-        if road_why is None:
-            stated = present_tense_road_claim(draft_text)
-            if stated:
-                road_why = ("states a present-tense road surface condition "
-                            f"({stated!r})")
-        if road_why:
-            escalate(BLOCK, f"draft {road_why} with no live CDOT data behind it -- "
-                            "forecast the roads and the passes, link CDOT for status")
+        stated, road_why = road_status_claim(draft_text)
+        if stated:
+            escalate(BLOCK, f"draft {road_why} ({stated!r}) with no live CDOT "
+                            "data behind it -- forecast the roads and the "
+                            "passes, link CDOT for status")
 
     # The persona rule "never a percentage," which the prompt has always
     # stated and nothing has ever enforced. The 2026-09-08 draft: "Pop's at 4%

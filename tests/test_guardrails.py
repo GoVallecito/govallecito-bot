@@ -278,7 +278,7 @@ ROAD_NON_CLAIMS = [
 
 def test_present_tense_road_claims_block():
     for claim in ROAD_CLAIMS:
-        assert G.present_tense_road_claim(claim), f"missed: {claim!r}"
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
         v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + claim)
         assert v == G.BLOCK, f"expected BLOCK for {claim!r}: {why}"
         assert any("road surface" in w for w in why), why
@@ -287,7 +287,7 @@ def test_present_tense_road_claims_block():
 def test_forecasting_the_roads_still_passes():
     """The gate must not block the thing the product exists to do."""
     for ok in ROAD_FORECASTS + ROAD_NON_CLAIMS:
-        assert G.present_tense_road_claim(ok) is None, f"false positive: {ok!r}"
+        assert G.road_status_claim(ok)[0] is None, f"false positive: {ok!r}"
         v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + ok)
         assert v == G.PASS, f"should have passed: {ok!r} -> {why}"
 
@@ -304,7 +304,7 @@ def test_a_number_that_is_not_a_route_is_not_a_road():
     """
     import re
     for ok in ROAD_NON_CLAIMS:
-        assert G.present_tense_road_claim(ok) is None, f"false positive: {ok!r}"
+        assert G.road_status_claim(ok)[0] is None, f"false positive: {ok!r}"
         for pattern, why in G.ROAD_STATUS_CLAIMS:
             assert not re.search(pattern, ok, re.IGNORECASE), f"{why}: {ok!r}"
 
@@ -313,21 +313,44 @@ def test_a_bare_route_number_is_still_a_road():
     """The exclusion must not cost the unadorned forms."""
     for claim in ["550 is closed.", "US-550 is closed.", "CR 501 is slick.",
                   "160 is icy over the top.", "The 501 is fine."]:
-        assert G.present_tense_road_claim(claim), f"missed: {claim!r}"
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
 
 
-def test_a_conditional_opener_hedges_the_clauses_after_it():
-    """"If that band sets up, the 550 is icy by 6am" forecasts, it does not report.
+def test_the_flat_patterns_are_hedge_aware_too():
+    """ROAD_STATUS_CLAIMS used to be matched flat against the whole draft.
 
-    Asserted against the detector rather than evaluate(), because the older
-    open/closed patterns in ROAD_STATUS_CLAIMS are flat and deliberately broad
-    -- they still fire on "is icy" here. That is the safe direction (a BLOCK is
-    text_fixable and costs one rewrite) and it is out of scope for this fix;
-    what matters is that the surface rule agrees with draft-lint.mjs, which
-    treats a conditional opener as hedging every clause in the sentence.
+    That made it the only road rule in the project with no notion of tense. It
+    blocked a conditional, and it blocked the phrasing constants.py holds up as
+    the honest product: "Coal Bank and Molas, 8-14 inches overnight, expect
+    traction law by morning".
     """
-    assert G.present_tense_road_claim(
-        "If that band sets up, the 550 is icy by 6am and Molas is slick.") is None
+    for forecast in [
+        "If that band sets up, the 550 is icy by 6am and Molas is slick.",
+        "Expect chain law up on Red Mountain by morning.",
+        "Coal Bank and Molas, 8-14 inches overnight, expect traction law by "
+        "morning.",
+        "Wolf Creek will likely be closed if this verifies.",
+    ]:
+        assert G.road_status_claim(forecast)[0] is None, f"blocked: {forecast!r}"
+        v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + forecast)
+        assert v == G.PASS, f"should have passed: {forecast!r} -> {why}"
+
+
+def test_a_time_window_alone_does_not_hedge_a_present_tense_claim():
+    """The hole that hedge-awareness would otherwise have opened.
+
+    "through the morning" says when, not whether. "The passes are dry through
+    the morning" still asserts that they are dry right now, and the flat
+    patterns have always blocked it; running them through an undifferentiated
+    hedge list would have let it through. Only the modal tier hedges.
+    """
+    for claim in ["The passes are dry through the morning.",
+                  "The 501 is clear all day.",
+                  "Roads are wet tonight."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+    for ok in ["The passes should be dry through the morning.",
+               "The 501 should be clear all day."]:
+        assert G.road_status_claim(ok)[0] is None, f"false positive: {ok!r}"
 
 
 def test_live_cdot_data_makes_a_road_claim_legal():
