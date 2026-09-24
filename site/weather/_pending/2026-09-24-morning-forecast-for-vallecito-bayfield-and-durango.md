@@ -1,24 +1,18 @@
-# Forecast run: held for review
+---
+title: "Morning forecast for Vallecito, Bayfield and Durango"
+date: "2026-09-24T05:35:21.008518-06:00"
+forDate: "2026-09-24"
+postType: "school_call"
+snowLineFt: null
+snowLineTrend: "falling"
+bands: {"durango": {"elevationFt": 6500, "precipType": "rain", "label": "Durango and the Animas Valley"}, "bayfield": {"elevationFt": 6900, "precipType": "rain", "label": "Bayfield and up the Pine"}, "vallecito": {"elevationFt": 7650, "precipType": "rain", "label": "Vallecito and the Florida"}, "weminuche": {"elevationFt": 10500, "precipType": "rain", "label": "The high Weminuche"}}
+basinPercentOfMedian: null
+alerts: []
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-24-morning-forecast-for-vallecito-bayfield-and-durango"
+---
 
-When: 2026-09-24T05:36:10-06:00 (Mountain)
-Slot: `school_call`
-
-## Detail
-
-```
-first-30-days policy: review everything
-```
-
-## What the data looked like
-
-- Snow line: 12550
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/24/26 5:35am: The gauge stayed dry overnight and the sky's just starting to lighten up behind the ridge, so we're starting Thursday quiet.
 
 Bus run's dry. The 501, the 240, the 160 into town all look fine for the morning drive. Districts decide by 6:30 but I'd expect a normal call today.
@@ -32,4 +26,3 @@ The SNOTEL at Vallecito's sitting at 4" of depth and 0.1" of SWE, which is just 
 Roads should be dry all day. The passes are getting wet pavement at most, maybe a couple inches way up high on Red Mountain or Wolf Creek but nothing at pass level. Check cotrip.org for current status but I'd expect everything open and dry.
 
 What's the inversion doing from your place this morning, or is it clear all the way down?
-```
