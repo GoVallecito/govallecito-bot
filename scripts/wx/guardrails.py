@@ -61,18 +61,11 @@ _ROUTE = (r"(?<![\d,])(?:550|160|172|240|500|501)"
 # behind a sentence like "Red Mountain is closed" -- and a wrong one sends
 # somebody on a three-hour detour or at a pass that is actually shut. Allowed
 # only when live roads data is present in the bundle.
+# Open/closed lives in CLOSURE_CLAIMS below, which is not hedgeable. What
+# remains here is judged per clause and yields to a forecast.
 ROAD_STATUS_CLAIMS = [
-    # Named passes belong in this alternation too: "Red Mountain is closed"
-    # names no road noun at all, and that is how a local would actually write
-    # it.
-    (rf"\b(?:pass|passes|road|highway|{_ROUTE}|coal bank|molas|"
-     rf"red mountain|wolf creek)\b[^.\n]{{0,50}}\b(?:is|are|'s)\s+(?:closed|open)\b",
-     "states whether a road is open or closed"),
-    (rf"\b(?:is|are|'s)\s+(?:closed|open)\b[^.\n]{{0,40}}\b(?:pass|passes|{_ROUTE})\b",
-     "states whether a road is open or closed"),
     (r"\bchain law(?:'s| is| are)?\s*(?:on|in effect|up)\b", "asserts chain law status"),
     (r"\btraction law(?:'s| is)?\s*(?:on|in effect|up)\b", "asserts traction law status"),
-    (r"\bCDOT has (?:closed|opened|lifted)\b", "asserts a CDOT action"),
     (r"\bthey(?:'re| are) doing control work\b", "asserts avalanche control is underway"),
 
     # THE GAP THAT SHIPPED. Every pattern above keys on "open" or "closed", so
@@ -156,6 +149,38 @@ _ROAD_STATE_CLAIM = re.compile(
     rf"(?:still\s+|both\s+|all\s+|already\s+|completely\s+)?"
     rf"(?:{_SURFACE})\b", re.IGNORECASE)
 
+# CLOSURES ARE NOT HEDGEABLE, and they are the one road rule that ignores both
+# the hedge tiers and the conditional opener below.
+#
+# A surface forecast is a weather claim: we have the weather, so "Coal Bank
+# should stay rain at pass level" is ours to make and hedging is exactly what
+# makes it honest. Whether a gate is down is not weather. It is an operational
+# decision that CDOT makes and publishes, we have no feed for it, and a
+# forecast of one is not a hedged version of a fact we hold -- it is invention
+# about somebody else's decision. "Wolf Creek will likely be closed if this
+# verifies" reads to a parent at 5:45am exactly like "Wolf Creek is closed",
+# and both send the same person on the same three-hour detour.
+#
+# So the verb set is deliberately wide where the surface rules are narrow: the
+# copulas, the modal forms ("will be closed", "should stay open"), and the
+# plain verbs ("closes at six", "reopens"). Chain law and traction law are NOT
+# here -- constants.py holds up "expect traction law by morning" as the honest
+# product, and tests/test_passes.py pins that. Those stay hedgeable above.
+_CLOSURE_STATE = (
+    r"(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|"
+    r"remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?"
+    r"(?:closed|open|shut)\b|\bclos(?:e|es|ing|ed)\b|\breopen(?:s|ed|ing)?\b|"
+    r"\bshuts?\b)")
+
+CLOSURE_CLAIMS = [
+    (rf"\b(?:{_ROAD_NAME}|{_ROAD_NOUN})\b[^.\n]{{0,50}}{_CLOSURE_STATE}",
+     "states whether a road is open or closed"),
+    (rf"{_CLOSURE_STATE}[^.\n]{{0,40}}\b(?:{_ROAD_NAME})\b",
+     "states whether a road is open or closed"),
+    (r"\bCDOT has (?:closed|opened|lifted)\b", "asserts a CDOT action"),
+]
+
+
 # Hedges, in two tiers, because they are not all the same thing.
 #
 # A MODAL turns the clause into a forecast outright. system.md lists "should",
@@ -209,11 +234,19 @@ def road_status_claim(text):
     honest product. Both now pass on the modal, and everything is judged per
     clause, so a "should" in one half of a sentence cannot launder "the 501 is
     fine" in the other.
+
+    CLOSURE_CLAIMS is the exception and runs first, unhedged. Surface is
+    weather and is ours to forecast; a gate being down is CDOT's decision and
+    is not ours to predict at all.
     """
     for sentence in _SENTENCE_SPLIT.split((text or "").replace("\n", " ")):
         sentence = sentence.strip()
         if not sentence:
             continue
+        # Before the hedges and before the conditional opener: see CLOSURE_CLAIMS.
+        for pattern, why in CLOSURE_CLAIMS:
+            if re.search(pattern, sentence, re.IGNORECASE):
+                return sentence, why
         if _CONDITIONAL_OPEN.search(sentence):
             continue
         for clause in _CLAUSE_SPLIT.split(sentence):

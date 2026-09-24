@@ -50,6 +50,14 @@ const ROAD_STATE = /(?:\b(?:is|are|remain|remains|sit|sits|stay|stays)|\w's)\s+(
 // will do rather than reporting what the road is. An infinitive is never a
 // present-tense claim. 2026-09-22 failed on that sentence.
 const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?)\b/i;
+// A CLOSURE is not hedgeable, and it is the one road claim that ignores the
+// hedges and the conditional opener below. A surface forecast is a weather
+// claim, so hedging is what makes it honest; whether a gate is down is CDOT's
+// decision, there is no feed for it, and "Wolf Creek will likely be closed"
+// reads at 5:45am like "Wolf Creek is closed". Chain law and traction law are
+// deliberately absent: system.md and constants.py both hold up "expect
+// traction law by morning" as the product. Mirrors guardrails.CLOSURE_CLAIMS.
+const CLOSURE = /(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?(?:closed|open|shut)\b|\bclos(?:e|es|ing|ed)\b|\breopen(?:s|ed|ing)?\b|\bshuts?\b)/i;
 // Hedges, in two tiers, because they are not all the same thing.
 //
 // A MODAL turns the clause into a forecast outright. system.md gives "I'd
@@ -156,14 +164,19 @@ function lint(raw, dateStr, historyDir) {
     else if (/\s--\s|\w--\w|\s--\w|\w--\s/.test(s)) fails.push(['em-dash', `Contains "--": ${q(s)}`]);
   }
 
-  // 2. Present-tense road or pass conditions. Judged per clause, so a "should"
-  // in one half of a sentence cannot launder "the 501 is fine" in the other.
+  // 2. Road and pass conditions. Judged per clause, so a "should" in one half
+  // of a sentence cannot launder "the 501 is fine" in the other. A closure is
+  // checked first and is not hedgeable -- see CLOSURE.
   for (const s of S) {
     const sentenceHedged = CONDITIONAL_OPEN.test(s);
     for (const c of clauses(s)) {
-      if (sentenceHedged || hedged(c)) continue;
       const hasRoad = ROUTE_NUMBER.test(c) ||
         ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
+      if (hasRoad && CLOSURE.test(c)) {
+        fails.push(['road-status', `Road closure claim with no CDOT data: ${q(s)}`]);
+        break;
+      }
+      if (sentenceHedged || hedged(c)) continue;
       if ((hasRoad && ROAD_STATE.test(c)) || ROAD_NOUN.test(c)) {
         fails.push(['road-status', `Present-tense road condition with no CDOT data: ${q(s)}`]);
         break;

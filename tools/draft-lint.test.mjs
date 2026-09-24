@@ -40,6 +40,9 @@ const cases = {
   // shipped 2026-09-21: a surface claim with the verb left out, and about a
   // valley road rather than a pass. Issue #30.
   'road-status-adjective.md': 'road-status',
+  // A closure is not hedgeable: "will likely be closed" is not a hedged
+  // version of a fact we hold, it is invention about a CDOT decision.
+  'road-status-closure.md': 'road-status',
   'personal-zero.md': 'personal-count',
   'personal-two.md': 'personal-count',
   'bare-percent.md': 'bare-percent',     // shipped 2026-09-08: "Pop's at 4%"
@@ -75,6 +78,21 @@ test("\"I'd plan for wet roads\" is the phrasing system.md asks for", () => {
   const r = run('road-status-hedged.md');
   assert.equal(r.code, 0);
   assert.deepEqual(r.fails, []);
+});
+
+test('a traction law forecast is still allowed', () => {
+  // constants.py holds "expect traction law by morning" up as the product: it
+  // is a consequence of weather we have, unlike a gate coming down.
+  const src = readFileSync(join(FIX, 'clean.md'), 'utf8').replace(
+    /^Coal Bank and Molas should stay dry through the morning\./m,
+    'Coal Bank and Molas pick up 8-14 inches overnight, so expect traction law by morning.');
+  const tmp = join(FIX, 'road-status-traction.md');
+  writeFileSync(tmp, src);
+  try {
+    const r = run('road-status-traction.md');
+    assert.equal(r.code, 0);
+    assert.deepEqual(r.fails, []);
+  } finally { rmSync(tmp); }
 });
 
 test('the hedge cannot launder an unhedged clause beside it', () => {

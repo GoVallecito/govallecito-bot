@@ -329,11 +329,49 @@ def test_the_flat_patterns_are_hedge_aware_too():
         "Expect chain law up on Red Mountain by morning.",
         "Coal Bank and Molas, 8-14 inches overnight, expect traction law by "
         "morning.",
-        "Wolf Creek will likely be closed if this verifies.",
     ]:
         assert G.road_status_claim(forecast)[0] is None, f"blocked: {forecast!r}"
         v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + forecast)
         assert v == G.PASS, f"should have passed: {forecast!r} -> {why}"
+
+
+def test_a_closure_cannot_be_hedged():
+    """The one road rule that ignores the hedges and the conditional opener.
+
+    A surface forecast is a weather claim and hedging is what makes it honest.
+    Whether a gate is down is not weather: it is CDOT's decision, there is no
+    feed for it, and "Wolf Creek will likely be closed" is not a hedged version
+    of a fact we hold. At 5:45am it reads like "Wolf Creek is closed" and sends
+    the same person on the same three-hour detour.
+    """
+    for claim in [
+        "Wolf Creek will likely be closed if this verifies.",
+        "Red Mountain should be closed by noon.",
+        "I'd expect the 550 to be shut through the morning.",
+        "If you are heading north, Red Mountain is closed.",
+        "The 550 closes at six.",
+        "Molas reopens later today.",
+        "Expect Wolf Creek to stay open all day.",
+        "CDOT has closed Molas.",
+    ]:
+        stated, why = G.road_status_claim(claim)
+        assert stated, f"missed: {claim!r}"
+        v, reasons = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + claim)
+        assert v == G.BLOCK, f"expected BLOCK for {claim!r}: {reasons}"
+
+
+def test_chain_law_stays_hedgeable_though():
+    """constants.py holds "expect traction law by morning" up as the product.
+
+    A traction law is a consequence of the weather we do have, unlike a gate
+    coming down, so it is forecastable and tests/test_passes.py pins that.
+    """
+    for ok in ["Expect traction law by morning over Wolf Creek.",
+               "Expect chain law up on Red Mountain by morning."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+    for claim in ["Chain law is on over Wolf Creek.",
+                  "Traction law is in effect on the 550."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
 
 
 def test_a_time_window_alone_does_not_hedge_a_present_tense_claim():
