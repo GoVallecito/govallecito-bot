@@ -79,6 +79,21 @@ const hedged = c => MODAL_HEDGE.test(c) ||
 // A sentence that opens conditionally hedges every clause in it, including the
 // ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is slick."
 const CONDITIONAL_OPEN = /^(?:if|when|once|unless|should)\b/i;
+// Unless the conditional is about the READER rather than the weather. "If that
+// band sets up" makes what follows contingent; "If you are heading north"
+// picks out an audience and then states a flat fact at them, so "If you are
+// heading north, Red Mountain is closed" is a closure claim in conditional
+// dress. "we" is deliberately absent: "If we do see rain it'd be brief" is
+// forecast-contingent. Mirrors guardrails._READER_ADDRESSED.
+const READER_ADDRESSED = /^(?:if|when|once|unless)\s+(?:you|your|you're|youre|ya|anyone|anybody|someone|somebody|folks|people|drivers?|kids|the kids)\b/i;
+const conditional = s => CONDITIONAL_OPEN.test(s) && !READER_ADDRESSED.test(s);
+// "if" is also a modal hedge, for the trailing form ("the 550 is icy if that
+// band sets up"), and at the head of a reader-addressed sentence it would
+// hedge the clause all over again: "If you're running the 550 this morning,
+// the pass is icy" is one clause and contains an "if". Drop the opener and
+// judge what is left, which is the claim actually being made.
+const LEADING_CONDITIONAL = /^(?:if|when|once|unless)\s+/i;
+const claimBody = s => READER_ADDRESSED.test(s) ? s.replace(LEADING_CONDITIONAL, '') : s;
 
 // Percent must carry a unit: "64% of median", "23% of full pool".
 const PCT = /(\d{1,3})\s*%/g;
@@ -167,10 +182,11 @@ function lint(raw, dateStr, historyDir) {
   // 2. Road and pass conditions. Judged per clause, so a "should" in one half
   // of a sentence cannot launder "the 501 is fine" in the other. A closure is
   // checked first and the hedges do not apply to it -- see CLOSURE. A
-  // conditional opener still exempts the whole sentence, closures included.
+  // weather-contingent conditional opener still exempts the whole sentence; a
+  // reader-addressed one exempts nothing.
   for (const s of S) {
-    if (CONDITIONAL_OPEN.test(s)) continue;
-    for (const c of clauses(s)) {
+    if (conditional(s)) continue;
+    for (const c of clauses(claimBody(s))) {
       const hasRoad = ROUTE_NUMBER.test(c) ||
         ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
       if (hasRoad && CLOSURE.test(c)) {

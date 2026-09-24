@@ -359,22 +359,50 @@ def test_a_closure_cannot_be_hedged():
         assert v == G.BLOCK, f"expected BLOCK for {claim!r}: {reasons}"
 
 
-def test_a_conditional_opener_still_exempts_a_closure():
-    """Deliberate, and it has a known cost.
+def test_a_weather_contingent_conditional_exempts_the_sentence():
+    """What is uncertain is the forecast, so everything after it is too."""
+    for ok in [
+        "If CDOT has closed the 550, the detour through Pagosa is long.",
+        "If that band sets up, the 550 is icy by 6am and Molas is slick.",
+        "If we do see rain it'd be brief and the 501 is fine either way.",
+        "Unless this shifts north, Wolf Creek is closed to nobody.",
+    ]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
 
-    "If CDOT has closed the 550, the detour through Pagosa is long" does not
-    claim the 550 is closed, and a sentence opening on "if" is contingent all
-    the way through. But nothing here can tell that apart from a
-    reader-addressed conditional with a flat closure after it, so the second
-    case below is exempt too. Closing that needs a rule about who the
-    conditional addresses, not about roads. Pinned so the gap stays visible.
+
+def test_a_reader_addressed_conditional_exempts_nothing():
+    """It picks out an audience and then states a flat fact at them.
+
+    "If you are heading north, Red Mountain is closed" makes nothing
+    contingent: the closure is asserted, the "if" only says who should care.
+    It is also the form a local would actually write, which is why the
+    undifferentiated conditional rule was a hole worth closing.
     """
-    assert G.road_status_claim(
-        "If CDOT has closed the 550, the detour through Pagosa is long."
-    )[0] is None
-    assert G.road_status_claim(
-        "If you are heading north, Red Mountain is closed."
-    )[0] is None, "known gap: a reader-addressed conditional is exempt too"
+    for claim in [
+        "If you are heading north, Red Mountain is closed.",
+        "If you're running the 550 this morning, the pass is icy.",
+        "When you head over Molas, the road is bare and dry.",
+        "If anyone is going to town, the 160 is fine.",
+    ]:
+        stated, _ = G.road_status_claim(claim)
+        assert stated, f"missed: {claim!r}"
+        v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + claim)
+        assert v == G.BLOCK, f"expected BLOCK for {claim!r}: {why}"
+
+
+def test_reader_addressed_advice_without_a_road_claim_still_passes():
+    """The persona writes these constantly and they are not status claims.
+
+    tests/test_passes.py pins the first one. The second is from a shipped post.
+    """
+    for ok in [
+        "If you are running the 550 today, check CDOT before you go.",
+        "If you're getting out on a trail today its a good window for it.",
+        "If you're heading over Molas this morning, it should be wet early.",
+    ]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+        v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + ok)
+        assert v == G.PASS, f"should have passed: {ok!r} -> {why}"
 
 
 def test_chain_law_stays_hedgeable_though():

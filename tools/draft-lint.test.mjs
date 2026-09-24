@@ -43,6 +43,9 @@ const cases = {
   // A closure is not hedgeable: "will likely be closed" is not a hedged
   // version of a fact we hold, it is invention about a CDOT decision.
   'road-status-closure.md': 'road-status',
+  // A conditional addressed to the reader picks out an audience; it does not
+  // make the claim after it contingent.
+  'road-status-reader-addressed.md': 'road-status',
   'personal-zero.md': 'personal-count',
   'personal-two.md': 'personal-count',
   'bare-percent.md': 'bare-percent',     // shipped 2026-09-08: "Pop's at 4%"
@@ -78,6 +81,35 @@ test("\"I'd plan for wet roads\" is the phrasing system.md asks for", () => {
   const r = run('road-status-hedged.md');
   assert.equal(r.code, 0);
   assert.deepEqual(r.fails, []);
+});
+
+test('reader-addressed advice with no road claim still passes', () => {
+  // The persona writes these constantly. "If you're getting out on a trail
+  // today its a good window for it" is from a shipped post.
+  const src = readFileSync(join(FIX, 'clean.md'), 'utf8').replace(
+    /^Coal Bank and Molas should stay dry through the morning\./m,
+    "If you're running the 550 today, check CDOT before you go, and I'd expect " +
+    'wet pavement by the 6:30 call.');
+  const tmp = join(FIX, 'road-status-reader-ok.md');
+  writeFileSync(tmp, src);
+  try {
+    const r = run('road-status-reader-ok.md');
+    assert.equal(r.code, 0);
+    assert.deepEqual(r.fails, []);
+  } finally { rmSync(tmp); }
+});
+
+test('a weather-contingent conditional still exempts the sentence', () => {
+  const src = readFileSync(join(FIX, 'clean.md'), 'utf8').replace(
+    /^Coal Bank and Molas should stay dry through the morning\./m,
+    'If that band sets up, the 550 is icy by 6am and Molas is slick.');
+  const tmp = join(FIX, 'road-status-weather-if.md');
+  writeFileSync(tmp, src);
+  try {
+    const r = run('road-status-weather-if.md');
+    assert.equal(r.code, 0);
+    assert.deepEqual(r.fails, []);
+  } finally { rmSync(tmp); }
 });
 
 test('a traction law forecast is still allowed', () => {

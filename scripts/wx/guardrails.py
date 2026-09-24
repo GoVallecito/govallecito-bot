@@ -152,14 +152,10 @@ _ROAD_STATE_CLAIM = re.compile(
 # CLOSURES ARE NOT HEDGEABLE. This is the one road rule the hedge tiers below
 # do not apply to.
 #
-# The conditional opener still exempts it, deliberately. "If CDOT has closed
-# the 550, the detour through Pagosa is long" does not claim the 550 is closed,
-# and a sentence that opens on "if" is contingent all the way through. The cost
-# is that a reader-addressed conditional with a flat closure after it --
-# "If you are heading north, Red Mountain is closed" -- is exempt too, because
-# nothing here can tell that apart from "If that band sets up, ...". That is a
-# known gap rather than an oversight; closing it needs a rule about who the
-# conditional addresses, not about roads.
+# A weather-contingent conditional opener still exempts it, deliberately: "If
+# CDOT has closed the 550, the detour through Pagosa is long" does not claim
+# the 550 is closed. A reader-addressed one does not exempt anything -- see
+# _READER_ADDRESSED below.
 #
 # A surface forecast is a weather claim: we have the weather, so "Coal Bank
 # should stay rain at pass level" is ours to make and hedging is exactly what
@@ -227,6 +223,43 @@ def _clause_is_hedged(clause):
 # slick" is a forecast throughout.
 _CONDITIONAL_OPEN = re.compile(r"^(?:if|when|once|unless|should)\b", re.IGNORECASE)
 
+# Unless the conditional is about the READER rather than about the weather.
+#
+# "If that band sets up" makes everything after it contingent, because what is
+# uncertain is the forecast. "If you are heading north" makes nothing
+# contingent: it picks out an audience and then states a flat fact at them, so
+# "If you are heading north, Red Mountain is closed" is a closure claim wearing
+# conditional dress, and it is the form a local would actually write.
+#
+# The distinction is the subject of the conditional -- a person, or the
+# weather. "we" is deliberately absent: the persona writes "If we do see rain
+# it'd be brief," which is forecast-contingent, not an address to anybody.
+_READER_ADDRESSED = re.compile(
+    r"^(?:if|when|once|unless)\s+(?:you|your|you're|youre|ya|anyone|anybody|"
+    r"someone|somebody|folks|people|drivers?|kids|the kids)\b", re.IGNORECASE)
+
+
+# "if" is also in the modal tier, for the trailing form ("the 550 is icy if
+# that band sets up"), and at the head of a reader-addressed sentence it would
+# hedge the clause all over again: "If you're running the 550 this morning, the
+# pass is icy" is one clause and contains an "if". So the opener is dropped
+# before the clause is judged. What is left, "you're running the 550 this
+# morning, the pass is icy", is the claim actually being made.
+_LEADING_CONDITIONAL = re.compile(r"^(?:if|when|once|unless)\s+", re.IGNORECASE)
+
+
+def _sentence_is_conditional(sentence):
+    """Does opening on "if" make the rest of this sentence contingent?"""
+    return bool(_CONDITIONAL_OPEN.search(sentence)
+                and not _READER_ADDRESSED.search(sentence))
+
+
+def _claim_body(sentence):
+    """The sentence with a reader-addressing opener removed."""
+    if _READER_ADDRESSED.search(sentence):
+        return _LEADING_CONDITIONAL.sub("", sentence)
+    return sentence
+
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 _CLAUSE_SPLIT = re.compile(r",\s*(?:and|but)\s+|;\s*|\s+and\s+|\s+but\s+",
                            re.IGNORECASE)
@@ -245,21 +278,22 @@ def road_status_claim(text):
     fine" in the other.
 
     CLOSURE_CLAIMS is the exception: the hedge tiers do not apply to it, though
-    the conditional opener still does. Surface is weather and is ours to
-    forecast; a gate being down is CDOT's decision and is not ours to predict
-    at all.
+    a weather-contingent conditional opener still does. Surface is weather and
+    is ours to forecast; a gate being down is CDOT's decision and is not ours
+    to predict at all.
     """
     for sentence in _SENTENCE_SPLIT.split((text or "").replace("\n", " ")):
         sentence = sentence.strip()
         if not sentence:
             continue
-        if _CONDITIONAL_OPEN.search(sentence):
+        if _sentence_is_conditional(sentence):
             continue
+        body = _claim_body(sentence)
         # Ahead of the hedge tiers, which do not apply to it: see CLOSURE_CLAIMS.
         for pattern, why in CLOSURE_CLAIMS:
-            if re.search(pattern, sentence, re.IGNORECASE):
+            if re.search(pattern, body, re.IGNORECASE):
                 return sentence, why
-        for clause in _CLAUSE_SPLIT.split(sentence):
+        for clause in _CLAUSE_SPLIT.split(body):
             if not clause or _clause_is_hedged(clause):
                 continue
             for pattern, why in ROAD_STATUS_CLAIMS:
