@@ -217,12 +217,61 @@ def render_bundle(bundle, post_type="school_call"):
           + (f", elev {res['elevation_ft']} ft" if res.get("elevation_ft") else ""))
     A("")
 
+    # --- roads: the absence that was never stated --------------------------
+    #
+    # This block is unconditional and it is about every road, not only the
+    # passes. Both of those were the bug.
+    #
+    # The road discipline used to live inside `if pass_card` under the heading
+    # THE PASSES. A model applies a constraint to what the constraint names, so
+    # it governed Coal Bank and Molas and said nothing about the 501, the 240,
+    # the bus run or the pavement in town -- which is where four of the last
+    # five drafts put their road claim. 2026-09-21 opened a paragraph with
+    # "Dry roads for the bus run this morning," which is almost word for word
+    # one of the examples system.md lists as forbidden.
+    #
+    # The old wording also said "say what the passes are GETTING," and got back
+    # "The passes are getting wet pavement at most." That was the instruction
+    # working as written. Present progressive is present tense, and a reader
+    # can drive up and disprove it, which is the persona's own test. Nothing
+    # here is phrased in the present.
+    #
+    # Same mechanism as the gauge block above, for the same reason: an absence
+    # that is stated does not get filled in. sources["roads"] has been ok=false
+    # every morning since CDOT withdrew public feed registration, but roads is
+    # written into the bundle outside record(), so it never enters
+    # bundle["missing"] and the DATA YOU DO NOT HAVE list below has never once
+    # mentioned it. The forbidden forms are spelled out rather than gestured
+    # at, because "do not report road status" and "dry roads for the bus run"
+    # do not look like the same sentence to the thing writing them.
+    if bundle.get("roads"):
+        A("LIVE ROAD STATUS (CDOT). This IS data. State it flat, name CDOT as")
+        A("the source, and do not soften it into a forecast.")
+    else:
+        A("LIVE ROAD STATUS: YOU HAVE NONE. Not for the passes, not for US-550")
+        A("or US-160, not for the 501, the 240 or the Florida Road, and not for")
+        A("the pavement in town. There is no road-status source in this bundle")
+        A("and there was not one yesterday either.")
+        A("  -> So you never write what a road IS. Not 'the passes are dry',")
+        A("     not 'dry roads for the bus run', not 'wet pavement for the")
+        A("     commute', not 'the 501 is fine', not 'clear conditions', and")
+        A("     not 'the passes are getting wet pavement'. An adjective sitting")
+        A("     in front of 'roads' or 'pavement' is the same claim with the")
+        A("     verb left out, and that is the form that keeps getting through.")
+        A("  -> Write what they will GET, in the future or the conditional,")
+        A("     every time: 'the 501 should be fine for the bus run', \"I'd")
+        A("     expect wet pavement by the afternoon commute\", 'Coal Bank")
+        A("     should stay rain at pass level'. The test: if a reader could")
+        A("     drive out the door and prove you wrong inside ten minutes, you")
+        A("     needed 'should', \"I'd expect\" or \"looks like it'll\".")
+        A(f"  -> Then send them to CDOT for the status: {C.CDOT_STATUS_URL}")
+        A("     The forecast is yours. The status is theirs. Say which is which.")
+    A("")
+
     if bundle.get("pass_card"):
-        A("THE PASSES, FORECAST ONLY. You do NOT know whether any road is open,")
-        A("closed, or under chain law. There is no live road-status source. Say")
-        A("what the passes are GETTING, then send people to CDOT for status.")
-        A("The three US-550 passes close as a unit. 'The pass is closed'")
-        A("unqualified means Red Mountain in Durango and Wolf Creek in Bayfield.")
+        A("THE PASSES, FORECAST ONLY, under the road rule above. The three")
+        A("US-550 passes close as a unit. 'The pass is closed' unqualified")
+        A("means Red Mountain in Durango and Wolf Creek in Bayfield.")
         A(bundle["pass_card"])
         if bundle.get("passes_notable"):
             A("  -> A pass is getting enough that it belongs near the top.")
@@ -290,8 +339,9 @@ def build_messages(bundle, post_type="school_call", recent_posts=None,
             "Write the morning school call. It publishes at 5:45am and the "
             "districts decide by 6:30, so lead with what a parent driving the "
             "501 or the 240 needs. Give the snow line in feet. Walk the bands "
-            "in order. Say plainly which routes are the question this morning, "
-            "and that the districts decide by 6:30, never announce a closure."),
+            "in order. Say plainly which routes the weather puts in question "
+            "this morning -- what they will GET, never what they are -- and "
+            "that the districts decide by 6:30, never announce a closure."),
         "evening": (
             "Write the evening look. Pattern first, then the next 3-5 days. No "
             "snow amounts beyond day 3."),

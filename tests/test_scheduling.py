@@ -454,3 +454,89 @@ def test_the_suppression_instruction_states_no_snow_line_figure():
     assert "DO NOT STATE A SNOW LINE FIGURE" in brief
     offenders = re.findall(r"\b1[0-9][,.]?\d{3}\b", brief)
     assert not offenders, f"a snow-line figure leaked into the brief: {offenders}"
+
+
+# --- the brief's road block: issues #30, #32, #33, #34 ---------------------
+#
+# The road discipline used to live inside `if pass_card` under the heading THE
+# PASSES, and it asked for "what the passes are GETTING". So on a day with no
+# pass card the brief said nothing about roads at all, and on every other day
+# it governed Coal Bank and Molas while saying nothing about the 501, the bus
+# run or the pavement in town -- which is where the failing sentences were.
+
+def _bundle(**kw):
+    b = {
+        "post_for_weekday": "Monday", "post_for_date": "2026-09-21",
+        "post_for_stamp": "09/21/26", "generated_at": "2026-09-21T05:46:00",
+        "season": "fall", "day_type": "school day", "is_late": False,
+        "alerts": [], "bands": {}, "missing": [], "sources": {},
+    }
+    b.update(kw)
+    return b
+
+
+def test_the_brief_always_states_that_there_is_no_road_status():
+    """With or without a pass card. An absence stated does not get filled in."""
+    from wx import compose as CO
+    from wx import constants as C
+    for bundle in (_bundle(), _bundle(pass_card="US-550 north: rain up high.")):
+        brief = CO.render_bundle(bundle, "school_call")
+        assert "LIVE ROAD STATUS: YOU HAVE NONE" in brief, brief
+        assert C.CDOT_STATUS_URL in brief, "must point at CDOT for status"
+
+
+def test_the_road_block_is_not_scoped_to_the_passes():
+    """Every failing sentence was about a valley road, not a pass."""
+    from wx import compose as CO
+    brief = CO.render_bundle(_bundle(), "school_call")
+    block = brief.split("LIVE ROAD STATUS")[1].split("\n\n")[0].lower()
+    for road in ("501", "240", "pavement", "florida road"):
+        assert road in block, f"{road!r} missing from the road block"
+
+
+def test_the_brief_never_asks_for_the_present_tense():
+    """It asked for "what the passes are GETTING" and got exactly that back.
+
+    2026-09-24: "The passes are getting wet pavement at most."
+    """
+    from wx import compose as CO
+    brief = CO.render_bundle(_bundle(pass_card="US-550 north: rain up high."),
+                             "school_call")
+    assert "are GETTING" not in brief
+    # And the forbidden forms are spelled out rather than gestured at.
+    assert "dry roads for the bus run" in brief.lower()
+    assert "should" in brief.lower() and "i'd\n     expect" in brief.lower()
+
+
+def test_the_school_call_task_does_not_invite_a_present_tense_route_claim():
+    from wx import compose as CO
+    task = [m for m in CO.build_messages(_bundle(), "school_call")
+            if m["role"] == "user"][0]["content"]
+    assert "which routes are the question" not in task
+    assert "what they will GET, never what they are" in task
+
+
+def test_live_cdot_data_flips_the_instruction():
+    from wx import compose as CO
+    brief = CO.render_bundle(_bundle(roads={"us550": {"status": "closed"}}),
+                             "school_call")
+    assert "LIVE ROAD STATUS (CDOT). This IS data." in brief
+    assert "YOU HAVE NONE" not in brief
+
+
+def test_the_four_review_drafts_would_now_be_caught_and_rewritten():
+    """Issues #30, #32, #33, #34. The gate saw none of these.
+
+    Two were real violations the composer produced; the other two were
+    draft-lint false positives on correctly hedged forecast copy, covered in
+    tools/draft-lint.test.mjs. These are the real ones.
+    """
+    from wx import guardrails as G
+    from test_guardrails import GOOD_BUNDLE, GOOD_DRAFT
+    for shipped in (
+        "Dry roads for the bus run this morning.",
+        "The 501, the 240, the 160 into town all look fine for the morning drive.",
+    ):
+        v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + shipped)
+        assert v == G.BLOCK, f"{shipped!r} -> {why}"
+        assert G.text_fixable(why), "a rewrite, not a silent morning"

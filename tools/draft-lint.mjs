@@ -25,9 +25,7 @@ const MONTHS = ['January','February','March','April','May','June','July','August
 // The persona opens every post with this: `11/04/26 5:52am: Morning, its Wednesday.`
 const STAMP = /^(\d{2})\/(\d{2})\/(\d{2})\s+\d{1,2}:\d{2}\s*[ap]m:\s*/i;
 
-// Local proper nouns that turn a clause into a road/pass report. The bare
-// highway numbers come with the article because that is how the persona writes
-// them ("the 550", "the 501"), and without it "the 160 cfs" style numbers bite.
+// Local proper nouns that turn a clause into a road/pass report.
 const ROADS = [
   'Coal Bank','Molas','Red Mountain','Wolf Creek','Cumbres','Lizard Head','Hesperus',
   'US 160','US-160','Highway 160','the 160','US 550','US-550','Highway 550','the 550',
@@ -36,10 +34,28 @@ const ROADS = [
   'Vallecito Road','Bayfield Parkway','Elmore',
   'the pass','the passes','Middle Mountain Road','Missionary Ridge Road'
 ];
+// A bare route number, which the list above only caught when it carried its
+// article. The article was there because "the 160 cfs" style numbers bite:
+// this persona writes elevations as "(6,500')" and flows as "running 160 cfs",
+// and a word boundary sits on both sides of the number in each. Excluding
+// those two contexts directly is what lets the number go bare -- nothing may
+// run into it from the left, which is what the comma in "6,500" does, and no
+// unit may follow it. Mirrors guardrails._ROUTE; the two are meant to agree.
+const ROUTE_NUMBER = /(?<![\d,])\b(?:550|160|172|240|500|501)\b(?!\s*(?:cfs|ft|feet|af|%|,\d|['"]))/i;
 const ROAD_STATE = /(?:\b(?:is|are|remain|remains|sit|sits|stay|stays)|\w's)\s+(?:still\s+|both\s+|all\s+|already\s+|completely\s+)?(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\b/i;
 // A surface claim with no verb at all: "clear roads and dry pavement."
-const ROAD_NOUN = /\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?)\b/i;
-const HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|would|expect|expected|likely|probably|could|may|might|if|by (?:mid|late|early|noon|dark|the|\d)|watch for|look for|plan on|tonight|tomorrow|later|until|through (?:the )?(?:morning|afternoon|evening|day|night|weekend|school run)|this (?:afternoon|evening)|all day|forecast)\b/i;
+//
+// The `to` lookbehind: "wet" is a verb at least as often as an adjective here,
+// and "enough to wet pavement for the evening commute" forecasts what the rain
+// will do rather than reporting what the road is. An infinitive is never a
+// present-tense claim. 2026-09-22 failed on that sentence.
+const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?)\b/i;
+// system.md gives "I'd expect dry pavement by the 6:30 call" as the CORRECT
+// repair, so `'d` and "plan for" have to count as hedges; without them this
+// file failed the very phrasing the persona prescribes. 2026-09-23 failed on
+// "I'd plan for wet roads and maybe some ponding by the afternoon commute."
+// Per the header: where this file and the persona disagree, this file is wrong.
+const HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|expected|likely|probably|could|may|might|if|by (?:mid|late|early|noon|dark|the|\d)|watch for|look for|plan (?:on|for)|tonight|tomorrow|later|until|through (?:the )?(?:morning|afternoon|evening|day|night|weekend|school run)|this (?:afternoon|evening)|all day|forecast)\b/i;
 // A sentence that opens conditionally hedges every clause in it, including the
 // ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is slick."
 const CONDITIONAL_OPEN = /^(?:if|when|once|unless|should)\b/i;
@@ -134,7 +150,8 @@ function lint(raw, dateStr, historyDir) {
     const sentenceHedged = CONDITIONAL_OPEN.test(s);
     for (const c of clauses(s)) {
       if (sentenceHedged || HEDGE.test(c)) continue;
-      const hasRoad = ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
+      const hasRoad = ROUTE_NUMBER.test(c) ||
+        ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
       if ((hasRoad && ROAD_STATE.test(c)) || ROAD_NOUN.test(c)) {
         fails.push(['road-status', `Present-tense road condition with no CDOT data: ${q(s)}`]);
         break;

@@ -223,3 +223,124 @@ def test_the_preposition_in_is_not_an_inch_abbreviation():
     ]:
         v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + ok)
         assert v == G.PASS, f"should have passed: {ok!r} -> {why}"
+
+
+# --- road status: the 2026-09-21..24 review issues -------------------------
+#
+# Four of the five drafts to 2026-09-24 failed draft-lint's `road-status` rule
+# and none of them tripped this module, because every pattern in
+# ROAD_STATUS_CLAIMS is anchored on a verb. A claim with the verb left out
+# ("Dry roads for the bus run") was invisible here, so correction_note() never
+# fired and the model was never asked to rewrite it.
+
+ROAD_CLAIMS = [
+    # The four drafts, verbatim.
+    "Dry roads for the bus run this morning.",
+    "Bayfield and up the Pine same story, dry pavement and clear conditions "
+    "through the morning.",
+    "The 501, the 240, the 160 into town all look fine for the morning drive.",
+    "The passes are getting wet pavement at most, maybe a couple inches way up "
+    "high on Red Mountain or Wolf Creek but nothing at pass level.",
+    # Every form system.md lists as forbidden, by name.
+    "The 160 into town looks fine.",
+    "Roads wet, no ice.",
+    "The passes are dry.",
+    "The 501 and the 240 are both dry for the school run.",
+    # A hedge in one clause must not launder the claim in the other.
+    "Coal Bank should stay dry, and Molas is clear right now.",
+]
+
+ROAD_FORECASTS = [
+    # system.md's own prescribed repairs. These are the whole point of the
+    # product and a false positive here is a silent morning.
+    "The 160 should be fine for the morning commute.",
+    "I'd expect dry pavement by the 6:30 call.",
+    "Coal Bank should stay rain at pass level.",
+    "Looks like it'll be wet pavement for the drive in.",
+    "The 501 should be fine this morning but I'd plan for wet roads and maybe "
+    "some ponding by the afternoon commute home.",
+    "Not much, maybe a few hundredths, but enough to wet pavement for the "
+    "evening commute.",
+    "The 550 passes should turn wet through the afternoon, mostly rain at pass "
+    "level even up at Red Mountain.",
+    "That is the forecast, not the road status. Current closures and chain "
+    "law: https://www.cotrip.org/",
+]
+
+# Weather and water sentences with a number in them that is not a route.
+ROAD_NON_CLAIMS = [
+    "Durango and the Animas Valley (6,500') stay dry today with highs in the "
+    "mid-80s.",
+    "The Florida is running 160 cfs and the lake is clear this morning.",
+    "Vallecito sits at 7,650 ft.",
+]
+
+
+def test_present_tense_road_claims_block():
+    for claim in ROAD_CLAIMS:
+        assert G.present_tense_road_claim(claim), f"missed: {claim!r}"
+        v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + claim)
+        assert v == G.BLOCK, f"expected BLOCK for {claim!r}: {why}"
+        assert any("road surface" in w for w in why), why
+
+
+def test_forecasting_the_roads_still_passes():
+    """The gate must not block the thing the product exists to do."""
+    for ok in ROAD_FORECASTS + ROAD_NON_CLAIMS:
+        assert G.present_tense_road_claim(ok) is None, f"false positive: {ok!r}"
+        v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + ok)
+        assert v == G.PASS, f"should have passed: {ok!r} -> {why}"
+
+
+def test_a_number_that_is_not_a_route_is_not_a_road():
+    """An elevation and a flow reading are not highways.
+
+    `\\b501\\b` matches inside "(6,500')" -- the comma is a word boundary -- and
+    `\\b160\\b` matches "running 160 cfs". Both read as road-status claims and
+    both would have blocked a morning over a sentence with no road in it. The
+    route number stays bare so "550 is closed" is still caught; the two numeric
+    contexts are excluded instead. Asserted on the flat patterns as well as the
+    detector, because the bug was in the flat patterns first.
+    """
+    import re
+    for ok in ROAD_NON_CLAIMS:
+        assert G.present_tense_road_claim(ok) is None, f"false positive: {ok!r}"
+        for pattern, why in G.ROAD_STATUS_CLAIMS:
+            assert not re.search(pattern, ok, re.IGNORECASE), f"{why}: {ok!r}"
+
+
+def test_a_bare_route_number_is_still_a_road():
+    """The exclusion must not cost the unadorned forms."""
+    for claim in ["550 is closed.", "US-550 is closed.", "CR 501 is slick.",
+                  "160 is icy over the top.", "The 501 is fine."]:
+        assert G.present_tense_road_claim(claim), f"missed: {claim!r}"
+
+
+def test_a_conditional_opener_hedges_the_clauses_after_it():
+    """"If that band sets up, the 550 is icy by 6am" forecasts, it does not report.
+
+    Asserted against the detector rather than evaluate(), because the older
+    open/closed patterns in ROAD_STATUS_CLAIMS are flat and deliberately broad
+    -- they still fire on "is icy" here. That is the safe direction (a BLOCK is
+    text_fixable and costs one rewrite) and it is out of scope for this fix;
+    what matters is that the surface rule agrees with draft-lint.mjs, which
+    treats a conditional opener as hedging every clause in the sentence.
+    """
+    assert G.present_tense_road_claim(
+        "If that band sets up, the 550 is icy by 6am and Molas is slick.") is None
+
+
+def test_live_cdot_data_makes_a_road_claim_legal():
+    """With CDOT in the bundle a flat present-tense statement is just data."""
+    live = {**GOOD_BUNDLE, "roads": {"us550": {"status": "closed"}}}
+    v, why = G.evaluate(live, GOOD_DRAFT + " Red Mountain is closed.")
+    assert v == G.PASS, why
+
+
+def test_a_blocked_road_claim_is_rewritable_rather_than_fatal():
+    """It is a writing problem, so the run should rewrite, not go silent."""
+    _, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " Dry roads for the bus run.")
+    assert G.text_fixable(why), why
+    note = G.correction_note(why)
+    assert "dry roads" in note.lower(), note
+    assert "adjective" in note.lower(), note
