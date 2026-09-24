@@ -38,8 +38,18 @@ const ROADS = [
 ];
 const ROAD_STATE = /(?:\b(?:is|are|remain|remains|sit|sits|stay|stays)|\w's)\s+(?:still\s+|both\s+|all\s+|already\s+|completely\s+)?(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\b/i;
 // A surface claim with no verb at all: "clear roads and dry pavement."
-const ROAD_NOUN = /\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?)\b/i;
-const HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|would|expect|expected|likely|probably|could|may|might|if|by (?:mid|late|early|noon|dark|the|\d)|watch for|look for|plan on|tonight|tomorrow|later|until|through (?:the )?(?:morning|afternoon|evening|day|night|weekend|school run)|this (?:afternoon|evening)|all day|forecast)\b/i;
+//
+// The `to` lookbehind: "wet" is a verb at least as often as an adjective here,
+// and "enough to wet pavement for the evening commute" forecasts what the rain
+// will do rather than reporting what the road is. An infinitive is never a
+// present-tense claim. 2026-09-22 failed on that sentence.
+const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?)\b/i;
+// system.md gives "I'd expect dry pavement by the 6:30 call" as the CORRECT
+// repair, so `'d` and "plan for" have to count as hedges; without them this
+// file failed the very phrasing the persona prescribes. 2026-09-23 failed on
+// "I'd plan for wet roads and maybe some ponding by the afternoon commute."
+// Per the header: where this file and the persona disagree, this file is wrong.
+const HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|expected|likely|probably|could|may|might|if|by (?:mid|late|early|noon|dark|the|\d)|watch for|look for|plan (?:on|for)|tonight|tomorrow|later|until|through (?:the )?(?:morning|afternoon|evening|day|night|weekend|school run)|this (?:afternoon|evening)|all day|forecast)\b/i;
 // A sentence that opens conditionally hedges every clause in it, including the
 // ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is slick."
 const CONDITIONAL_OPEN = /^(?:if|when|once|unless|should)\b/i;

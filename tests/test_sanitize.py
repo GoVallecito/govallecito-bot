@@ -54,8 +54,12 @@ def test_guardrail_blocks_a_dash_that_survived():
     bundle = {"missing": [], "bands": {"durango": {"ok": True}, "bayfield": {"ok": True},
                                        "vallecito": {"ok": True}},
               "life_safety_alerts": [], "snow_line": None}
+    # This baseline said "the 501 looks fine" until 2026-09-24. system.md lists
+    # "the 160 into town looks fine" among the forbidden road claims by name,
+    # so the fixture was asserting that a road-status violation was clean; the
+    # guardrail simply could not see it. Hedged, as the persona requires.
     good = ("08/31/26 5:45am: Morning, its Monday. Dry through the morning up "
-            "the Pine and the 501 looks fine. Storms build after noon, best "
+            "the Pine and the 501 should be fine. Storms build after noon, best "
             "chances 2pm-5pm. How is it looking out your window?")
     assert G.evaluate(bundle, good)[0] == G.PASS
     v, why = G.evaluate(bundle, good + " The 240 is the one to watch — later.")

@@ -84,6 +84,110 @@ ROAD_STATUS_CLAIMS = [
      "states a present-tense road surface condition"),
 ]
 
+# THE SECOND GAP. Every pattern in ROAD_STATUS_CLAIMS is anchored on a verb --
+# "X is dry", "X are clear" -- so a surface claim with the verb left out is
+# invisible to it. Four of the five drafts to 2026-09-24 made one:
+#
+#   "Dry roads for the bus run this morning."
+#   "Bayfield and up the Pine same story, dry pavement and clear conditions."
+#
+# Those went out to review as PASS-on-this-rule, which meant correction_note()
+# never fired and the model was never asked to rewrite them. tools/draft-lint.mjs
+# caught them hours later on the review issue, because its rule 2 does carry an
+# adjective-first pattern. Two gates for one rule had drifted apart, and the one
+# that runs early enough to fix anything was the weaker of the two.
+#
+# So this mirrors draft-lint.mjs rule 2 on purpose: same surface words, same
+# clause split, same hedge list, same conditional-opener rule. The two are meant
+# to agree, and where they disagree scripts/wx/prompts/system.md decides.
+#
+# Tense is the whole distinction, exactly as above. "I'd expect dry pavement by
+# the 6:30 call" is the phrasing system.md asks for and must pass; "dry roads
+# for the 6:30 call" is the phrasing it forbids and must not.
+_SURFACE = (r"dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|"
+            r"greasy|sanded|passable|impassable|fine|good|clean")
+_ROAD_NOUN = r"roads?|pavement|highways?|blacktop"
+# The bare route numbers carry their article, exactly as draft-lint.mjs does
+# and for the reason its comment gives: "the 550" is how the persona writes a
+# road, and a naked 550 also appears inside "(6,500')" and "running 160 cfs".
+# An earlier cut of this list used naked numbers and flagged "Durango and the
+# Animas Valley (6,500') stay dry today," which is a weather sentence with no
+# road in it at all.
+_ROAD_NAME = (r"pass|passes|coal bank|molas|red mountain|wolf creek|cumbres|"
+              r"lizard head|hesperus|florida road|vallecito road|"
+              r"bayfield parkway|elmore|middle mountain road|"
+              r"missionary ridge road|"
+              r"us[-\s]?(?:550|160|172)|highway\s+(?:550|160|172)|"
+              r"c[or][-\s]?(?:172|240|500|501)|county road\s+(?:500|501)|"
+              r"the\s+(?:550|160|172|240|500|501)")
+
+# "clear roads", "dry pavement" -- a condition with no verb at all.
+#
+# The lookbehind is load-bearing. "wet" is a verb as often as an adjective in
+# this register, and "enough to wet pavement for the evening commute" is a
+# forecast of what the rain will do, not a report of what the road is. An
+# infinitive is never a present-tense claim.
+_ROAD_NOUN_CLAIM = re.compile(
+    rf"(?<!\bto )\b(?:{_SURFACE})\s+(?:{_ROAD_NOUN})\b", re.IGNORECASE)
+
+# The telegraphic form, noun then adjective, copula dropped: system.md forbids
+# "Roads wet, no ice." by name. The trailing lookahead keeps it to that clipped
+# register -- the adjective has to end the clause -- so an ordinary noun phrase
+# like "Vallecito Road, fine gravel past the turn" is not a road-status claim.
+_ROAD_TELEGRAPHIC_CLAIM = re.compile(
+    rf"\b(?:{_ROAD_NOUN})\s+(?:{_SURFACE})\s*(?=[,.;:!?]|$)", re.IGNORECASE)
+
+# "the 501 is fine", "Molas stays clear", "the passes are getting wet pavement".
+# "getting" is here because the brief used to ask for it in as many words.
+_ROAD_STATE_CLAIM = re.compile(
+    rf"\b(?:{_ROAD_NAME}|{_ROAD_NOUN})\b[^.\n]{{0,50}}?"
+    rf"(?:\b(?:is|are|'s|re|remains?|sits?|stays?|looks?|runs?|"
+    rf"(?:is|are)\s+getting)|\w's)\s+"
+    rf"(?:still\s+|both\s+|all\s+|already\s+|completely\s+)?"
+    rf"(?:{_SURFACE})\b", re.IGNORECASE)
+
+# The persona's own correct forms, plus the ordinary future. system.md lists
+# "should", "I'd expect" and "looks like it'll" as the required repairs, so all
+# three have to count as hedges or the gate contradicts the prompt.
+_HEDGE = re.compile(
+    r"\b(?:should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|expected|"
+    r"likely|probably|could|may|might|if|by (?:mid|late|early|noon|dark|the|\d)|"
+    r"watch for|look for|plan (?:on|for)|tonight|tomorrow|later|until|"
+    r"through (?:the )?(?:morning|afternoon|evening|day|night|weekend|school run)|"
+    r"this (?:afternoon|evening)|all day|forecast)\b", re.IGNORECASE)
+
+# A sentence that opens conditionally hedges every clause in it, including the
+# ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is
+# slick" is a forecast throughout.
+_CONDITIONAL_OPEN = re.compile(r"^(?:if|when|once|unless|should)\b", re.IGNORECASE)
+
+_SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
+_CLAUSE_SPLIT = re.compile(r",\s*(?:and|but)\s+|;\s*|\s+and\s+|\s+but\s+",
+                           re.IGNORECASE)
+
+
+def present_tense_road_claim(text):
+    """The offending sentence, or None.
+
+    Judged per clause, so a "should" in one half of a sentence cannot launder
+    "the 501 is fine" in the other.
+    """
+    for sentence in _SENTENCE_SPLIT.split((text or "").replace("\n", " ")):
+        sentence = sentence.strip()
+        if not sentence:
+            continue
+        if _CONDITIONAL_OPEN.search(sentence):
+            continue
+        for clause in _CLAUSE_SPLIT.split(sentence):
+            if not clause or _HEDGE.search(clause):
+                continue
+            if (_ROAD_NOUN_CLAIM.search(clause)
+                    or _ROAD_TELEGRAPHIC_CLAIM.search(clause)
+                    or _ROAD_STATE_CLAIM.search(clause)):
+                return sentence
+    return None
+
+
 # A reading attributed to the gauge or the snow stake at the house.
 #
 # 2026-09-17: "the snow stake here is still sitting at 5 inches" on an all-rain
@@ -208,11 +312,19 @@ def evaluate(bundle, draft_text, *, first_30_days=False, calibrated=False):
 
     # Road status without a road-status source.
     if not bundle.get("roads"):
+        road_why = None
         for pattern, why in ROAD_STATUS_CLAIMS:
             if re.search(pattern, draft_text, re.IGNORECASE):
-                escalate(BLOCK, f"draft {why} with no live CDOT data behind it -- "
-                                "forecast the passes, link CDOT for status")
+                road_why = why
                 break
+        if road_why is None:
+            stated = present_tense_road_claim(draft_text)
+            if stated:
+                road_why = ("states a present-tense road surface condition "
+                            f"({stated!r})")
+        if road_why:
+            escalate(BLOCK, f"draft {road_why} with no live CDOT data behind it -- "
+                            "forecast the roads and the passes, link CDOT for status")
 
     # The persona rule "never a percentage," which the prompt has always
     # stated and nothing has ever enforced. The 2026-09-08 draft: "Pop's at 4%
@@ -385,11 +497,15 @@ def correction_note(reasons):
         "Change only what these complaints name.\n\n"
         f"{bullets}\n\n"
         "On road and pass conditions specifically, if that is what was "
-        "flagged: you have weather data, not road data. Never write that a "
-        "pass or road IS dry, clear, icy, open or closed. Forecast it instead, "
-        "in the future or conditional, and point at CDOT for the status. "
-        "'Coal Bank should stay dry through the morning' is right. "
-        "'The passes are dry' is not.\n\n"
+        "flagged: you have weather data, not road data, for the passes and "
+        "equally for the 501, the 240 and the pavement in town. Never write "
+        "that a road IS dry, clear, icy, open or closed, and never write the "
+        "adjective on its own either -- 'dry roads', 'wet pavement', 'clear "
+        "conditions' are the same claim with the verb left out. Forecast it "
+        "instead, in the future or conditional, and point at CDOT for the "
+        "status. 'Coal Bank should stay dry through the morning' and \"I'd "
+        "expect wet pavement by the afternoon commute\" are right. "
+        "'The passes are dry' and 'Dry roads for the bus run' are not.\n\n"
         "On your own gauge or snow stake specifically, if that is what was "
         "flagged: there is no reading from either one today and you did not "
         "measure anything. Keep your one personal detail, but make it "

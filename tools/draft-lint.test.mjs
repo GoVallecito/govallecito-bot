@@ -7,6 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -36,6 +37,9 @@ const cases = {
   'em-dash.md': 'em-dash',               // shipped 2026-09-08: "this one -- Euro, GFS"
   'em-dash-unicode.md': 'em-dash',
   'road-status.md': 'road-status',       // shipped 2026-09-08: "The passes are dry."
+  // shipped 2026-09-21: a surface claim with the verb left out, and about a
+  // valley road rather than a pass. Issue #32.
+  'road-status-adjective.md': 'road-status',
   'personal-zero.md': 'personal-count',
   'personal-two.md': 'personal-count',
   'bare-percent.md': 'bare-percent',     // shipped 2026-09-08: "Pop's at 4%"
@@ -53,6 +57,38 @@ for (const [file, key] of Object.entries(cases)) {
     assert.deepEqual(r.fails, [key]);
   });
 }
+
+// Two of the four `road-status` review issues were this file's fault, not the
+// composer's: correctly hedged forecast copy that rule 2 failed anyway. The
+// header rule applies -- where this file and system.md disagree, the persona
+// wins and this file is wrong.
+test('"enough to wet pavement" is a forecast, not a road report', () => {
+  // "wet" as an infinitive verb. Issue #33.
+  const r = run('road-status-infinitive.md');
+  assert.equal(r.code, 0);
+  assert.deepEqual(r.fails, []);
+});
+
+test("\"I'd plan for wet roads\" is the phrasing system.md asks for", () => {
+  // system.md gives "I'd expect dry pavement by the 6:30 call" as the correct
+  // repair, and this file used to fail it. Issue #34.
+  const r = run('road-status-hedged.md');
+  assert.equal(r.code, 0);
+  assert.deepEqual(r.fails, []);
+});
+
+test('the hedge cannot launder an unhedged clause beside it', () => {
+  const src = readFileSync(join(FIX, 'clean.md'), 'utf8').replace(
+    /^Coal Bank and Molas should stay dry through the morning\./m,
+    'Coal Bank should stay dry and Molas is clear right now.');
+  const tmp = join(FIX, 'road-status-mixed.md');
+  writeFileSync(tmp, src);
+  try {
+    const r = run('road-status-mixed.md');
+    assert.equal(r.code, 1);
+    assert.deepEqual(r.fails, ['road-status']);
+  } finally { rmSync(tmp); }
+});
 
 test('unknowable.md warns but does not fail', () => {
   const r = run('unknowable.md');
