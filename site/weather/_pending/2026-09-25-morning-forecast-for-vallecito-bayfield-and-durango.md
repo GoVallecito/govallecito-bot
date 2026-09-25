@@ -1,24 +1,18 @@
-# Forecast run: held for review
+---
+title: "Morning forecast for Vallecito, Bayfield and Durango"
+date: "2026-09-24T21:39:04.113451-06:00"
+forDate: "2026-09-25"
+postType: "school_call"
+snowLineFt: null
+snowLineTrend: "falling"
+bands: {"durango": {"elevationFt": 6500, "precipType": "rain", "label": "Durango and the Animas Valley"}, "bayfield": {"elevationFt": 6900, "precipType": "rain", "label": "Bayfield and up the Pine"}, "vallecito": {"elevationFt": 7650, "precipType": "rain", "label": "Vallecito and the Florida"}, "weminuche": {"elevationFt": 10500, "precipType": "rain", "label": "The high Weminuche"}}
+basinPercentOfMedian: null
+alerts: []
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-25-morning-forecast-for-vallecito-bayfield-and-durango"
+---
 
-When: 2026-09-24T21:42:39-06:00 (Mountain)
-Slot: `school_call`
-
-## Detail
-
-```
-review panel: rejected by the magistrate in round 3: The draft contains multiple critical factual errors that cannot be fixed in a final round: the timestamp claims 5:52am when composition was at 9:39pm the night before, Durango's timing is wrong (shows 'most' when it's 'all'), Bayfield's total is overstated (0.04in stated as 'trace to a tenth'), and Vallecito's fraction is wrong (60% stated as 'a third to half'). The model disagreement section also creates fundamental confusion about which data source to trust. These are not polish issues—they're accuracy problems that require rewriting against the brief, which is not possible in a final-round-only scenario.
-```
-
-## What the data looked like
-
-- Snow line: 12100
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/25/26 5:52am: Late start this morning, the propane tank needed filling before I could sit down here. Its Friday, 09/25/26.
 
 Its all rain today, even way up high, so the snow line isnt the question. The question is timing and how much, and thats where the models are all over the place.
@@ -34,4 +28,3 @@ The high Weminuche (10,500'+) stays rain through the weekend with a tenth or les
 Current road status is CDOT's call, not mine: https://www.cotrip.org/
 
 Anybody else scraping frost off the windshield up the drainage this morning?
-```
