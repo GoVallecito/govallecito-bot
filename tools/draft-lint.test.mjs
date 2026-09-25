@@ -360,19 +360,35 @@ test('the linter agrees with the road corpus', () => {
 test('both gates reach the same verdict on every case', () => {
   // Windows has no `python3`, and CLAUDE.md documents Windows. PYTHON
   // overrides for a venv or a pinned interpreter.
+  //
+  // Advance on the RESULT, not on the spawn. Windows ships a Microsoft Store
+  // `python3.exe` App Execution Alias on PATH by default, and a python.org
+  // install does not shadow it because it ships no `python3.exe` at all. That
+  // alias spawns without error and exits 9009, so breaking on `!error` would
+  // stop at it and never reach `py` -- red on exactly the platform this
+  // fallback was added for.
+  //
+  // Exit 2 is road-gate-probe.py's own "could not load guardrails": that is a
+  // real failure to report, not a wrong interpreter, so stop there too rather
+  // than masking it by trying the next candidate.
   const candidates = process.env.PYTHON ? [process.env.PYTHON]
     : ['python3', 'python', 'py'];
-  let probe;
+  let probe = null, last = null;
   for (const exe of candidates) {
-    probe = spawnSync(exe, [join(here, 'road-gate-probe.py')], { encoding: 'utf8' });
-    if (!probe.error) break;
+    const attempt = spawnSync(exe, [join(here, 'road-gate-probe.py')], { encoding: 'utf8' });
+    last = { exe, ...attempt };
+    if (!attempt.error && (attempt.status === 0 || attempt.status === 2)) {
+      probe = attempt;
+      break;
+    }
   }
-  if (probe.error || probe.status === null) {
+  if (!probe) {
     // Not a silent pass: say so loudly, because a skipped parity check looks
     // exactly like a passing one in the TAP output.
-    assert.fail(`could not run tools/road-gate-probe.py (${probe.error?.code ?? 'no status'}). ` +
-      `tried ${candidates.join(', ')}. One must be on PATH for the cross-gate check, ` +
-      'or set PYTHON; guardrails.py needs only the stdlib.');
+    assert.fail(`no usable python found for tools/road-gate-probe.py. Tried ` +
+      `${candidates.join(', ')}; last was ${last?.exe} ` +
+      `(${last?.error?.code ?? `exit ${last?.status}`}). One must be on PATH ` +
+      'for the cross-gate check, or set PYTHON; guardrails.py needs only the stdlib.');
   }
   assert.equal(probe.status, 0, `road-gate-probe.py exited ${probe.status}: ${probe.stderr}`);
 
