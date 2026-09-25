@@ -32,8 +32,17 @@ const ROADS = [
   'CO 172','Highway 172','the 172','County Road 501','CR 501','the 501',
   'County Road 500','CR 500','the 500','CR 240','the 240','Florida Road',
   'Vallecito Road','Bayfield Parkway','Elmore',
-  'the pass','the passes','Middle Mountain Road','Missionary Ridge Road'
+  'Middle Mountain Road','Missionary Ridge Road'
 ];
+// "passes" is also the verb for weather moving through. Two forms, and no
+// guessing from the surrounding words: a determiner immediately before, or a
+// copula immediately after. That covers "the passes", "The passes over the
+// divide are closed", "The high passes are closed" and a bare "Passes are
+// closed", while "the front passes midday" is neither. An earlier cut allowed
+// a word of slack plus a list of words only a moving system takes; it read
+// "the front passes" as a road and threw away "The passes over the divide".
+// Mirrors guardrails._ROAD_NAME.
+const PASS_NOUN = /(?:\b(?:the|these|those|both|all|either|our)\s+pass(?:es)?\b|\bpass(?:es)?(?=\s+(?:is|are|'s|was|were|remains?|stays?|looks?|runs?|sits?|gets?)))/i;
 // A bare route number, which the list above only caught when it carried its
 // article. The article was there because "the 160 cfs" style numbers bite:
 // this persona writes elevations as "(6,500')" and flows as "running 160 cfs",
@@ -41,24 +50,106 @@ const ROADS = [
 // those two contexts directly is what lets the number go bare -- nothing may
 // run into it from the left, which is what the comma in "6,500" does, and no
 // unit may follow it. Mirrors guardrails._ROUTE; the two are meant to agree.
-const ROUTE_NUMBER = /(?<![\d,])\b(?:550|160|172|240|500|501)\b(?!\s*(?:cfs|ft|feet|af|%|,\d|['"]))/i;
-const ROAD_STATE = /(?:\b(?:is|are|remain|remains|sit|sits|stay|stays)|\w's)\s+(?:still\s+|both\s+|all\s+|already\s+|completely\s+)?(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\b/i;
+// The apostrophe is the FOOT MARK, 7,650', and must not also swallow the
+// possessive -- "The 550's closed this morning" is the most direct closure
+// claim there is. So a quote only excludes when it is not followed by an s.
+const ROUTE_NUMBER = /(?<![\d,])\b(?:550|160|172|240|500|501)\b(?!\s*(?:cfs|ft|feet|af|%|,\d|"|'(?!s\b)))/i;
+// The bare `'s` matters now that this is composed after a road token: in "The
+// 501's fine" the digit is consumed by the token, so `\w's` has nothing left to
+// anchor on. guardrails._ROAD_STATE_CLAIM has always carried both forms.
+// Every way a clause can name a road, as one token, so a claim can be bounded
+// by distance from it the way guardrails does. The gap may not cross a
+// coordination: "The front moves through Wolf Creek and the ski area is open"
+// changes subject at the "and". This file had NO proximity bound at all --
+// hasRoad and ROAD_STATE were tested independently against the whole clause,
+// so "Snow piles up on Red Mountain and the window is clear" failed.
+const ROAD_TOKEN = `(?:${PASS_NOUN.source}|${ROUTE_NUMBER.source}|\\b(?:${ROADS.map(r => r.replace(/[-]/g, '\\-')).join('|')})\\b|\\b(?:roads?|pavement|highways?|blacktop)\\b)`;
+const GAP = '(?:(?!\\s+and\\s+)[^.\\n])';
+const ROAD_STATE = /(?:\b(?:is|are|'s|re|remain|remains|sit|sits|stay|stays|look|looks|run|runs|get|gets|turn|turns|(?:is|are)\s+getting)|\w's)\s+(?:still\s+|both\s+|all\s+|already\s+|completely\s+|currently\s+)?(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\b/i;
+const ROAD_STATE_CLAIM = new RegExp(`${ROAD_TOKEN}${GAP}{0,50}?${ROAD_STATE.source}`, 'i');
 // A surface claim with no verb at all: "clear roads and dry pavement."
 //
 // The `to` lookbehind: "wet" is a verb at least as often as an adjective here,
 // and "enough to wet pavement for the evening commute" forecasts what the rain
 // will do rather than reporting what the road is. An infinitive is never a
 // present-tense claim. 2026-09-22 failed on that sentence.
-const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?)\b/i;
-// system.md gives "I'd expect dry pavement by the 6:30 call" as the CORRECT
-// repair, so `'d` and "plan for" have to count as hedges; without them this
-// file failed the very phrasing the persona prescribes. 2026-09-23 failed on
-// "I'd plan for wet roads and maybe some ponding by the afternoon commute."
-// Per the header: where this file and the persona disagree, this file is wrong.
-const HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|expected|likely|probably|could|may|might|if|by (?:mid|late|early|noon|dark|the|\d)|watch for|look for|plan (?:on|for)|tonight|tomorrow|later|until|through (?:the )?(?:morning|afternoon|evening|day|night|weekend|school run)|this (?:afternoon|evening)|all day|forecast)\b/i;
+// "All clear over Molas and Coal Bank" -- surface word first. The duplicate
+// rule set guardrails deleted covered this and nothing else did.
+const ROAD_REVERSE = new RegExp(`\\b(?:all|both)\\s+(?:clear|dry|open|passable)\\b${GAP}{0,60}\\b(?:${ROADS.map(r => r.replace(/[-]/g, '\\-')).join('|')}|roads?|pavement|highways?|blacktop)\\b`, 'i');
+const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?|blacktop)\b/i;
+// The telegraphic form, noun then adjective, copula dropped. system.md forbids
+// "Roads wet, no ice." BY NAME and this file did not catch it -- guardrails
+// grew the rule and the lint never did, so the two gates disagreed on a
+// sentence the persona names as the canonical mistake. The trailing lookahead
+// keeps it to that clipped register, so "Vallecito Road, fine gravel past the
+// turn" is an ordinary noun phrase. Mirrors guardrails._ROAD_TELEGRAPHIC_CLAIM.
+// A coordination ends the claim as surely as punctuation: "roads wet and icy
+// on the 550" states "roads wet" whatever follows. That used to come free from
+// clause splitting on a bare "and", which no longer happens.
+const SURFACE = 'dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean';
+// The generic nouns plus the four pass names, NOT route numbers: "heavy enough
+// to make the 240 and the upper 501 slick this evening" is a forecast, and
+// including them re-broke 2026-09-22. The trailing time words are present ones
+// only, for the same reason -- in a 5:45am post "this evening" is a forecast.
+const ROAD_TELEGRAPHIC_SRC = `\\b(?:roads?|pavement|highways?|blacktop|coal bank|molas|red mountain|wolf creek)\\b${GAP}{0,30}?\\s(?:all\\s+|both\\s+)?(?:${SURFACE})\\s*(?=[,.;:!?]|\\s+(?:and|but)\\b|\\s+(?:this morning|right now|today|so far|out there|up there)\\b|\\s+(?:to|above|over|past|below|down|up)\\b|$)`;
+const ROAD_TELEGRAPHIC = new RegExp(ROAD_TELEGRAPHIC_SRC, 'i');
+// A CLOSURE is not hedgeable: it is the one road claim the hedges below do not
+// apply to. The conditional opener still exempts it. A surface forecast is a weather
+// claim, so hedging is what makes it honest; whether a gate is down is CDOT's
+// decision, there is no feed for it, and "Wolf Creek will likely be closed"
+// reads at 5:45am like "Wolf Creek is closed". Chain law and traction law are
+// deliberately absent: system.md and constants.py both hold up "expect
+// traction law by morning" as the product. Mirrors guardrails.CLOSURE_CLAIMS.
+// NOT a bare "close": it is the ordinary adjective far more often than a verb
+// here -- "the snow line ends up close to 11,000 feet on the passes" -- and
+// because this rule is hedge-exempt a match is an unrecoverable fail on the
+// product's signature sentence.
+// The modal branch has NO optional "be": "will be close to 11,000 feet" is the
+// adjective again, and `(?:be\s+)?` in front of a bare "close" re-admits exactly
+// what dropping the bare alternative removed. "will be closed" needs no help --
+// the copula branch already has `be` and `closed`. "close out"/"closing out" is
+// weather, not a road. The `to close` branch keeps the infinitive that dropping
+// the bare alternative had also dropped ("is set to close", "going to close").
+const CLOSURE = /(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?(?:closed|open|shut)\b|\b(?:will|would|may|might|could|should|gonna)\s+(?:close|shut|reopen)\b|\b(?:set|going|expects?|expected|due|scheduled|slated|plans?|planning)\s+to\s+(?:close\b(?!\s+out\b)|shut|reopen)\b|\bclos(?:es|ing|ed)\b(?!\s+out\b)|\breopen(?:s|ed|ing)?\b|\bshuts?\b)/i;
+
+// Hedges, in two tiers, because they are not all the same thing.
+//
+// A MODAL turns the clause into a forecast outright. system.md gives "I'd
+// expect dry pavement by the 6:30 call" as the CORRECT repair, so `'d` and
+// "plan for" have to count; without them this file failed the very phrasing
+// the persona prescribes. 2026-09-23 failed on "I'd plan for wet roads and
+// maybe some ponding by the afternoon commute." Per the header: where this
+// file and the persona disagree, this file is wrong.
+const MODAL_HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|expected|likely|probably|could|may|might|if|watch for|look for|plan (?:on|for)|forecast)\b/i;
+// A time window used to hedge as well, and it says WHEN, never WHETHER: "The
+// passes are dry through the morning" asserts they are dry right now. Exempting
+// clauses with a present indicative did not save it, because the verbless forms
+// this rule exists to catch never have one -- "Dry roads all day" passed while
+// "Roads are wet tonight" failed. A time window now hedges nothing.
+//
+// A clause with no finite verb is not a claim of its own: it is the back half
+// of a coordination, and it inherits the hedge governing the front. clauses()
+// breaks on a bare "and", which also splits coordinated noun phrases and
+// strips the modal off -- "I'd expect wet pavement in town and icy roads on
+// the 550" left "icy roads on the 550" to be judged alone.
 // A sentence that opens conditionally hedges every clause in it, including the
 // ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is slick."
 const CONDITIONAL_OPEN = /^(?:if|when|once|unless|should)\b/i;
+// Unless the conditional is about the READER rather than the weather. "If that
+// band sets up" makes what follows contingent; "If you are heading north"
+// picks out an audience and then states a flat fact at them, so "If you are
+// heading north, Red Mountain is closed" is a closure claim in conditional
+// dress. "we" is deliberately absent: "If we do see rain it'd be brief" is
+// forecast-contingent. Mirrors guardrails._READER_ADDRESSED.
+const READER_ADDRESSED = /^(?:if|when|once|unless|should)\s+(?:you|your|you're|youre|ya|anyone|anybody|someone|somebody|folks|people|drivers?|kids|the kids)\b/i;
+const conditional = s => CONDITIONAL_OPEN.test(s) && !READER_ADDRESSED.test(s);
+// "if" is also a modal hedge, for the trailing form ("the 550 is icy if that
+// band sets up"), and at the head of a reader-addressed sentence it would
+// hedge the clause all over again: "If you're running the 550 this morning,
+// the pass is icy" is one clause and contains an "if". Drop the opener and
+// judge what is left, which is the claim actually being made.
+const LEADING_CONDITIONAL = /^(?:if|when|once|unless|should)\s+/i;
+const claimBody = s => READER_ADDRESSED.test(s) ? s.replace(LEADING_CONDITIONAL, '') : s;
 
 // Percent must carry a unit: "64% of median", "23% of full pool".
 const PCT = /(\d{1,3})\s*%/g;
@@ -116,10 +207,21 @@ function parseDraft(raw) {
   return { meta, body: raw.trim() };
 }
 
-const sentences = t => t.replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/).filter(Boolean);
+// A newline ends a sentence as surely as a period does. Collapsing every run
+// of whitespace merged an unpunctuated line into the next one, so a single
+// conditional opener exempted both. Lines are split first, then sentences.
+const sentences = t => t.split('\n')
+  .flatMap(l => l.replace(/[^\S\n]+/g, ' ').trim().split(/(?<=[.!?])\s+/))
+  .filter(Boolean);
 const lines = t => t.split('\n').map(s => s.trim()).filter(Boolean);
 const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\s+/).filter(Boolean);
-const clauses = s => s.split(/,\s*(?:and|but)\s+|;\s*|\s+and\s+|\s+but\s+/i).filter(Boolean);
+// NOT a bare "and" or "but": those coordinate objects as often as clauses, and
+// splitting there strips the governing modal off the second half. The cost is
+// that an uncommaed "Coal Bank should stay dry and Molas is clear right now"
+// is one hedged clause and is missed; with the comma the persona usually
+// writes it still splits and is caught. Deliberate -- a false fail on the
+// phrasing system.md prescribes is the more expensive error.
+const clauses = s => s.split(/,\s*(?:and|but)\s+|;\s*/i).filter(Boolean);
 const q = s => `"${s.trim()}"`;
 
 function jaccard(a, b) {
@@ -144,15 +246,41 @@ function lint(raw, dateStr, historyDir) {
     else if (/\s--\s|\w--\w|\s--\w|\w--\s/.test(s)) fails.push(['em-dash', `Contains "--": ${q(s)}`]);
   }
 
-  // 2. Present-tense road or pass conditions. Judged per clause, so a "should"
-  // in one half of a sentence cannot launder "the 501 is fine" in the other.
+  // 2. Road and pass conditions. A closure is checked first and the hedge does
+  // not apply to it -- see CLOSURE. A weather-contingent conditional opener
+  // exempts the whole sentence; a reader-addressed one exempts nothing.
+  //
+  // The hedge is asked PER CLAIM, not per clause, because a modal governs what
+  // FOLLOWS it: "I'd expect wet pavement in town and icy roads for the bus
+  // run" hedges both conjuncts, while "Roads are wet and it should dry out by
+  // noon" hedges neither. Testing the clause as a whole let the trailing modal
+  // launder the leading claim, and report-then-advice is the commoner shape.
+  // The window runs to the END of the match because the modal usually sits
+  // inside the claim it governs ("Coal Bank should stay dry").
+  // Both orders, as guardrails.CLOSURE_CLAIMS has: "Red Mountain is closed"
+  // and "They expect to close the 550 overnight".
+  const CLOSURE_G = new RegExp(`${ROAD_TOKEN}${GAP}{0,50}${CLOSURE.source}`, 'i');
+  const CLOSURE_REV = new RegExp(`${CLOSURE.source}${GAP}{0,40}${ROAD_TOKEN}`, 'i');
+  const unhedged = (c, rx) => {
+    const g = new RegExp(rx.source, rx.flags.includes('g') ? rx.flags : rx.flags + 'g');
+    for (const m of c.matchAll(g)) {
+      const end = m.index + m[0].length;
+      // A trailing subordinator is the one thing that scopes backwards: "the
+      // 550 is icy if that band sets up" is conditional on the band.
+      if (!MODAL_HEDGE.test(c.slice(0, end)) && !/\b(?:if|unless)\b/i.test(c.slice(end)))
+        return true;
+    }
+    return false;
+  };
   for (const s of S) {
-    const sentenceHedged = CONDITIONAL_OPEN.test(s);
-    for (const c of clauses(s)) {
-      if (sentenceHedged || HEDGE.test(c)) continue;
-      const hasRoad = ROUTE_NUMBER.test(c) ||
-        ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
-      if ((hasRoad && ROAD_STATE.test(c)) || ROAD_NOUN.test(c)) {
+    if (conditional(s)) continue;
+    for (const c of clauses(claimBody(s))) {
+      if (CLOSURE_G.test(c) || CLOSURE_REV.test(c)) {
+        fails.push(['road-status', `Road closure claim with no CDOT data: ${q(s)}`]);
+        break;
+      }
+      if (unhedged(c, ROAD_STATE_CLAIM) || unhedged(c, ROAD_NOUN) ||
+          unhedged(c, ROAD_TELEGRAPHIC) || unhedged(c, ROAD_REVERSE)) {
         fails.push(['road-status', `Present-tense road condition with no CDOT data: ${q(s)}`]);
         break;
       }

@@ -40,6 +40,12 @@ const cases = {
   // shipped 2026-09-21: a surface claim with the verb left out, and about a
   // valley road rather than a pass. Issue #30.
   'road-status-adjective.md': 'road-status',
+  // A closure is not hedgeable: "will likely be closed" is not a hedged
+  // version of a fact we hold, it is invention about a CDOT decision.
+  'road-status-closure.md': 'road-status',
+  // A conditional addressed to the reader picks out an audience; it does not
+  // make the claim after it contingent.
+  'road-status-reader-addressed.md': 'road-status',
   'personal-zero.md': 'personal-count',
   'personal-two.md': 'personal-count',
   'bare-percent.md': 'bare-percent',     // shipped 2026-09-08: "Pop's at 4%"
@@ -77,10 +83,214 @@ test("\"I'd plan for wet roads\" is the phrasing system.md asks for", () => {
   assert.deepEqual(r.fails, []);
 });
 
+test('reader-addressed advice with no road claim still passes', () => {
+  // The persona writes these constantly. "If you're getting out on a trail
+  // today its a good window for it" is from a shipped post.
+  const src = readFileSync(join(FIX, 'clean.md'), 'utf8').replace(
+    /^Coal Bank and Molas should stay dry through the morning\./m,
+    "If you're running the 550 today, check CDOT before you go, and I'd expect " +
+    'wet pavement by the 6:30 call.');
+  const tmp = join(FIX, 'road-status-reader-ok.md');
+  writeFileSync(tmp, src);
+  try {
+    const r = run('road-status-reader-ok.md');
+    assert.equal(r.code, 0);
+    assert.deepEqual(r.fails, []);
+  } finally { rmSync(tmp); }
+});
+
+test('a weather-contingent conditional still exempts the sentence', () => {
+  const src = readFileSync(join(FIX, 'clean.md'), 'utf8').replace(
+    /^Coal Bank and Molas should stay dry through the morning\./m,
+    'If that band sets up, the 550 is icy by 6am and Molas is slick.');
+  const tmp = join(FIX, 'road-status-weather-if.md');
+  writeFileSync(tmp, src);
+  try {
+    const r = run('road-status-weather-if.md');
+    assert.equal(r.code, 0);
+    assert.deepEqual(r.fails, []);
+  } finally { rmSync(tmp); }
+});
+
+// The seven a code review found on the branch, mirrored from
+// tests/test_guardrails.py so the two gates cannot drift apart again.
+function withBody(text) {
+  return readFileSync(join(FIX, 'clean.md'), 'utf8').replace(
+    /^Coal Bank and Molas should stay dry through the morning\./m, text);
+}
+function lintBody(name, text) {
+  const tmp = join(FIX, name);
+  writeFileSync(tmp, withBody(text));
+  try { return run(name); } finally { rmSync(tmp); }
+}
+
+for (const [label, text] of [
+  // "close" is the adjective, and "passes" is a verb. Both were hedge-exempt
+  // fails on ordinary weather prose.
+  ['close-adjective', 'Coal Bank and Molas are close to the freezing line this morning.'],
+  ['passes-verb', 'The cold front passes through around noon, closing out the showers.'],
+  // A bare "and" splits coordinated noun phrases and strips the modal.
+  ['coordination', "I'd expect wet pavement in town and icy roads on the 550."],
+]) {
+  test(`${label} is not a road-status claim`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, []);
+    assert.equal(r.code, 0);
+  });
+}
+
+for (const [label, text] of [
+  // A time window says when, never whether -- and the verbless forms this
+  // rule exists to catch never carry the copula the old guard keyed on.
+  ['verbless-window', 'Dry roads all day.'],
+  ['verbless-window2', 'Wet pavement through the morning.'],
+  // A newline ends a sentence; collapsing it let one "if" exempt two lines.
+  ['newline', 'If that band sets up we could see 2-3 inches\nThe passes are dry right now.'],
+  // The inverted conditional is reader-addressed too.
+  ['inverted-conditional', "Should you be heading over Molas, it's closed."],
+  // The foot-mark exclusion must not swallow the possessive.
+  ['possessive-closure', "The 550's closed this morning."],
+  ['possessive-surface', "The 501's fine for the bus run."],
+]) {
+  test(`${label} is caught`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, ['road-status']);
+    assert.equal(r.code, 1);
+  });
+}
+
+// A second review round found four of the seven fixes above incomplete, two of
+// them self-defeating. Cases are taken from the corpus idiom, not invented.
+for (const [label, text] of [
+  // `(?:be\s+)?(?:close)` put the adjective back in the same hunk that removed it.
+  ['modal-be-close', 'The snow line will be close to 11,000 feet on the passes.'],
+  // "run" is a noun: "bus run"/"school run" appears 33x in the corpus.
+  ['bus-run', "I'd expect wet pavement in town and icy roads for the bus run."],
+  ['school-run', "I'd expect slick spots and wet roads for the school run."],
+  // A noun phrase is not a road-status claim.
+  ['gravel', 'Vallecito Road, fine gravel past the turn.'],
+]) {
+  test(`${label} is not a road-status claim`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, []);
+    assert.equal(r.code, 0);
+  });
+}
+
+for (const [label, text] of [
+  // Only a coordinating "and" carries a hedge across.
+  ['semicolon', 'The front should clear by noon; wet roads and icy pavement on the 550.'],
+  ['but-clause', 'The front should clear by noon, but wet roads and icy pavement on the 550.'],
+  // The determiner needs a word of slack, and the bare copula form counts.
+  ['high-passes', 'The high passes are closed this morning.'],
+  ['bare-passes', 'Passes are closed.'],
+  // The infinitive, which dropping bare "close" had also dropped.
+  ['set-to-close', 'Molas is set to close this afternoon.'],
+  // system.md forbids this one BY NAME and this file used to miss it entirely.
+  ['telegraphic', 'Roads wet, no ice.'],
+  // A clause with road + verb + surface asserts on its own.
+  ['own-predicate', 'Coal Bank should stay dry, and Molas stays clear.'],
+]) {
+  test(`${label} is caught`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, ['road-status']);
+    assert.equal(r.code, 1);
+  });
+}
+
+// The accepted cost of not splitting on a bare "and"/"but". Pinned so it is a
+// known trade rather than something rediscovered by a later review: the same
+// sentence with the comma the persona usually writes is still caught, above.
+test('an uncommaed coordination is a known miss', () => {
+  const r = lintBody('road-status-uncommaed.md',
+    'Coal Bank should stay dry and Molas is clear right now.');
+  assert.deepEqual(r.fails, []);
+});
+
+// Round four.
+for (const [label, text] of [
+  // A modal governs what FOLLOWS it; report-then-advice is not hedged.
+  ['trailing-modal', 'Roads are wet and it should dry out by noon.'],
+  ['trailing-modal2', 'The 550 is icy this morning and you should leave early.'],
+  // The pass copula list must accept the same verbs ROAD_STATE does.
+  ['passes-run-icy', 'The snowy passes run icy.'],
+  // "to close TO" excludes numbers, not traffic.
+  ['close-to-traffic', 'Red Mountain is set to close to traffic at six.'],
+  // Everything the deleted duplicate rule set uniquely caught.
+  ['all-clear', 'Coal Bank and Molas all clear.'],
+  ['currently', 'The 550 is currently dry.'],
+  ['time-tail', 'Red Mountain all clear this morning.'],
+]) {
+  test(`${label} is caught`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, ['road-status']);
+    assert.equal(r.code, 1);
+  });
+}
+
+for (const [label, text] of [
+  // A proximity window may not cross a coordination: the subject changes.
+  ['closure-across-and', 'Molas and Coal Bank both pick up snow and the districts may close.'],
+  ['surface-across-and', 'The front moves through Wolf Creek and the ski area is open.'],
+  ['proximity', 'Snow piles up on Red Mountain and the window is clear.'],
+  ['proximity2', 'Molas and Coal Bank pick up a few inches and the valley stays dry.'],
+]) {
+  test(`${label} is not a road-status claim`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, []);
+    assert.equal(r.code, 0);
+  });
+}
+
+// Round five.
+for (const [label, text] of [
+  ['close-to-amount', 'That adds up to close to a foot on Red Mountain by morning.'],
+  ['close-to-two-feet', 'Up to close to two feet on Wolf Creek.'],
+  // A trailing subordinator scopes backwards, unlike a modal.
+  ['trailing-if', 'The 550 is icy if that band sets up.'],
+  ['trailing-unless', 'Molas is slick unless the sun gets it.'],
+]) {
+  test(`${label} is not a road-status claim`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, []);
+    assert.equal(r.code, 0);
+  });
+}
+
+for (const [label, text] of [
+  ['expect-to-close', 'They expect to close the 550 overnight.'],
+  ['reverse-order', 'All clear on Red Mountain this morning.'],
+  ['reverse-order2', 'All clear over Molas and Coal Bank.'],
+  ['adj-preposition', 'Red Mountain bare to the top.'],
+  ['gets-icy', 'The passes get icy.'],
+  ['gets-icy2', 'The 550 gets icy.'],
+]) {
+  test(`${label} is caught`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, ['road-status']);
+    assert.equal(r.code, 1);
+  });
+}
+
+test('a traction law forecast is still allowed', () => {
+  // constants.py holds "expect traction law by morning" up as the product: it
+  // is a consequence of weather we have, unlike a gate coming down.
+  const src = readFileSync(join(FIX, 'clean.md'), 'utf8').replace(
+    /^Coal Bank and Molas should stay dry through the morning\./m,
+    'Coal Bank and Molas pick up 8-14 inches overnight, so expect traction law by morning.');
+  const tmp = join(FIX, 'road-status-traction.md');
+  writeFileSync(tmp, src);
+  try {
+    const r = run('road-status-traction.md');
+    assert.equal(r.code, 0);
+    assert.deepEqual(r.fails, []);
+  } finally { rmSync(tmp); }
+});
+
 test('the hedge cannot launder an unhedged clause beside it', () => {
   const src = readFileSync(join(FIX, 'clean.md'), 'utf8').replace(
     /^Coal Bank and Molas should stay dry through the morning\./m,
-    'Coal Bank should stay dry and Molas is clear right now.');
+    'Coal Bank should stay dry, and Molas is clear right now.');
   const tmp = join(FIX, 'road-status-mixed.md');
   writeFileSync(tmp, src);
   try {
