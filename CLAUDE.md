@@ -57,6 +57,9 @@ tools/
                          cross-gate parity check over fixtures/road-cases.json
   road-gate-probe.py     runs that corpus through guardrails, so `npm test`
                          (the only suite CI runs) checks BOTH road gates
+  gate-diff.py           replays every recorded draft through the gate at two
+                         revisions and prints the difference; exits 1 if the
+                         newer side flags a post that published
   fixtures/road-cases.json  the shared road-status corpus
   lint-review-issue.sh   prepends the lint verdict to the review issue
   daily-audit.sh         the daily deterministic review
@@ -65,7 +68,7 @@ site/weather/            published forecasts + feed.json (the site reads this)
 site/weather/_pending/   HELD drafts, awaiting promotion. The feed ignores them.
 site-astro/              copies of the Astro pages that belong in the SITE repo
 config/                  hand-edited inputs (emergency_override.json, almanac)
-tests/                   213 offline pytest tests, no network, no API key
+tests/                   215 offline pytest tests, no network, no API key
 ```
 
 ## Workflows (all in `.github/workflows/`)
@@ -146,7 +149,9 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
   held drafts must match `tests/fixtures/road_baseline.json` sentence for
   sentence. After an intended change run
   `tests/fixtures/road_baseline_refresh.py` and read the diff — that diff is
-  the review. Those two live in pytest, which **no workflow runs**, so they
+  the review. `python3 tools/gate-diff.py` answers the wider question: it
+  replays every recorded draft through the gate at two revisions and prints
+  what changed, which is how PRs #35 and #37 were checked. Those two live in pytest, which **no workflow runs**, so they
   fire when you run the suite, not automatically; the cross-gate corpus is the
   half that runs in CI via `npm test`. Keep it that way: `npm test` gates the
   audit step in `daily-audit.yml`, so a check that depends on mutable
@@ -171,9 +176,9 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
 
 ```bash
 pip install -r requirements.txt && pip install pytest   # pytest is not pinned
-python -m pytest tests/ -q      # 213 passed, offline, no keys, no network
-                                # (one shells out to node; without it,
-                                #  212 passed, 1 skipped -- not a loss)
+python -m pytest tests/ -q      # 215 passed, offline, no keys, no network
+                                # (one shells out to node, two to git;
+                                #  they skip if those are missing)
 npm test                        # 69 subtests: node --test tools/draft-lint.test.mjs
 ```
 
