@@ -21,6 +21,16 @@ rather than a live test, because the sandbox that wrote this code doesn't have
 internet access to the real APIs it calls -- GitHub Actions does, so the first
 real runs are also the first real test.
 
+There is a second orientation file, `CLAUDE.md` at the root of the repo, and it is
+written for Claude Code rather than for you: what the two bots are and who reads
+their output, every workflow and when it actually runs, the rules that are not up
+for discussion (never hand-edit `state/`, never say whether a road is open or
+closed, never spend a dollar), and the exact commands that run the tests. You do
+not need to read it. It matters because it is what stops a fresh session from
+re-deriving the project from scratch, or guessing wrong about something that
+posts to your Page at 5:45am -- so when the code changes, that file changes with
+it.
+
 ## What it actually does
 
 Every hour, a free GitHub Actions job wakes up, checks the time in Colorado,
@@ -557,6 +567,13 @@ setting is almost certainly why.
 ## Repo layout
 
 ```
+CLAUDE.md                -- orientation for Claude Code sessions (see the top of this
+                            file); architecture, every workflow, the hard rules, the
+                            test commands
+.claude/
+  settings.json          -- registers the session-start hook below
+  hooks/session-start.sh -- installs the test dependencies in a Claude Code on the web
+                            container, so the test suites run with no setup step
 scripts/
   fetch_conditions.py    -- pulls weather/lake/streamflow/fire+wildfire data primarily from
                              govallecito.com's own Worker, falling back to direct NWS / USGS /
