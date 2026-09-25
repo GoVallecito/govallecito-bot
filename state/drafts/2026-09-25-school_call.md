@@ -1,21 +1,21 @@
 # Friday, 2026-09-25, school_call
 
-Verdict: `review` | Snow line: 12100 | Alerts: none
+Verdict: `block` | Snow line: 12100 | Alerts: none
 
 ---
 
-09/25/26 5:52am: Late start this morning, the propane tank needed filling before I could sit down here. Its Friday, 09/25/26.
+09/25/26 5:52am: Late start this morning, 09/25/26. Sky's still heavy and the yard's wet from yesterday, which is the setup for Friday.
 
-Its all rain today, even way up high, so the snow line isnt the question. The question is timing and how much, and thats where the models are all over the place.
+Durango and the Animas Valley should stay dry through the 6:30 call. Bayfield and up the Pine look fine for the bus run. The Florida drainage has a different morning ahead.
 
-Durango and the Animas Valley (6,500') have under a quarter inch in the forecast, and the timing window puts most of that between 6am and 11am, right in the middle of the school run, but I wouldnt bet the farm on that timing (the timing window on these September setups is still pretty wide and a couple hours either way changes the whole bus call).
+Durango and the Animas Valley (6,500') should stay dry through the school run and into the afternoon. Bayfield and up the Pine (6,900') are looking at a trace to 0.05" through mid-morning, most of that falling after the school run. The 501 should stay dry for the early buses, with wet pavement possible by late morning but nothing that makes the drive difficult.
 
-Bayfield and up the Pine (6,900') have trace to a tenth total, with a hundredth or two overnight into this morning and another hundredth or two Friday evening. The 501 might catch a hundredth or two before the 6:30 call from that overnight window, then should stay dry until evening.
+Vallecito and the Florida (7,650') are in a different setup. The Euro is showing close to an inch through tonight, GFS and ICON in the 0.7-0.8" range, and GEM's the outlier at around half an inch. The models agree on timing though, with the heavier stuff hitting between 6am and noon. I'd expect wet pavement for the morning drive and steady rain through the school run. Take those totals with a big grain of salt (the spread between GEM and Euro is almost 0.4" and that's the whole difference between a nuisance and a real soaker), but the window's solid across all four.
 
-Vallecito and the Florida (7,650') are the outlier here. The forecast shows three quarters to an inch for Vallecito with a third to half of that between 6am and noon, but the Euro, GFS, ICON and GEM all show 0.0", the models aren't buying what the elevation-corrected forecast is selling. If the forecast totals verify, the 240 could see wet pavement and gusty conditions for the bus run, gusts 12-16mph through the morning. If the models are right and the forecast totals don't verify, it's a dry Friday start. Districts decide by 6:30 and I'll say this: I'd lean toward planning for wet roads up the drainage given the forecast totals, even with the model disagreement.
+Snow line's higher today than anywhere anybody here goes. All rain everywhere, including up high in the Weminuche where it stays in the low 40s. Coal Bank and Molas should stay rain at pass level through the morning with a couple inches at most possible by tonight, but that's this afternoon's story, not this morning's. Red Mountain's the same setup. Wolf Creek should see a couple inches at most by tonight, same window.
 
-The high Weminuche (10,500'+) stays rain through the weekend with a tenth or less, temps in the low 40s.
+Districts decide by 6:30 and I'd expect they run normal for Bayfield and town. The Florida drainage's the only route where weather puts the morning in question.
 
-Current road status is CDOT's call, not mine: https://www.cotrip.org/
+Current road status and chain law: https://www.cotrip.org/
 
-Anybody else scraping frost off the windshield up the drainage this morning?
+Anybody up the 240 seeing steady rain yet or is it still holding off?
