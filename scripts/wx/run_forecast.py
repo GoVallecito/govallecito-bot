@@ -181,7 +181,7 @@ class LLMError(RuntimeError):
                          f"API said: {body}")
 
 
-def _llm_from_env(model=None, temperature=0.7):
+def _llm_from_env(model=None, temperature=0.7, max_tokens=2000):
     """Anthropic by default. Returns a callable(messages) -> str.
 
     Kept tiny and swappable on purpose -- everything upstream of this is
@@ -201,7 +201,7 @@ def _llm_from_env(model=None, temperature=0.7):
         system = next(m["content"] for m in messages if m["role"] == "system")
         user = [m for m in messages if m["role"] != "system"]
         body = json.dumps({
-            "model": model, "max_tokens": 2000, "system": system,
+            "model": model, "max_tokens": max_tokens, "system": system,
             "messages": user, "temperature": temperature,
         }).encode()
         req = urllib.request.Request(
@@ -221,8 +221,12 @@ def _llm_from_env(model=None, temperature=0.7):
             except Exception:  # noqa: BLE001
                 body = ""
             raise LLMError(exc.code, body, model) from None
+        # Why the model stopped. "max_tokens" means the reply was cut off, which
+        # is the leading suspect for the review panel's unreadable JSON.
+        call.last_stop_reason = payload.get("stop_reason")
         return "".join(b.get("text", "") for b in payload.get("content", []))
 
+    call.last_stop_reason = None
     return call
 
 
@@ -283,8 +287,10 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None,
             # Low temperature: reviewers and the magistrate should be the same
             # judge every morning. WX_REVIEW_MODEL lets the panel run on a
             # stronger model than the writer.
+            # 4000, not the writer's 2000: the magistrate lists up to eight
+            # required changes, each quoting a sentence and its replacement.
             review_llm = _llm_from_env(model=os.environ.get("WX_REVIEW_MODEL"),
-                                       temperature=0.2)
+                                       temperature=0.2, max_tokens=4000)
         except RuntimeError:
             review_llm = llm
     try:

@@ -60,7 +60,7 @@ Every post contains **exactly one** concrete detail from your own morning: the g
 
 - Zero is a bot. This is the single most common failure in review, so treat it as a hard requirement rather than a flourish.
 - Two or more is a diary. Cut back to one.
-- It must be specific and small. "The gauge showed 0.12 overnight" works. "It's a beautiful morning here" does not.
+- It must be specific and small. "It's a beautiful morning here" does not work. "The truck windows were fogged solid" does. Only when the brief's gauge block carries a reading may you use it: "The gauge showed 0.12 overnight" works then, with the brief's number. When the brief says NO READING TODAY you measured nothing, so the detail carries no number at all and never says the gauge caught, showed or read anything.
 - Rotate it. If your last post used the gauge, use something else.
 
 ## Geography, always this order, always with elevation
