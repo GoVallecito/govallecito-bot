@@ -65,7 +65,7 @@ site/weather/            published forecasts + feed.json (the site reads this)
 site/weather/_pending/   HELD drafts, awaiting promotion. The feed ignores them.
 site-astro/              copies of the Astro pages that belong in the SITE repo
 config/                  hand-edited inputs (emergency_override.json, almanac)
-tests/                   214 offline pytest tests, no network, no API key
+tests/                   217 offline pytest tests, no network, no API key
 ```
 
 ## Workflows (all in `.github/workflows/`)
@@ -140,7 +140,13 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
   and rule 2 of `tools/draft-lint.mjs`. The guardrail relaxes automatically if
   real CDOT data ever lands in the bundle.
   **Both gates are pinned to one corpus, `tools/fixtures/road-cases.json`** —
-  add a case there, never to a single suite. These rules are shallow syntax done
+  add a case there, never to a single suite. They are also checked against the
+  drafts this repo has actually recorded: nothing in `site/weather/` may be
+  flagged (it published, so a flag is a false positive on known good copy), and
+  held drafts must match `tests/fixtures/road_baseline.json` sentence for
+  sentence. After an intended change run
+  `tests/fixtures/road_baseline_refresh.py` and read the diff — that diff is
+  the review. These rules are shallow syntax done
   with regexes, so a change that looks local usually is not: five review rounds
   on PR #37 found 31 defects, about two thirds of them regressions introduced by
   the previous round's fix. The corpus is what holds that rate down, and each
@@ -160,8 +166,8 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
 
 ```bash
 pip install -r requirements.txt && pip install pytest   # pytest is not pinned
-python -m pytest tests/ -q      # 214 passed, offline, no keys, no network
-npm test                        # 69 subtests: node --test tools/draft-lint.test.mjs
+python -m pytest tests/ -q      # 217 passed, offline, no keys, no network
+npm test                        # 70 subtests: node --test tools/draft-lint.test.mjs
 ```
 
 Both were run in this repo and both pass. In Claude Code on the web,
