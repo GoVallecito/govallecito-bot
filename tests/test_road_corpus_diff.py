@@ -94,7 +94,14 @@ def test_the_linter_agrees_on_the_published_posts():
     """
     node = shutil.which("node")
     if not node:
-        pytest.skip("node not installed; `npm test` covers the linter")
+        # Not "npm test covers it": that node test was deleted, because it made
+        # the CI gate depend on mutable site/weather/ content. Without node the
+        # LINTER side of the published posts is checked nowhere -- the
+        # guardrails side above still runs unconditionally, and
+        # tools/fixtures/road-cases.json still pins both gates to 59
+        # constructed sentences under `npm test`.
+        pytest.skip("node not installed: the linter half of this check is "
+                    "skipped; run `npm test` for the rest of the linter")
     lint = os.path.join(REPO, "tools", "draft-lint.mjs")
     flagged = []
     for path in sorted(glob.glob(os.path.join(REPO, "site", "weather", "2*.md"))):

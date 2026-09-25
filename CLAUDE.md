@@ -172,6 +172,8 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
 ```bash
 pip install -r requirements.txt && pip install pytest   # pytest is not pinned
 python -m pytest tests/ -q      # 213 passed, offline, no keys, no network
+                                # (one shells out to node; without it,
+                                #  212 passed, 1 skipped -- not a loss)
 npm test                        # 69 subtests: node --test tools/draft-lint.test.mjs
 ```
 
