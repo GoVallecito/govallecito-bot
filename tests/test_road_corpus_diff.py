@@ -19,32 +19,54 @@ Two assertions, and the first is the important one:
   sentence. Only the files listed there are checked, so the workflow commits
   that add a draft every morning do not turn this red.
 
+THIS FILE IS DEVELOPER-FACING. No workflow runs pytest -- `npm test` in
+daily-audit.yml is the only suite CI runs -- so these checks fire when someone
+changing the rules runs the suite, not automatically. That is deliberate: the
+same check lived in `npm test` briefly, and `npm test` GATES the audit step, so
+one flagged post would have killed the daily audit rather than reporting the
+problem. An alarm must not be silenced by the thing it exists to report.
+
 Refresh the baseline with tests/fixtures/road_baseline_refresh.py after an
 intended change, and read the diff -- that diff is the review.
 """
 
 import glob
+import importlib.util
 import json
 import os
+import shutil
+import subprocess
 import sys
+
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 from wx import guardrails as G  # noqa: E402
 
 REPO = os.path.join(os.path.dirname(__file__), "..")
-BASELINE = os.path.join(os.path.dirname(__file__), "fixtures",
-                        "road_baseline.json")
+FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures")
+BASELINE = os.path.join(FIXTURES, "road_baseline.json")
+
+
+def _load_refresh():
+    """The generator is imported, not reimplemented.
+
+    An earlier cut copied its front-matter splitter into this file, so the
+    baseline's author and its checker could have drifted on how a draft is
+    parsed and still agreed on every verdict. Importing means the thing under
+    test is the thing that wrote the file.
+    """
+    path = os.path.join(FIXTURES, "road_baseline_refresh.py")
+    spec = importlib.util.spec_from_file_location("_road_baseline_refresh", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+REFRESH = _load_refresh()
 
 with open(BASELINE, encoding="utf-8") as _fh:
     DRAFTS = json.load(_fh)["drafts"]
-
-
-def _body(path):
-    """The post text, past either on-disk front-matter shape."""
-    raw = open(path, encoding="utf-8").read()
-    if raw.startswith("# "):
-        return raw.split("\n---\n", 1)[-1]
-    return raw.split("\n---", 1)[-1]
 
 
 def test_nothing_that_published_is_flagged():
@@ -53,7 +75,7 @@ def test_nothing_that_published_is_flagged():
     assert posts, "no published posts found -- has the layout moved?"
     flagged = []
     for path in posts:
-        stated, why = G.road_status_claim(_body(path))
+        stated, why = G.road_status_claim(REFRESH.body(path))
         if stated:
             flagged.append(f"  {os.path.basename(path)}\n"
                            f"    {why}: {stated!r}")
@@ -63,26 +85,47 @@ def test_nothing_that_published_is_flagged():
         "good copy:\n" + "\n".join(flagged))
 
 
+def test_the_linter_agrees_on_the_published_posts():
+    """The other gate, over the same real copy.
+
+    tools/fixtures/road-cases.json already pins both gates to 59 constructed
+    sentences; this is the same question asked of prose nobody wrote for a
+    test.
+    """
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node not installed; `npm test` covers the linter")
+    lint = os.path.join(REPO, "tools", "draft-lint.mjs")
+    flagged = []
+    for path in sorted(glob.glob(os.path.join(REPO, "site", "weather", "2*.md"))):
+        name = os.path.basename(path)
+        out = subprocess.run([node, lint, path, f"--date={name[:10]}",
+                              "--history=none", "--json"],
+                             capture_output=True, text=True)
+        if out.returncode == 2:
+            continue
+        for rule, detail in json.loads(out.stdout)["fails"]:
+            if rule == "road-status":
+                flagged.append(f"  {name}\n    {detail}")
+    assert not flagged, ("draft-lint.mjs flags published posts:\n"
+                         + "\n".join(flagged))
+
+
 def test_the_recorded_drafts_match_the_baseline():
     """A rule change shows up as a sentence diff, not as a count."""
-    missing, wrong = [], []
-    for rel, expected in sorted(DRAFTS.items()):
-        path = os.path.join(REPO, rel)
-        if not os.path.exists(path):
-            missing.append(rel)          # pruned by a workflow; not a failure
-            continue
-        stated, why = G.road_status_claim(_body(path))
-        got = ({"flagged": True, "sentence": stated, "why": why} if stated
-               else {"flagged": False})
-        if got != expected:
-            wrong.append(f"  {rel}\n    baseline: {expected!r}\n"
+    present = {k: v for k, v in REFRESH.scan().items() if k in DRAFTS}
+    assert present, "every baselined draft has disappeared"
+
+    wrong = []
+    for rel, got in sorted(present.items()):
+        if got != DRAFTS[rel]:
+            wrong.append(f"  {rel}\n    baseline: {DRAFTS[rel]!r}\n"
                          f"    now:      {got!r}")
     assert not wrong, (
         "the road rules changed what they say about recorded drafts:\n"
         + "\n".join(wrong)
         + "\n\nIf that was intended, run "
           "tests/fixtures/road_baseline_refresh.py and read the diff.")
-    assert len(missing) < len(DRAFTS), "every baselined draft has disappeared"
 
 
 def test_the_baseline_still_covers_both_shapes():

@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, rmSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -358,12 +358,21 @@ test('the linter agrees with the road corpus', () => {
 });
 
 test('both gates reach the same verdict on every case', () => {
-  const probe = spawnSync('python3', [join(here, 'road-gate-probe.py')], { encoding: 'utf8' });
+  // Windows has no `python3`, and CLAUDE.md documents Windows. PYTHON
+  // overrides for a venv or a pinned interpreter.
+  const candidates = process.env.PYTHON ? [process.env.PYTHON]
+    : ['python3', 'python', 'py'];
+  let probe;
+  for (const exe of candidates) {
+    probe = spawnSync(exe, [join(here, 'road-gate-probe.py')], { encoding: 'utf8' });
+    if (!probe.error) break;
+  }
   if (probe.error || probe.status === null) {
     // Not a silent pass: say so loudly, because a skipped parity check looks
     // exactly like a passing one in the TAP output.
     assert.fail(`could not run tools/road-gate-probe.py (${probe.error?.code ?? 'no status'}). ` +
-      'python3 must be on PATH for the cross-gate check; guardrails.py needs only the stdlib.');
+      `tried ${candidates.join(', ')}. One must be on PATH for the cross-gate check, ` +
+      'or set PYTHON; guardrails.py needs only the stdlib.');
   }
   assert.equal(probe.status, 0, `road-gate-probe.py exited ${probe.status}: ${probe.stderr}`);
 
@@ -383,35 +392,3 @@ test('both gates reach the same verdict on every case', () => {
     disagreements.join('\n'));
 });
 
-// --- the recorded corpus ---------------------------------------------------
-//
-// Every post that actually published. These went out through
-// guardrails.evaluate(), so a road-status fail here is a false positive on
-// copy that is known good -- and a false flag cannot be repaired by the
-// rewrite loop, because nothing is wrong with the sentence.
-//
-// This asks what the forecaster actually wrote rather than what someone
-// thought to ask, which catches a different class of mistake: on PR #37,
-// extending a rule to route numbers and a bare trailing "this" silently
-// re-broke 2026-09-22 and no unit test noticed. The Python half of this lives
-// in tests/test_road_corpus_diff.py, with a sentence-level baseline for the
-// held drafts too.
-
-test('no published post trips the road rule', () => {
-  const dir = join(here, '..', 'site', 'weather');
-  const posts = readdirSync(dir).filter(f => /^\d{4}-\d{2}-\d{2}-.*\.md$/.test(f));
-  assert.ok(posts.length, 'no published posts found -- has the layout moved?');
-
-  const flagged = [];
-  for (const file of posts) {
-    const r = spawnSync(process.execPath,
-      [LINT, join(dir, file), `--date=${file.slice(0, 10)}`, '--history=none', '--json'],
-      { encoding: 'utf8' });
-    if (r.status === 2) continue;             // usage error on a stray file
-    for (const [rule, detail] of JSON.parse(r.stdout).fails)
-      if (rule === 'road-status') flagged.push(`  ${file}\n    ${detail}`);
-  }
-  assert.equal(flagged.length, 0,
-    `published posts are now flagged, which makes this a false positive on ` +
-    `copy the gate already passed:\n${flagged.join('\n')}`);
-});

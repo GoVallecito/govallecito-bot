@@ -65,7 +65,7 @@ site/weather/            published forecasts + feed.json (the site reads this)
 site/weather/_pending/   HELD drafts, awaiting promotion. The feed ignores them.
 site-astro/              copies of the Astro pages that belong in the SITE repo
 config/                  hand-edited inputs (emergency_override.json, almanac)
-tests/                   217 offline pytest tests, no network, no API key
+tests/                   213 offline pytest tests, no network, no API key
 ```
 
 ## Workflows (all in `.github/workflows/`)
@@ -146,7 +146,12 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
   held drafts must match `tests/fixtures/road_baseline.json` sentence for
   sentence. After an intended change run
   `tests/fixtures/road_baseline_refresh.py` and read the diff — that diff is
-  the review. These rules are shallow syntax done
+  the review. Those two live in pytest, which **no workflow runs**, so they
+  fire when you run the suite, not automatically; the cross-gate corpus is the
+  half that runs in CI via `npm test`. Keep it that way: `npm test` gates the
+  audit step in `daily-audit.yml`, so a check that depends on mutable
+  `site/weather/` content would kill the daily audit rather than report the
+  problem. These rules are shallow syntax done
   with regexes, so a change that looks local usually is not: five review rounds
   on PR #37 found 31 defects, about two thirds of them regressions introduced by
   the previous round's fix. The corpus is what holds that rate down, and each
@@ -166,9 +171,14 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
 
 ```bash
 pip install -r requirements.txt && pip install pytest   # pytest is not pinned
-python -m pytest tests/ -q      # 217 passed, offline, no keys, no network
-npm test                        # 70 subtests: node --test tools/draft-lint.test.mjs
+python -m pytest tests/ -q      # 213 passed, offline, no keys, no network
+npm test                        # 69 subtests: node --test tools/draft-lint.test.mjs
 ```
+
+**Pass `tests/`, not a bare `pytest`.** `scripts/test_data_sources.py` is a
+hand-run debug script that hits live endpoints, and pytest collects it by
+filename: a bare `pytest` runs 5 extra tests and makes real network calls,
+which is neither offline nor what the count above means.
 
 Both were run in this repo and both pass. In Claude Code on the web,
 `.claude/hooks/session-start.sh` installs the dependencies for you, so normally
