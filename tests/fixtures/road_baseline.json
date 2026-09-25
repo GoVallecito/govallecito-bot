@@ -1,0 +1,133 @@
+{
+  "//": [
+    "What the road rules say about every draft this repo has actually",
+    "recorded. tests/test_road_corpus_diff.py compares the rules against it.",
+    "",
+    "The point is regressions against REAL copy rather than invented cases. A",
+    "unit test only asks what you thought to ask; this asks what the forecaster",
+    "actually wrote. It is how the 'this evening' regression was caught during",
+    "PR #37 -- extending a rule to route numbers and a bare trailing 'this'",
+    "silently re-broke 2026-09-22, one of the four drafts whose lint failure",
+    "started that work, and no unit test noticed.",
+    "",
+    "Only the files listed here are checked, so the daily workflow commits that",
+    "add new drafts do not turn this red. A file that disappears is skipped.",
+    "",
+    "flagged=false is the load-bearing half: those are sentences the rules must",
+    "keep leaving alone. flagged=true entries pin the sentence, so a rule that",
+    "stops catching a known violation, or starts catching a different part of",
+    "the same draft, shows up as a diff rather than as an unchanged count.",
+    "",
+    "To refresh after an INTENDED behaviour change:",
+    "  python3 tests/fixtures/road_baseline_refresh.py",
+    "and read the diff before committing it -- that diff is the review."
+  ],
+  "drafts": {
+    "state/drafts/2026-08-31-school_call.md": {
+      "flagged": false
+    },
+    "state/drafts/2026-09-02-school_call.md": {
+      "flagged": true,
+      "sentence": "Dry roads for the morning run.",
+      "why": "states a present-tense road surface condition"
+    },
+    "state/drafts/2026-09-06-school_call.md": {
+      "flagged": false
+    },
+    "state/drafts/2026-09-08-school_call.md": {
+      "flagged": true,
+      "sentence": "The 501 and the 240 are both dry for the school run, and the afternoon stays clear.",
+      "why": "states a present-tense road surface condition"
+    },
+    "state/drafts/2026-09-09-school_call.md": {
+      "flagged": false
+    },
+    "state/drafts/2026-09-10-school_call.md": {
+      "flagged": true,
+      "sentence": "Coal Bank, Molas and Red Mountain all look clear for the early runs, and Wolf Creek the same.",
+      "why": "states a present-tense road surface condition"
+    },
+    "state/drafts/2026-09-11-school_call.md": {
+      "flagged": true,
+      "sentence": "Durango and the Animas Valley start in the upper 50s, dry roads, then climb to the mid-80s this afternoon.",
+      "why": "states a present-tense road surface condition"
+    },
+    "state/drafts/2026-09-12-school_call.md": {
+      "flagged": true,
+      "sentence": "Wolf Creek Pass runs the same, dry today and breezy, isolated storm chance tomorrow afternoon stays above the road.",
+      "why": "states a present-tense road surface condition"
+    },
+    "state/drafts/2026-09-13-school_call.md": {
+      "flagged": true,
+      "sentence": "The 550 passes stay dry today, wet tomorrow night with maybe a couple inches at the very top of Red Mountain and Molas.",
+      "why": "states a present-tense road surface condition"
+    },
+    "state/drafts/2026-09-14-school_call.md": {
+      "flagged": true,
+      "sentence": "Durango and Bayfield should stay dry through the school run, and the 501 and the 240 are both fine.",
+      "why": "states a present-tense road surface condition"
+    },
+    "state/drafts/2026-09-15-school_call.md": {
+      "flagged": true,
+      "sentence": "No ice anywhere, no snow line issues, just wet pavement drying out as the sun gets it.",
+      "why": "states a present-tense road surface condition"
+    },
+    "state/drafts/2026-09-16-school_call.md": {
+      "flagged": true,
+      "sentence": "The 160 into town looks fine for the morning commute.",
+      "why": "states a present-tense road surface condition"
+    },
+    "state/drafts/2026-09-17-school_call.md": {
+      "flagged": true,
+      "sentence": "Roads wet, no ice.",
+      "why": "states a present-tense road surface condition"
+    },
+    "state/drafts/2026-09-18-school_call.md": {
+      "flagged": false
+    },
+    "state/drafts/2026-09-19-school_call.md": {
+      "flagged": false
+    },
+    "state/drafts/2026-09-20-school_call.md": {
+      "flagged": false
+    },
+    "state/drafts/2026-09-21-school_call.md": {
+      "flagged": true,
+      "sentence": "Dry roads for the bus run this morning.",
+      "why": "states a present-tense road surface condition"
+    },
+    "state/drafts/2026-09-22-school_call.md": {
+      "flagged": false
+    },
+    "state/drafts/2026-09-23-school_call.md": {
+      "flagged": false
+    },
+    "state/drafts/2026-09-24-school_call.md": {
+      "flagged": true,
+      "sentence": "The 501, the 240, the 160 into town all look fine for the morning drive.",
+      "why": "states a present-tense road surface condition"
+    },
+    "site/weather/_pending/2026-09-19-morning-forecast-for-vallecito-bayfield-and-durango.md": {
+      "flagged": false
+    },
+    "site/weather/_pending/2026-09-20-morning-forecast-for-vallecito-bayfield-and-durango.md": {
+      "flagged": false
+    },
+    "site/weather/_pending/2026-09-21-morning-forecast-for-vallecito-bayfield-and-durango.md": {
+      "flagged": true,
+      "sentence": "Dry roads for the bus run this morning.",
+      "why": "states a present-tense road surface condition"
+    },
+    "site/weather/_pending/2026-09-22-flood-watch-for-vallecito-bayfield-and-durango.md": {
+      "flagged": false
+    },
+    "site/weather/_pending/2026-09-23-flood-watch-for-vallecito-bayfield-and-durango.md": {
+      "flagged": false
+    },
+    "site/weather/_pending/2026-09-24-morning-forecast-for-vallecito-bayfield-and-durango.md": {
+      "flagged": true,
+      "sentence": "The 501, the 240, the 160 into town all look fine for the morning drive.",
+      "why": "states a present-tense road surface condition"
+    }
+  }
+}
