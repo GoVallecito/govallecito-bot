@@ -154,7 +154,12 @@ python -m pytest tests/ -q      # 176 passed, offline, no keys, no network
 npm test                        # 20 subtests: node --test tools/draft-lint.test.mjs
 ```
 
-Both were run in this repo and both pass. On Windows use `py -m pytest tests/ -q`
+Both were run in this repo and both pass. In Claude Code on the web,
+`.claude/hooks/session-start.sh` has already installed both, so the two commands
+work with no setup; the `pip` line is only needed locally. Node needs nothing
+installed — `package.json` declares zero dependencies.
+
+On Windows use `py -m pytest tests/ -q`
 and `py -m pip …`; Windows ships no IANA tz database, so `zoneinfo` cannot resolve
 `America/Denver` and `constants.py` fails at import without `tzdata` — it is
 already in `requirements.txt` behind a `sys_platform == "win32"` marker.
