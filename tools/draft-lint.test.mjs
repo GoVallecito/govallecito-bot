@@ -180,7 +180,7 @@ for (const [label, text] of [
 for (const [label, text] of [
   // Only a coordinating "and" carries a hedge across.
   ['semicolon', 'The front should clear by noon; wet roads and icy pavement on the 550.'],
-  ['but-clause', 'The front should clear by noon but wet roads and icy pavement on the 550.'],
+  ['but-clause', 'The front should clear by noon, but wet roads and icy pavement on the 550.'],
   // The determiner needs a word of slack, and the bare copula form counts.
   ['high-passes', 'The high passes are closed this morning.'],
   ['bare-passes', 'Passes are closed.'],
@@ -189,7 +189,7 @@ for (const [label, text] of [
   // system.md forbids this one BY NAME and this file used to miss it entirely.
   ['telegraphic', 'Roads wet, no ice.'],
   // A clause with road + verb + surface asserts on its own.
-  ['own-predicate', 'Coal Bank should stay dry and Molas stays clear.'],
+  ['own-predicate', 'Coal Bank should stay dry, and Molas stays clear.'],
 ]) {
   test(`${label} is caught`, () => {
     const r = lintBody(`road-status-${label}.md`, text);
@@ -197,6 +197,15 @@ for (const [label, text] of [
     assert.equal(r.code, 1);
   });
 }
+
+// The accepted cost of not splitting on a bare "and"/"but". Pinned so it is a
+// known trade rather than something rediscovered by a later review: the same
+// sentence with the comma the persona usually writes is still caught, above.
+test('an uncommaed coordination is a known miss', () => {
+  const r = lintBody('road-status-uncommaed.md',
+    'Coal Bank should stay dry and Molas is clear right now.');
+  assert.deepEqual(r.fails, []);
+});
 
 test('a traction law forecast is still allowed', () => {
   // constants.py holds "expect traction law by morning" up as the product: it
@@ -216,7 +225,7 @@ test('a traction law forecast is still allowed', () => {
 test('the hedge cannot launder an unhedged clause beside it', () => {
   const src = readFileSync(join(FIX, 'clean.md'), 'utf8').replace(
     /^Coal Bank and Molas should stay dry through the morning\./m,
-    'Coal Bank should stay dry and Molas is clear right now.');
+    'Coal Bank should stay dry, and Molas is clear right now.');
   const tmp = join(FIX, 'road-status-mixed.md');
   writeFileSync(tmp, src);
   try {

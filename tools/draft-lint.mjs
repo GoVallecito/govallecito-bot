@@ -34,13 +34,15 @@ const ROADS = [
   'Vallecito Road','Bayfield Parkway','Elmore',
   'Middle Mountain Road','Missionary Ridge Road'
 ];
-// "passes" is also the verb for weather moving through ("the cold front passes
-// through around noon"). A determiner adjacent missed "The HIGH passes are
-// closed"; any gap re-admitted "The storm passes overnight". So: a determiner,
-// at most one word between, and not followed by a word only a moving system
-// takes -- plus a bare "Passes are closed", unambiguous on the copula.
+// "passes" is also the verb for weather moving through. Two forms, and no
+// guessing from the surrounding words: a determiner immediately before, or a
+// copula immediately after. That covers "the passes", "The passes over the
+// divide are closed", "The high passes are closed" and a bare "Passes are
+// closed", while "the front passes midday" is neither. An earlier cut allowed
+// a word of slack plus a list of words only a moving system takes; it read
+// "the front passes" as a road and threw away "The passes over the divide".
 // Mirrors guardrails._ROAD_NAME.
-const PASS_NOUN = /(?:\b(?:the|these|those|both|all|either|our)\s+(?:\w+\s+)?pass(?:es)?\b(?!\s+(?:through|over|east|west|north|south|by|along|off|quickly|overnight))|\bpass(?:es)?(?=\s+(?:is|are|'s|was|were|remains?|stays?|looks?)))/i;
+const PASS_NOUN = /(?:\b(?:the|these|those|both|all|either|our)\s+pass(?:es)?\b|\bpass(?:es)?(?=\s+(?:is|are|'s|was|were|remains?|stays?|looks?)))/i;
 // A bare route number, which the list above only caught when it carried its
 // article. The article was there because "the 160 cfs" style numbers bite:
 // this persona writes elevations as "(6,500')" and flows as "running 160 cfs",
@@ -66,7 +68,10 @@ const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|o
 // sentence the persona names as the canonical mistake. The trailing lookahead
 // keeps it to that clipped register, so "Vallecito Road, fine gravel past the
 // turn" is an ordinary noun phrase. Mirrors guardrails._ROAD_TELEGRAPHIC_CLAIM.
-const ROAD_TELEGRAPHIC = /\b(?:roads?|pavement|highways?|blacktop)\s+(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\s*(?=[,.;:!?]|$)/i;
+// A coordination ends the claim as surely as punctuation: "roads wet and icy
+// on the 550" states "roads wet" whatever follows. That used to come free from
+// clause splitting on a bare "and", which no longer happens.
+const ROAD_TELEGRAPHIC = /\b(?:roads?|pavement|highways?|blacktop)\s+(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\s*(?=[,.;:!?]|\s+(?:and|but)\b|$)/i;
 // A CLOSURE is not hedgeable: it is the one road claim the hedges below do not
 // apply to. The conditional opener still exempts it. A surface forecast is a weather
 // claim, so hedging is what makes it honest; whether a gate is down is CDOT's
@@ -84,7 +89,7 @@ const ROAD_TELEGRAPHIC = /\b(?:roads?|pavement|highways?|blacktop)\s+(?:dry|wet|
 // the copula branch already has `be` and `closed`. "close out"/"closing out" is
 // weather, not a road. The `to close` branch keeps the infinitive that dropping
 // the bare alternative had also dropped ("is set to close", "going to close").
-const CLOSURE = /(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?(?:closed|open|shut)\b|\b(?:will|would|may|might|could|should|gonna)\s+(?:close|shut|reopen)\b|\bto\s+(?:close\b(?!\s+out\b)|shut|reopen)\b|\bclos(?:es|ing|ed)\b(?!\s+out\b)|\breopen(?:s|ed|ing)?\b|\bshuts?\b)/i;
+const CLOSURE = /(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?(?:closed|open|shut)\b|\b(?:will|would|may|might|could|should|gonna)\s+(?:close|shut|reopen)\b|\bto\s+(?:close\b(?!\s+(?:out|to)\b)|shut|reopen)\b|\bclos(?:es|ing|ed)\b(?!\s+out\b)|\breopen(?:s|ed|ing)?\b|\bshuts?\b)/i;
 // Hedges, in two tiers, because they are not all the same thing.
 //
 // A MODAL turns the clause into a forecast outright. system.md gives "I'd
@@ -105,18 +110,12 @@ const MODAL_HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|ex
 // breaks on a bare "and", which also splits coordinated noun phrases and
 // strips the modal off -- "I'd expect wet pavement in town and icy roads on
 // the 550" left "icy roads on the 550" to be judged alone.
-// ONLY unambiguous verbs. The first cut listed `runs?`, `looks?`, `stays?` and
-// friends, every one of which is also a noun -- and "the bus run" appears 33
-// times in the recorded corpus and in clean.md, so "icy roads for the bus run"
-// counted as having a verb, did not inherit its modal, and failed.
-const FINITE_VERB = /(?:\b(?:is|are|was|were|be|been|am|has|have|had|do|does|did|will|would|should|could|may|might|can)\b|\w's\b)/i;
-// `inherits` is false across a ";" or a "but", which join independent
-// statements rather than coordinating one predicate over two objects.
-// `ownPredicate` is road + verb + surface: such a clause is its own claim
-// however few auxiliaries it has, so a modal beside it cannot launder it.
-const hedged = (c, prev = false, inherits = true, ownPredicate = false) =>
-  MODAL_HEDGE.test(c) ? true
-    : (!inherits || FINITE_VERB.test(c) || ownPredicate) ? false : prev;
+// A modal, and nothing else. Three review rounds went into trying to carry a
+// hedge across a coordination, and every version was wrong: deciding whether a
+// fragment is a second predicate or a second object needs to tell a noun from a
+// verb, and "run", "look", "stay" and "pick" are all both. clauses() no longer
+// splits on a bare "and", so the coordination stays with its modal.
+const hedged = c => MODAL_HEDGE.test(c);
 // A sentence that opens conditionally hedges every clause in it, including the
 // ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is slick."
 const CONDITIONAL_OPEN = /^(?:if|when|once|unless|should)\b/i;
@@ -200,18 +199,13 @@ const sentences = t => t.split('\n')
   .filter(Boolean);
 const lines = t => t.split('\n').map(s => s.trim()).filter(Boolean);
 const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\s+/).filter(Boolean);
-// The delimiter is captured, because only a coordinating "and" carries a hedge
-// from one clause to the next; a ";" or a "but" joins independent statements.
-// Returns [{text, inherits}] with the delimiters folded into the clause after.
-const clauses = s => {
-  const parts = s.split(/(,\s*(?:and|but)\s+|;\s*|\s+and\s+|\s+but\s+)/i);
-  const out = [];
-  for (let i = 0; i < parts.length; i += 2)
-    if (parts[i])
-      out.push({ text: parts[i],
-                 inherits: i === 0 || /^,?\s*and\s+$/i.test(parts[i - 1]) });
-  return out;
-};
+// NOT a bare "and" or "but": those coordinate objects as often as clauses, and
+// splitting there strips the governing modal off the second half. The cost is
+// that an uncommaed "Coal Bank should stay dry and Molas is clear right now"
+// is one hedged clause and is missed; with the comma the persona usually
+// writes it still splits and is caught. Deliberate -- a false fail on the
+// phrasing system.md prescribes is the more expensive error.
+const clauses = s => s.split(/,\s*(?:and|but)\s+|;\s*/i).filter(Boolean);
 const q = s => `"${s.trim()}"`;
 
 function jaccard(a, b) {
@@ -243,16 +237,14 @@ function lint(raw, dateStr, historyDir) {
   // reader-addressed one exempts nothing.
   for (const s of S) {
     if (conditional(s)) continue;
-    let wasHedged = false;
-    for (const { text: c, inherits } of clauses(claimBody(s))) {
+    for (const c of clauses(claimBody(s))) {
       const hasRoad = PASS_NOUN.test(c) || ROUTE_NUMBER.test(c) ||
         ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
       if (hasRoad && CLOSURE.test(c)) {
         fails.push(['road-status', `Road closure claim with no CDOT data: ${q(s)}`]);
         break;
       }
-      wasHedged = hedged(c, wasHedged, inherits, hasRoad && ROAD_STATE.test(c));
-      if (wasHedged) continue;
+      if (hedged(c)) continue;
       if ((hasRoad && ROAD_STATE.test(c)) || ROAD_NOUN.test(c) ||
           ROAD_TELEGRAPHIC.test(c)) {
         fails.push(['road-status', `Present-tense road condition with no CDOT data: ${q(s)}`]);

@@ -597,27 +597,40 @@ def test_the_bus_run_is_a_noun():
         assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
 
 
-def test_a_clause_with_its_own_predicate_does_not_inherit():
-    """Narrowing the verb list must not let a real claim ride a modal.
-
-    "Molas stays clear" has road + verb + surface, so it asserts on its own
-    even though "stays" is no longer in the finite-verb list.
-    """
-    for claim in ["Coal Bank should stay dry and Molas stays clear.",
-                  "The passes should be wet and the 501 looks fine."]:
-        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
-
-
-def test_only_and_carries_a_hedge_across():
-    """A semicolon or a "but" joins independent statements.
-
-    The inheritance was applied across every delimiter, so a modal in the first
-    half silently covered a flat claim in the second.
-    """
+def test_a_modal_does_not_reach_past_a_comma_or_semicolon():
+    """Where the sentence is punctuated, the second claim is still judged."""
     for claim in ["The front should clear by noon; roads wet and icy on the 550.",
-                  "The front should clear by noon but roads wet and icy on the 550.",
-                  "It should dry out; dry roads for the bus run."]:
+                  "The front should clear by noon, but wet roads on the 550.",
+                  "It should dry out; dry roads for the bus run.",
+                  "Coal Bank should stay dry, and Molas is clear right now.",
+                  "The passes should be wet, and the 501 looks fine."]:
         assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+
+
+def test_an_uncommaed_coordination_is_a_known_miss():
+    """The accepted cost of not splitting on a bare "and" or "but".
+
+    Three review rounds went into carrying a hedge across a coordination and
+    every version was wrong, because telling a second predicate from a second
+    object needs to tell a noun from a verb -- and "run", "look", "stay" and
+    "pick" are all both, with "the bus run" the persona's commonest idiom.
+
+    So the coordination stays in one clause with the modal that governs it.
+    The sentences below are missed; the same sentences with the comma the
+    persona usually writes are caught above. This is pinned deliberately: a
+    false BLOCK on the phrasing compose.py prescribes cannot be repaired by the
+    rewrite loop, because nothing is wrong with the sentence, so it burns the
+    morning -- which is the more expensive of the two errors.
+    """
+    for missed in ["Coal Bank should stay dry and Molas is clear right now.",
+                   "It should warm up and the plows get the roads clear.",
+                   "Coal Bank should stay dry and Molas sees icy pavement."]:
+        assert G.road_status_claim(missed)[0] is None, (
+            f"now caught, so update this note: {missed!r}")
+    # The coordination itself must still not produce a false positive.
+    for ok in ["I'd expect wet pavement in town and icy roads for the bus run.",
+               "I'd expect wet pavement in town but icy roads on the 550."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
 
 
 def test_the_passes_with_an_adjective_in_between():
