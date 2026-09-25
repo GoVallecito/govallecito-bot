@@ -17,10 +17,21 @@
 set -euo pipefail
 
 # Local machines already have their own environment; only the web containers
-# start empty.
+# start empty. This check stays ABOVE the async handshake so a local run prints
+# nothing at all.
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
+
+# ASYNC. The session starts immediately and the install runs behind it, which
+# costs a real race: a first turn can reach `python -m pytest` before pytest
+# lands, and the failure is the ordinary "No module named pytest". The repair is
+# the pip line in CLAUDE.md, or simply waiting a few seconds and re-running.
+#
+# This JSON must be the FIRST thing on stdout and must come before the slow work,
+# or the handshake is not read and the hook blocks the session anyway. Everything
+# below it is background output.
+echo '{"async": true, "asyncTimeout": 300000}'
 
 cd "${CLAUDE_PROJECT_DIR:-$(dirname "$(dirname "$(dirname "$(readlink -f "$0")")")")}"
 

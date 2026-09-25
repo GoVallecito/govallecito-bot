@@ -155,9 +155,10 @@ npm test                        # 20 subtests: node --test tools/draft-lint.test
 ```
 
 Both were run in this repo and both pass. In Claude Code on the web,
-`.claude/hooks/session-start.sh` has already installed both, so the two commands
-work with no setup; the `pip` line is only needed locally. Node needs nothing
-installed — `package.json` declares zero dependencies.
+`.claude/hooks/session-start.sh` installs the dependencies for you, so normally
+the `pip` line is not needed. It runs **async**, so a very early first command can
+still hit `No module named pytest` — run the `pip` line, or wait a few seconds and
+retry. Node needs nothing installed: `package.json` declares zero dependencies.
 
 On Windows use `py -m pytest tests/ -q`
 and `py -m pip …`; Windows ships no IANA tz database, so `zoneinfo` cannot resolve
