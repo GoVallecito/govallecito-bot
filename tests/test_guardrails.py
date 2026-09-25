@@ -450,3 +450,111 @@ def test_a_blocked_road_claim_is_rewritable_rather_than_fatal():
     note = G.correction_note(why)
     assert "dry roads" in note.lower(), note
     assert "adjective" in note.lower(), note
+
+
+# --- the seven the code review found -------------------------------------
+#
+# All seven were live on the branch and none was covered by a test. The two
+# directions matter equally: a false BLOCK on correct copy sends the composer
+# into a rewrite loop it cannot satisfy, which is the silent-morning failure
+# the rebuild exists to stop; a missed claim is the bad post.
+
+def test_close_is_an_adjective_not_a_closure():
+    """`clos(e)` matched the ordinary word, and closures are hedge-exempt.
+
+    So these were unrecoverable BLOCKs on the product's signature sentence.
+    """
+    for ok in [
+        "Coal Bank should stay rain at pass level, with the snow line close "
+        "to 11,000 feet.",
+        "It will be close to freezing at pass level.",
+        "Coal Bank and Molas are close to the freezing line this morning.",
+        "The snow line ends up close to 11,000 feet on the passes.",
+        "The high Weminuche could pick up close to half an inch overnight.",
+    ]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+
+
+def test_passes_is_also_a_verb():
+    """"The cold front passes through" has no road in it."""
+    for ok in [
+        "The cold front passes through around noon, closing out the showers.",
+        "That band passes east of us by dawn.",
+    ]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+    # The noun still counts, with its determiner.
+    for claim in ["The passes are dry.", "The pass is closed, go around."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+
+
+def test_a_modal_governs_both_halves_of_a_coordination():
+    """The clause split breaks on a bare "and", which splits noun phrases too.
+
+    "icy roads on the 550" has no verb of its own; it is the back half of
+    "I'd expect ... and ...", and judging it alone blocked the phrasing
+    compose.py prescribes.
+    """
+    for ok in [
+        "I'd expect wet pavement in town and icy roads on the 550.",
+        "Look for slick spots and wet roads for the commute.",
+        "The passes should be wet early and slick up high.",
+    ]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+    # A clause with its own finite verb is still judged on its own.
+    assert G.road_status_claim(
+        "Coal Bank should stay dry, and Molas is clear right now.")[0]
+
+
+def test_a_time_window_hedges_nothing():
+    """It says when, never whether -- and the verbless forms proved it.
+
+    An earlier cut kept a time tier and exempted clauses carrying a present
+    indicative. The verbless claims this rule exists to catch never carry one,
+    so they passed while the copula form blocked.
+    """
+    for claim in ["Dry roads all day.", "Clear roads tonight.",
+                  "Icy roads later.", "Wet pavement through the morning.",
+                  "Roads are wet tonight.",
+                  "The passes are dry through the morning.",
+                  "The 501 is clear all day."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+    for ok in ["The passes should be dry through the morning.",
+               "I'd expect dry roads all day."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+
+
+def test_a_newline_ends_a_sentence():
+    """Collapsing newlines merged an unpunctuated line into the next one.
+
+    One conditional opener then exempted both, and it made the `\\n` in every
+    `[^.\\n]` class inert.
+    """
+    merged = ("If that band sets up we could see 2-3 inches\n"
+              "The passes are dry right now.")
+    assert G.road_status_claim(merged)[0], "the second line is a flat claim"
+    # A bullet list is the same shape.
+    assert G.road_status_claim("- 2-3 inches up high\n- Roads wet, no ice.")[0]
+
+
+def test_the_inverted_conditional_is_reader_addressed_too():
+    """_CONDITIONAL_OPEN took a leading "should" and _READER_ADDRESSED did not."""
+    assert G.road_status_claim(
+        "Should you be heading over Molas, it's closed.")[0]
+    assert G.road_status_claim(
+        "Should that band set up, the 550 is icy by 6am.")[0] is None
+
+
+def test_a_route_number_may_take_the_possessive():
+    """The foot-mark exclusion swallowed "the 550's" as well as "7,650'".
+
+    guardrails matched nothing while draft-lint.mjs still caught it on its
+    literal, so the two gates disagreed on the most direct closure claim there
+    is.
+    """
+    for claim in ["The 550's closed this morning.",
+                  "The 501's fine for the bus run.",
+                  "The 160's icy over the top."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+    # And the foot mark is still not a route.
+    assert G.road_status_claim(
+        "Vallecito sits at 7,650' and the lake is clear.")[0] is None

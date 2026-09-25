@@ -112,6 +112,53 @@ test('a weather-contingent conditional still exempts the sentence', () => {
   } finally { rmSync(tmp); }
 });
 
+// The seven a code review found on the branch, mirrored from
+// tests/test_guardrails.py so the two gates cannot drift apart again.
+function withBody(text) {
+  return readFileSync(join(FIX, 'clean.md'), 'utf8').replace(
+    /^Coal Bank and Molas should stay dry through the morning\./m, text);
+}
+function lintBody(name, text) {
+  const tmp = join(FIX, name);
+  writeFileSync(tmp, withBody(text));
+  try { return run(name); } finally { rmSync(tmp); }
+}
+
+for (const [label, text] of [
+  // "close" is the adjective, and "passes" is a verb. Both were hedge-exempt
+  // fails on ordinary weather prose.
+  ['close-adjective', 'Coal Bank and Molas are close to the freezing line this morning.'],
+  ['passes-verb', 'The cold front passes through around noon, closing out the showers.'],
+  // A bare "and" splits coordinated noun phrases and strips the modal.
+  ['coordination', "I'd expect wet pavement in town and icy roads on the 550."],
+]) {
+  test(`${label} is not a road-status claim`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, []);
+    assert.equal(r.code, 0);
+  });
+}
+
+for (const [label, text] of [
+  // A time window says when, never whether -- and the verbless forms this
+  // rule exists to catch never carry the copula the old guard keyed on.
+  ['verbless-window', 'Dry roads all day.'],
+  ['verbless-window2', 'Wet pavement through the morning.'],
+  // A newline ends a sentence; collapsing it let one "if" exempt two lines.
+  ['newline', 'If that band sets up we could see 2-3 inches\nThe passes are dry right now.'],
+  // The inverted conditional is reader-addressed too.
+  ['inverted-conditional', "Should you be heading over Molas, it's closed."],
+  // The foot-mark exclusion must not swallow the possessive.
+  ['possessive-closure', "The 550's closed this morning."],
+  ['possessive-surface', "The 501's fine for the bus run."],
+]) {
+  test(`${label} is caught`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, ['road-status']);
+    assert.equal(r.code, 1);
+  });
+}
+
 test('a traction law forecast is still allowed', () => {
   // constants.py holds "expect traction law by morning" up as the product: it
   // is a consequence of weather we have, unlike a gate coming down.

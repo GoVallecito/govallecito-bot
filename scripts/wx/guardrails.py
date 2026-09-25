@@ -53,8 +53,14 @@ FORBIDDEN_PATTERNS = [
 # excluded directly: nothing may run into it from the left, which is what the
 # comma in "6,500" does, and no unit may follow it. US-550, CR 501 and "the
 # 160" all still match.
+# The apostrophe in that exclusion is the FOOT MARK, 7,650', and it must not
+# also swallow the possessive. "The 550's closed this morning" is the most
+# direct closure claim there is and it matched nothing here, while
+# draft-lint.mjs caught it on its "the 550" literal -- the two gates
+# disagreeing on the easiest case. So a quote only excludes when it is not
+# followed by an s.
 _ROUTE = (r"(?<![\d,])(?:550|160|172|240|500|501)"
-          r'(?!\s*(?:cfs|ft|feet|af|%|,\d|[\'"]))')
+          r"""(?!\s*(?:cfs|ft|feet|af|%|,\d|"|'(?!s\b)))""")
 
 # Live road-status claims. We forecast the passes; we never report their state.
 # CDOT's public feed documentation has been withdrawn, so there is no source
@@ -119,7 +125,15 @@ _SURFACE = (r"dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|"
 _ROAD_NOUN = r"roads?|pavement|highways?|blacktop"
 # Route numbers come from _ROUTE, so this rule and the ones above agree about
 # what counts as a road and neither of them reads an elevation as one.
-_ROAD_NAME = (rf"pass|passes|coal bank|molas|red mountain|wolf creek|cumbres|"
+#
+# "pass" and "passes" carry a determiner, because "passes" is also the verb the
+# persona uses for weather moving through: "The cold front passes through
+# around noon, closing out the showers" has no road in it, and a bare `passes`
+# made that a road claim. "the passes", "both passes", "Wolf Creek Pass" (on
+# the proper name) all still match; "at pass level" correctly does not, since
+# that phrase describes an elevation rather than a road.
+_ROAD_NAME = (rf"(?:the|these|those|both|all|either)\s+pass(?:es)?|"
+              rf"coal bank|molas|red mountain|wolf creek|cumbres|"
               rf"lizard head|hesperus|florida road|vallecito road|"
               rf"bayfield parkway|elmore|middle mountain road|"
               rf"missionary ridge road|{_ROUTE}")
@@ -171,11 +185,20 @@ _ROAD_STATE_CLAIM = re.compile(
 # plain verbs ("closes at six", "reopens"). Chain law and traction law are NOT
 # here -- constants.py holds up "expect traction law by morning" as the honest
 # product, and tests/test_passes.py pins that. Those stay hedgeable above.
+# NOT a bare "close". It is the ordinary adjective far more often than a verb
+# in this register -- "the snow line ends up close to 11,000 feet on the
+# passes", "Coal Bank and Molas are close to the freezing line" -- and because
+# this rule is exempt from the hedges, a match is an unrecoverable BLOCK on a
+# snow-line sentence about the passes, which is the product's signature output.
+# The finite forms are what a closure actually reads like, plus the modal
+# forms, which are safe now that this is judged per clause.
 _CLOSURE_STATE = (
     r"(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|"
     r"remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?"
-    r"(?:closed|open|shut)\b|\bclos(?:e|es|ing|ed)\b|\breopen(?:s|ed|ing)?\b|"
-    r"\bshuts?\b)")
+    r"(?:closed|open|shut)\b"
+    r"|\b(?:will|would|may|might|could|should|gonna)\s+(?:be\s+)?"
+    r"(?:close|shut|reopen)\b"
+    r"|\bclos(?:es|ing|ed)\b|\breopen(?:s|ed|ing)?\b|\bshuts?\b)")
 
 CLOSURE_CLAIMS = [
     (rf"\b(?:{_ROAD_NAME}|{_ROAD_NOUN})\b[^.\n]{{0,50}}{_CLOSURE_STATE}",
@@ -186,37 +209,45 @@ CLOSURE_CLAIMS = [
 ]
 
 
-# Hedges, in two tiers, because they are not all the same thing.
+# ONLY A MODAL HEDGES. system.md lists "should", "I'd expect" and "looks like
+# it'll" as the required repairs, so all three have to count or the gate
+# contradicts the prompt.
 #
-# A MODAL turns the clause into a forecast outright. system.md lists "should",
-# "I'd expect" and "looks like it'll" as the required repairs, so all three
-# have to count or the gate contradicts the prompt.
+# A time window used to hedge as well, and it was wrong twice over. It says
+# WHEN, never WHETHER: "The passes are dry through the morning" asserts that
+# they are dry right now, and a reader can drive up and disprove it, which is
+# the persona's own test. An earlier cut of this tried to keep the time tier
+# and exempt clauses carrying a present indicative, but the verbless forms this
+# whole rule exists to catch never carry one -- so "Dry roads all day" and "Wet
+# pavement through the morning" sailed through while "Roads are wet tonight"
+# blocked. A time window now hedges nothing at all, which is simpler and
+# stricter, and the corpus stays clean because the copy that needs a hedge
+# already carries a modal.
 _MODAL_HEDGE = re.compile(
     r"\b(?:should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|expected|"
     r"likely|probably|could|may|might|if|watch for|look for|plan (?:on|for)|"
     r"forecast)\b", re.IGNORECASE)
 
-# A TIME WINDOW only says when, and on its own it does not make a present
-# indicative into a forecast. "The passes are dry through the morning" asserts
-# that they are dry, right now, and a reader can drive up and disprove it --
-# which is the persona's test. Treating "through the morning" as a hedge
-# outright is a hole: the flat patterns have always blocked that sentence, and
-# running them through an undifferentiated hedge list would have opened it.
-# "should be dry through the morning" is still fine, on the modal.
-_TIME_HEDGE = re.compile(
-    r"\b(?:by (?:mid|late|early|noon|dark|the|\d)|tonight|tomorrow|later|until|"
-    r"through (?:the )?(?:morning|afternoon|evening|day|night|weekend|school run)|"
-    r"this (?:afternoon|evening)|all day)\b", re.IGNORECASE)
-
-_PRESENT_INDICATIVE = re.compile(r"(?:\b(?:is|are|'s|re)|\w's)\b", re.IGNORECASE)
+# A clause with no finite verb is not a claim of its own -- it is the second
+# half of a coordination, and it inherits the hedge that governs the first.
+# _CLAUSE_SPLIT breaks on a bare "and", which also splits coordinated noun
+# phrases and strips the modal off the back one: "I'd expect wet pavement in
+# town and icy roads on the 550" left "icy roads on the 550" to be judged
+# alone, and blocked the phrasing compose.py prescribes.
+_FINITE_VERB = re.compile(
+    r"(?:\b(?:is|are|was|were|be|been|am|has|have|had|do|does|did|"
+    r"looks?|stays?|runs?|sits?|remains?|gets?|turns?|picks?|comes?|go(?:es)?|"
+    r"see|sees|expect|expects|will|would|should|could|may|might|can|"
+    r"clos(?:es|ing|ed)|reopens?)\b|\w's\b)", re.IGNORECASE)
 
 
-def _clause_is_hedged(clause):
+def _clause_is_hedged(clause, previous_hedged=False):
     """Is this clause a forecast rather than a report?"""
     if _MODAL_HEDGE.search(clause):
         return True
-    return bool(_TIME_HEDGE.search(clause)
-                and not _PRESENT_INDICATIVE.search(clause))
+    if not _FINITE_VERB.search(clause):
+        return previous_hedged
+    return False
 
 # A sentence that opens conditionally hedges every clause in it, including the
 # ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is
@@ -234,9 +265,14 @@ _CONDITIONAL_OPEN = re.compile(r"^(?:if|when|once|unless|should)\b", re.IGNORECA
 # The distinction is the subject of the conditional -- a person, or the
 # weather. "we" is deliberately absent: the persona writes "If we do see rain
 # it'd be brief," which is forecast-contingent, not an address to anybody.
+# The opener list matches _CONDITIONAL_OPEN exactly, "should" included:
+# "Should you be heading over Molas, it's closed" is the inverted conditional
+# and is every bit as reader-addressed as "If you are". Leaving it out here
+# while _CONDITIONAL_OPEN accepted it meant that one form was exempt.
 _READER_ADDRESSED = re.compile(
-    r"^(?:if|when|once|unless)\s+(?:you|your|you're|youre|ya|anyone|anybody|"
-    r"someone|somebody|folks|people|drivers?|kids|the kids)\b", re.IGNORECASE)
+    r"^(?:if|when|once|unless|should)\s+(?:you|your|you're|youre|ya|anyone|"
+    r"anybody|someone|somebody|folks|people|drivers?|kids|the kids)\b",
+    re.IGNORECASE)
 
 
 # "if" is also in the modal tier, for the trailing form ("the 550 is icy if
@@ -245,7 +281,8 @@ _READER_ADDRESSED = re.compile(
 # pass is icy" is one clause and contains an "if". So the opener is dropped
 # before the clause is judged. What is left, "you're running the 550 this
 # morning, the pass is icy", is the claim actually being made.
-_LEADING_CONDITIONAL = re.compile(r"^(?:if|when|once|unless)\s+", re.IGNORECASE)
+_LEADING_CONDITIONAL = re.compile(r"^(?:if|when|once|unless|should)\s+",
+                                  re.IGNORECASE)
 
 
 def _sentence_is_conditional(sentence):
@@ -277,33 +314,53 @@ def road_status_claim(text):
     clause, so a "should" in one half of a sentence cannot launder "the 501 is
     fine" in the other.
 
-    CLOSURE_CLAIMS is the exception: the hedge tiers do not apply to it, though
-    a weather-contingent conditional opener still does. Surface is weather and
-    is ours to forecast; a gate being down is CDOT's decision and is not ours
-    to predict at all.
+    CLOSURE_CLAIMS is the exception: the hedge does not apply to it, though a
+    weather-contingent conditional opener still does. Surface is weather and is
+    ours to forecast; a gate being down is CDOT's decision and is not ours to
+    predict at all. It is still judged per clause -- matching it against the
+    whole sentence let a road at one end reach a closure word at the other,
+    which is how "Molas and Coal Bank both pick up snow, and the districts may
+    close" became a road claim.
+
+    A newline ends a sentence here as surely as a period does. Collapsing them
+    into spaces merged an unpunctuated line into the next one, so a single
+    conditional opener exempted both, and it made the `\\n` in every `[^.\\n]`
+    class inert.
     """
-    for sentence in _SENTENCE_SPLIT.split((text or "").replace("\n", " ")):
-        sentence = sentence.strip()
-        if not sentence:
-            continue
-        if _sentence_is_conditional(sentence):
-            continue
-        body = _claim_body(sentence)
-        # Ahead of the hedge tiers, which do not apply to it: see CLOSURE_CLAIMS.
-        for pattern, why in CLOSURE_CLAIMS:
-            if re.search(pattern, body, re.IGNORECASE):
-                return sentence, why
-        for clause in _CLAUSE_SPLIT.split(body):
-            if not clause or _clause_is_hedged(clause):
+    for line in (text or "").splitlines():
+        for sentence in _SENTENCE_SPLIT.split(line):
+            sentence = sentence.strip()
+            if not sentence:
                 continue
-            for pattern, why in ROAD_STATUS_CLAIMS:
-                if re.search(pattern, clause, re.IGNORECASE):
-                    return sentence, why
-            if (_ROAD_NOUN_CLAIM.search(clause)
-                    or _ROAD_TELEGRAPHIC_CLAIM.search(clause)
-                    or _ROAD_STATE_CLAIM.search(clause)):
-                return sentence, "states a present-tense road surface condition"
+            if _sentence_is_conditional(sentence):
+                continue
+            found = _claim_in_sentence(sentence)
+            if found:
+                return sentence, found
     return None, None
+
+
+def _claim_in_sentence(sentence):
+    """The reason this sentence is a road-status claim, or None."""
+    hedged = False
+    for clause in _CLAUSE_SPLIT.split(_claim_body(sentence)):
+        if not clause:
+            continue
+        # Ahead of the hedge, which does not apply to it: see CLOSURE_CLAIMS.
+        for pattern, why in CLOSURE_CLAIMS:
+            if re.search(pattern, clause, re.IGNORECASE):
+                return why
+        hedged = _clause_is_hedged(clause, previous_hedged=hedged)
+        if hedged:
+            continue
+        for pattern, why in ROAD_STATUS_CLAIMS:
+            if re.search(pattern, clause, re.IGNORECASE):
+                return why
+        if (_ROAD_NOUN_CLAIM.search(clause)
+                or _ROAD_TELEGRAPHIC_CLAIM.search(clause)
+                or _ROAD_STATE_CLAIM.search(clause)):
+            return "states a present-tense road surface condition"
+    return None
 
 
 # A reading attributed to the gauge or the snow stake at the house.
