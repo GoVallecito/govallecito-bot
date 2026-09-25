@@ -58,10 +58,10 @@ def build(days=5, want_model_spread=True, calibration_offset_ft=0.0,
         # it ran on a Sunday and the post opened by fumbling for a reason to
         # exist. The composer now knows what kind of day it is writing into.
         "day_type": C.day_type(target),
-        # A post landing at 7:40 must not pretend it arrived at 5:45. Lateness
-        # is measured against the window the run is actually IN, not against
-        # the morning target: a 6pm run composing tomorrow's post is on time
-        # for the evening slot, and an earlier version called it late.
+        # A post landing at 7:40 must not pretend it arrived at 5:45. Only the
+        # school call has a time to miss, so only the morning window is
+        # measured: an evening run composing tomorrow's post is early, not
+        # late, and an earlier version called it late. See _is_late().
         "is_late": _is_late(now.hour),
         "composed_hour": now.hour,
         # What the last few posts opened and closed with. Three drafts in a row
@@ -167,11 +167,23 @@ def build(days=5, want_model_spread=True, calibration_offset_ft=0.0,
 
 
 def _is_late(hour):
-    """True only when the run is inside a posting window, past its start."""
-    for lo, hi in C.SLOT_WINDOWS.values():
-        if lo <= hour < hi:
-            return hour > lo
-    return False
+    """True when a school call is going out past the hour it can still keep.
+
+    Lateness belongs to the school call and to nothing else. 5:45am is the
+    promise, and C.LATE_AFTER_HOUR is the point a post stops being able to
+    pretend it kept it. The evening look has no published time to miss, so it
+    is never late.
+
+    THE BUG THIS FIXES: the old version scanned EVERY window and returned
+    `hour > its start`, so any run at 20:00-21:59 was "late" for the evening
+    window. On 2026-09-25 a school call composed at 21:56 for the next morning
+    was handed RUNNING LATE and opened "Late start this morning." It was
+    neither late nor morning: it was four hours early for a post that had not
+    gone out yet. C.LATE_AFTER_HOUR has documented the real threshold since it
+    was written, and nothing read it.
+    """
+    lo, hi = C.SCHOOL_CALL_WINDOW
+    return lo <= hour < hi and hour >= C.LATE_AFTER_HOUR
 
 
 def _recent_post_shapes(n=6):

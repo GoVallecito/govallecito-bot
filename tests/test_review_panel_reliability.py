@@ -274,6 +274,22 @@ def test_every_role_is_told_to_escape_quotes(who):
     assert '\\"' in ALL_THREE[who]
 
 
+@pytest.mark.parametrize("who", list(ALL_THREE))
+def test_no_role_may_read_composed_at_as_evidence_about_the_stamp(who):
+    """2026-09-25: the fact checker and the magistrate both called a correct
+    5:52am stamp fabricated "when composed at 9:56pm", and the magistrate
+    rejected a sound post partly on that. The old rule said only "never flag
+    it as fabricated" without saying where the clock time comes from, so the
+    reasoning had nothing to run into.
+    """
+    rule = [ln for ln in ALL_THREE[who].splitlines() if ln.startswith("2. THE STAMP")]
+    assert len(rule) == 1
+    rule = rule[0]
+    assert "COMPOSED AT is NOT evidence" in rule
+    assert "evening run writes the next morning's post" in rule
+    assert "fabricated" in rule
+
+
 # --- 3. the gauge reading nobody entered ------------------------------------------
 
 def test_the_persona_no_longer_offers_a_bare_gauge_number_as_the_model_detail():

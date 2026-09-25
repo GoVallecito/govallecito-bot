@@ -17,6 +17,7 @@ The LLM call is injected rather than hardcoded so the whole pipeline is
 testable offline and so swapping providers later touches one function.
 """
 
+import datetime as _dt
 import json
 import os
 
@@ -30,6 +31,48 @@ def load_system_prompt():
         return fh.read()
 
 
+# The publication time each slot is stamped for. Only stated where it is
+# actually known: 5:45am is the school call's promise, the same figure the TASK
+# line below hands the writer, so both read it from here and cannot drift. For
+# any other slot the brief says what the stamp time is NOT, which is what the
+# reviewers were missing, rather than inventing a clock nobody has agreed on.
+_PUBLISH_TIME = {"school_call": "5:45am"}
+
+
+def _clock(iso):
+    """'2026-09-25T07:40:00-06:00' -> '7:40am'. None if it will not parse."""
+    try:
+        t = _dt.datetime.fromisoformat(iso)
+    except (TypeError, ValueError):
+        return None
+    return f"{t.hour % 12 or 12}:{t.minute:02d}{'am' if t.hour < 12 else 'pm'}"
+
+
+def _stamp_time_lines(bundle, post_type):
+    """What the stamp's clock time IS, stated rather than left to be derived.
+
+    Two cases that want opposite answers. A run that is late goes out when it
+    finishes, so its stamp carries roughly the time it is writing; handing it
+    5:45am would be the exact pretence RUNNING LATE exists to prevent, the post
+    claiming the time it missed in the same breath as admitting it missed it.
+    Every other run goes out at its slot's published time, which for the school
+    call is 5:45am and for anything else is not a figure anyone has agreed on.
+
+    In all three cases the brief states the answer outright. Telling the model
+    how to work the time out would put COMPOSED AT back in play, and the review
+    panel is told COMPOSED AT is never evidence about the stamp.
+    """
+    if bundle.get("is_late"):
+        now = _clock(bundle.get("generated_at"))
+        tail = f"is {now}" if now else "is the time it finishes"
+        return ["  -> This run is late, so the post goes out as it finishes and",
+                f"     the stamp's clock time {tail}, not the usual time."]
+    when = _PUBLISH_TIME.get(post_type)
+    hint = f", about {when}" if when else ""
+    return [f"  -> The stamp's clock time is when the post GOES OUT{hint},",
+            "     not when you are writing. It is never the COMPOSED AT time below."]
+
+
 def render_bundle(bundle, post_type="school_call"):
     """Turn the bundle into the compact brief the model actually reads."""
     L = []
@@ -40,8 +83,19 @@ def render_bundle(bundle, post_type="school_call"):
       f"{bundle.get('post_for_date')}")
     A(f"  -> Open with the stamp {bundle.get('post_for_stamp')} and, if you name")
     A(f"     the day, it is {bundle.get('post_for_weekday')}. Use no other weekday.")
+    # The clock time in the stamp had nowhere to come from. The brief handed
+    # over the DATE and stopped, so the model invented a time and the review
+    # panel, reading the same brief, had nothing to check it against -- and
+    # reached for COMPOSED AT, which sits two lines below. On 2026-09-25 both
+    # the fact checker and the magistrate called a correct 5:52am stamp
+    # "fabricated (claims 5:52am when composed at 9:56pm)", and the magistrate
+    # rejected the post partly on that. Same failure as the road block: an
+    # absence that is merely implied gets filled in.
+    for line in _stamp_time_lines(bundle, post_type):
+        A(line)
     A(f"COMPOSED AT: {bundle.get('generated_at')} (this is NOT necessarily the")
-    A(f"  date the post is for, an evening run writes tomorrow's post)")
+    A("  date OR the time the post is for. An evening run writes tomorrow's")
+    A("  post, and the stamp above is the one to use.)")
     A(f"SEASON: {bundle.get('season')}")
     A(f"DAY TYPE: {bundle.get('day_type')} (approximate calendar, hedge it)")
     if bundle.get("day_type") != "school day" and post_type == "school_call":
@@ -49,10 +103,16 @@ def render_bundle(bundle, post_type="school_call"):
         A("     a district decision, or the drive in. Write the same forecast")
         A("     for whoever is actually out today: the drive to town, the boat")
         A("     ramp, hunting camp, the trail, the yard work window.")
-    if bundle.get("is_late"):
+    # Only the school call has a publication time to miss, and only it can say
+    # "this morning" about the post it is in. The gate is here as well as in
+    # bundle._is_late() because the wording below is morning-specific: an
+    # evening look must never carry it, however is_late was arrived at.
+    if bundle.get("is_late") and post_type == "school_call":
         A(f"RUNNING LATE: composed at hour {bundle.get('composed_hour')}, past the")
-        A("  5am target. Say so plainly in the first line, one short clause, no")
-        A("  apology and no explanation. 'Late start this morning,' and move on.")
+        A(f"  {_PUBLISH_TIME['school_call']} promise. Say so plainly in the first"
+          " line, one short")
+        A("  clause, no apology and no explanation, then move on. Write that")
+        A("  clause fresh; do not reuse the wording a previous late post used.")
     A("")
 
     # Anti-repetition. Three consecutive drafts opened "Morning, its <day>."
@@ -353,7 +413,8 @@ def build_messages(bundle, post_type="school_call", recent_posts=None,
 
     task = {
         "school_call": (
-            "Write the morning school call. It publishes at 5:45am and the "
+            f"Write the morning school call. It publishes at "
+            f"{_PUBLISH_TIME['school_call']} and the "
             "districts decide by 6:30, so lead with what a parent driving the "
             "501 or the 240 needs. Give the snow line in feet. Walk the bands "
             "in order. Say plainly which routes the weather puts in question "
