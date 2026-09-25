@@ -242,6 +242,36 @@ for (const [label, text] of [
   });
 }
 
+// Round five.
+for (const [label, text] of [
+  ['close-to-amount', 'That adds up to close to a foot on Red Mountain by morning.'],
+  ['close-to-two-feet', 'Up to close to two feet on Wolf Creek.'],
+  // A trailing subordinator scopes backwards, unlike a modal.
+  ['trailing-if', 'The 550 is icy if that band sets up.'],
+  ['trailing-unless', 'Molas is slick unless the sun gets it.'],
+]) {
+  test(`${label} is not a road-status claim`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, []);
+    assert.equal(r.code, 0);
+  });
+}
+
+for (const [label, text] of [
+  ['expect-to-close', 'They expect to close the 550 overnight.'],
+  ['reverse-order', 'All clear on Red Mountain this morning.'],
+  ['reverse-order2', 'All clear over Molas and Coal Bank.'],
+  ['adj-preposition', 'Red Mountain bare to the top.'],
+  ['gets-icy', 'The passes get icy.'],
+  ['gets-icy2', 'The 550 gets icy.'],
+]) {
+  test(`${label} is caught`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, ['road-status']);
+    assert.equal(r.code, 1);
+  });
+}
+
 test('a traction law forecast is still allowed', () => {
   // constants.py holds "expect traction law by morning" up as the product: it
   // is a consequence of weather we have, unlike a gate coming down.

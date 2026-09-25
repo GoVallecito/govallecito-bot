@@ -750,3 +750,60 @@ def test_a_forecast_consequence_is_not_a_present_claim():
                "Enough rain to leave the 550 wet tonight."]:
         assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
     assert G.road_status_claim("Red Mountain all clear this morning.")[0]
+
+
+# --- the fifth review round ----------------------------------------------
+
+def test_close_to_an_amount_is_not_a_closure():
+    """An allowlist of what may follow "close to" kept letting a shape through.
+
+    "close to" is the adjective nearly every time this persona writes it, so
+    the infinitive is licensed by the verb IN FRONT of it instead.
+    """
+    for ok in ["That adds up to close to a foot on Red Mountain by morning.",
+               "Up to close to two feet on Wolf Creek.",
+               "Models get to close to a foot up top.",
+               "The snow line drops down to close to 11,000 feet on the passes."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+    for claim in ["Molas is set to close this afternoon.",
+                  "They expect to close the 550 overnight.",
+                  "CDOT is going to close Molas at noon.",
+                  "Red Mountain is set to close to traffic at six."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+
+
+def test_a_trailing_conditional_scopes_backwards():
+    """The one thing that does, unlike a modal.
+
+    "if" is in _MODAL_HEDGE precisely for "the 550 is icy if that band sets
+    up", and judging the hedge only over the text before the match lost it.
+    """
+    for ok in ["The 550 is icy if that band sets up.",
+               "Molas is slick unless the sun gets it."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+    # A trailing modal still does not reach backwards.
+    assert G.road_status_claim("Roads are wet and it should dry out by noon.")[0]
+
+
+def test_the_surface_word_may_come_first():
+    """"All clear over Molas" -- reverse order, lost with the deleted copy."""
+    for claim in ["All clear on Red Mountain this morning.",
+                  "All clear over Molas and Coal Bank.",
+                  "Both dry over the passes."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+
+
+def test_an_adjective_before_a_preposition_still_ends_the_claim():
+    """"Red Mountain bare to the top" reports; "fine gravel" modifies a noun."""
+    for claim in ["Red Mountain bare to the top.",
+                  "Coal Bank icy above the switchbacks."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+    assert G.road_status_claim(
+        "Vallecito Road, fine gravel past the turn.")[0] is None
+
+
+def test_the_state_verbs_match_the_pass_lookahead():
+    """`gets?` was added to the lookahead and the lint but not to the claim."""
+    for claim in ["The passes get icy.", "The 550 gets icy.",
+                  "The passes turn slick."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"

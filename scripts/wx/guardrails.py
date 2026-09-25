@@ -176,8 +176,16 @@ _ROAD_TELEGRAPHIC_CLAIM = re.compile(
     rf"\b(?:{_ROAD_NOUN}|coal bank|molas|red mountain|wolf creek)\b"
     rf"{_GAP}{{0,30}}?\s(?:all\s+|both\s+)?(?:{_SURFACE})\s*"
     rf"(?=[,.;:!?]|\s+(?:and|but)\b"
-    rf"|\s+(?:this morning|right now|today|so far|out there|up there)\b|$)",
+    rf"|\s+(?:this morning|right now|today|so far|out there|up there)\b"
+    rf"|\s+(?:to|above|over|past|below|down|up)\b|$)",
     re.IGNORECASE)
+
+# "All clear over Molas and Coal Bank" -- the surface word first. The deleted
+# duplicate rule set covered this and none of the named patterns did, so it
+# went missing entirely when that copy came out.
+_ROAD_REVERSE_CLAIM = re.compile(
+    rf"\b(?:all|both)\s+(?:clear|dry|open|passable)\b{_GAP}{{0,60}}"
+    rf"\b(?:{_ROAD_NAME}|{_ROAD_NOUN})\b", re.IGNORECASE)
 
 # "the 501 is fine", "Molas stays clear", "the passes are getting wet pavement".
 # "getting" is here because the brief used to ask for it in as many words.
@@ -188,7 +196,7 @@ _ROAD_TELEGRAPHIC_CLAIM = re.compile(
 # are both dry" -- the scan simply starts again at the second one.
 _ROAD_STATE_CLAIM = re.compile(
     rf"\b(?:{_ROAD_NAME}|{_ROAD_NOUN})\b{_GAP}{{0,50}}?"
-    rf"(?:\b(?:is|are|'s|re|remains?|sits?|stays?|looks?|runs?|"
+    rf"(?:\b(?:is|are|'s|re|remains?|sits?|stays?|looks?|runs?|gets?|turns?|"
     rf"(?:is|are)\s+getting)|\w's)\s+"
     rf"(?:still\s+|both\s+|all\s+|already\s+|completely\s+|currently\s+)?"
     rf"(?:{_SURFACE})\b", re.IGNORECASE)
@@ -236,13 +244,14 @@ _CLOSURE_STATE = (
     r"remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?"
     r"(?:closed|open|shut)\b"
     r"|\b(?:will|would|may|might|could|should|gonna)\s+(?:close|shut|reopen)\b"
-    # "is set to close", "going to close" -- the infinitive, which dropping the
-    # bare alternative had also dropped. "to close to A NUMBER" is the
-    # adjective again ("the snow line drops down to close to 11,000 feet"), but
-    # "set to close to traffic" is a real closure, so the exclusion names the
-    # numeric and freezing-point contexts rather than every following "to".
-    r"|\bto\s+(?:close\b(?!\s+out\b)(?!\s+to\s+(?:\d|about|around|roughly|"
-    r"freezing|the\s+freezing))|shut|reopen)\b"
+    # The infinitive, licensed by the verb IN FRONT of it rather than by a list
+    # of what may follow. "close to" is the adjective nearly every time it
+    # appears here -- "drops down to close to 11,000 feet", "adds up to close
+    # to a foot" -- and an allowlist of following words kept letting one shape
+    # or another through. "set to close", "going to close" is what a closure
+    # actually reads like, and "set to close to traffic" still matches.
+    r"|\b(?:set|going|expects?|expected|due|scheduled|slated|plans?|planning)"
+    r"\s+to\s+(?:close\b(?!\s+out\b)|shut|reopen)\b"
     rf"|\bclos(?:es|ing|ed)\b(?!\s+out\b)|\breopen(?:s|ed|ing)?\b|\bshuts?\b)")
 
 CLOSURE_CLAIMS = [
@@ -297,7 +306,13 @@ def _hedged_at(clause, end):
     usually sits inside the claim it governs: "Coal Bank should stay dry" is
     one _ROAD_STATE_CLAIM match with the "should" in the middle of it.
     """
-    return bool(_MODAL_HEDGE.search(clause[:end]))
+    if _MODAL_HEDGE.search(clause[:end]):
+        return True
+    # A trailing subordinator is the one thing that does scope backwards: "the
+    # 550 is icy if that band sets up" is conditional on the band, and "if" is
+    # in _MODAL_HEDGE precisely for that form. Only the unambiguous
+    # conditionals -- a trailing "when" is as often temporal as conditional.
+    return bool(re.search(r"\b(?:if|unless)\b", clause[end:], re.IGNORECASE))
 
 # A sentence that opens conditionally hedges every clause in it, including the
 # ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is
@@ -415,7 +430,8 @@ def _claim_in_sentence(sentence):
             for m in re.finditer(pattern, clause, re.IGNORECASE):
                 if not _hedged_at(clause, m.end()):
                     return why
-        for rx in (_ROAD_NOUN_CLAIM, _ROAD_TELEGRAPHIC_CLAIM, _ROAD_STATE_CLAIM):
+        for rx in (_ROAD_NOUN_CLAIM, _ROAD_TELEGRAPHIC_CLAIM, _ROAD_STATE_CLAIM,
+               _ROAD_REVERSE_CLAIM):
             for m in rx.finditer(clause):
                 if not _hedged_at(clause, m.end()):
                     return "states a present-tense road surface condition"

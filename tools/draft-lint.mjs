@@ -65,7 +65,7 @@ const ROUTE_NUMBER = /(?<![\d,])\b(?:550|160|172|240|500|501)\b(?!\s*(?:cfs|ft|f
 // so "Snow piles up on Red Mountain and the window is clear" failed.
 const ROAD_TOKEN = `(?:${PASS_NOUN.source}|${ROUTE_NUMBER.source}|\\b(?:${ROADS.map(r => r.replace(/[-]/g, '\\-')).join('|')})\\b|\\b(?:roads?|pavement|highways?|blacktop)\\b)`;
 const GAP = '(?:(?!\\s+and\\s+)[^.\\n])';
-const ROAD_STATE = /(?:\b(?:is|are|'s|re|remain|remains|sit|sits|stay|stays|look|looks|run|runs|get|gets|(?:is|are)\s+getting)|\w's)\s+(?:still\s+|both\s+|all\s+|already\s+|completely\s+|currently\s+)?(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\b/i;
+const ROAD_STATE = /(?:\b(?:is|are|'s|re|remain|remains|sit|sits|stay|stays|look|looks|run|runs|get|gets|turn|turns|(?:is|are)\s+getting)|\w's)\s+(?:still\s+|both\s+|all\s+|already\s+|completely\s+|currently\s+)?(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\b/i;
 const ROAD_STATE_CLAIM = new RegExp(`${ROAD_TOKEN}${GAP}{0,50}?${ROAD_STATE.source}`, 'i');
 // A surface claim with no verb at all: "clear roads and dry pavement."
 //
@@ -73,6 +73,9 @@ const ROAD_STATE_CLAIM = new RegExp(`${ROAD_TOKEN}${GAP}{0,50}?${ROAD_STATE.sour
 // and "enough to wet pavement for the evening commute" forecasts what the rain
 // will do rather than reporting what the road is. An infinitive is never a
 // present-tense claim. 2026-09-22 failed on that sentence.
+// "All clear over Molas and Coal Bank" -- surface word first. The duplicate
+// rule set guardrails deleted covered this and nothing else did.
+const ROAD_REVERSE = new RegExp(`\\b(?:all|both)\\s+(?:clear|dry|open|passable)\\b${GAP}{0,60}\\b(?:${ROADS.map(r => r.replace(/[-]/g, '\\-')).join('|')}|roads?|pavement|highways?|blacktop)\\b`, 'i');
 const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?|blacktop)\b/i;
 // The telegraphic form, noun then adjective, copula dropped. system.md forbids
 // "Roads wet, no ice." BY NAME and this file did not catch it -- guardrails
@@ -88,7 +91,7 @@ const SURFACE = 'dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare
 // to make the 240 and the upper 501 slick this evening" is a forecast, and
 // including them re-broke 2026-09-22. The trailing time words are present ones
 // only, for the same reason -- in a 5:45am post "this evening" is a forecast.
-const ROAD_TELEGRAPHIC_SRC = `\\b(?:roads?|pavement|highways?|blacktop|coal bank|molas|red mountain|wolf creek)\\b${GAP}{0,30}?\\s(?:all\\s+|both\\s+)?(?:${SURFACE})\\s*(?=[,.;:!?]|\\s+(?:and|but)\\b|\\s+(?:this morning|right now|today|so far|out there|up there)\\b|$)`;
+const ROAD_TELEGRAPHIC_SRC = `\\b(?:roads?|pavement|highways?|blacktop|coal bank|molas|red mountain|wolf creek)\\b${GAP}{0,30}?\\s(?:all\\s+|both\\s+)?(?:${SURFACE})\\s*(?=[,.;:!?]|\\s+(?:and|but)\\b|\\s+(?:this morning|right now|today|so far|out there|up there)\\b|\\s+(?:to|above|over|past|below|down|up)\\b|$)`;
 const ROAD_TELEGRAPHIC = new RegExp(ROAD_TELEGRAPHIC_SRC, 'i');
 // A CLOSURE is not hedgeable: it is the one road claim the hedges below do not
 // apply to. The conditional opener still exempts it. A surface forecast is a weather
@@ -107,7 +110,7 @@ const ROAD_TELEGRAPHIC = new RegExp(ROAD_TELEGRAPHIC_SRC, 'i');
 // the copula branch already has `be` and `closed`. "close out"/"closing out" is
 // weather, not a road. The `to close` branch keeps the infinitive that dropping
 // the bare alternative had also dropped ("is set to close", "going to close").
-const CLOSURE = /(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?(?:closed|open|shut)\b|\b(?:will|would|may|might|could|should|gonna)\s+(?:close|shut|reopen)\b|\bto\s+(?:close\b(?!\s+out\b)(?!\s+to\s+(?:\d|about|around|roughly|freezing|the\s+freezing))|shut|reopen)\b|\bclos(?:es|ing|ed)\b(?!\s+out\b)|\breopen(?:s|ed|ing)?\b|\bshuts?\b)/i;
+const CLOSURE = /(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?(?:closed|open|shut)\b|\b(?:will|would|may|might|could|should|gonna)\s+(?:close|shut|reopen)\b|\b(?:set|going|expects?|expected|due|scheduled|slated|plans?|planning)\s+to\s+(?:close\b(?!\s+out\b)|shut|reopen)\b|\bclos(?:es|ing|ed)\b(?!\s+out\b)|\breopen(?:s|ed|ing)?\b|\bshuts?\b)/i;
 
 // Hedges, in two tiers, because they are not all the same thing.
 //
@@ -129,12 +132,6 @@ const MODAL_HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|ex
 // breaks on a bare "and", which also splits coordinated noun phrases and
 // strips the modal off -- "I'd expect wet pavement in town and icy roads on
 // the 550" left "icy roads on the 550" to be judged alone.
-// A modal, and nothing else. Three review rounds went into trying to carry a
-// hedge across a coordination, and every version was wrong: deciding whether a
-// fragment is a second predicate or a second object needs to tell a noun from a
-// verb, and "run", "look", "stay" and "pick" are all both. clauses() no longer
-// splits on a bare "and", so the coordination stays with its modal.
-const hedged = c => MODAL_HEDGE.test(c);
 // A sentence that opens conditionally hedges every clause in it, including the
 // ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is slick."
 const CONDITIONAL_OPEN = /^(?:if|when|once|unless|should)\b/i;
@@ -260,22 +257,30 @@ function lint(raw, dateStr, historyDir) {
   // launder the leading claim, and report-then-advice is the commoner shape.
   // The window runs to the END of the match because the modal usually sits
   // inside the claim it governs ("Coal Bank should stay dry").
+  // Both orders, as guardrails.CLOSURE_CLAIMS has: "Red Mountain is closed"
+  // and "They expect to close the 550 overnight".
   const CLOSURE_G = new RegExp(`${ROAD_TOKEN}${GAP}{0,50}${CLOSURE.source}`, 'i');
+  const CLOSURE_REV = new RegExp(`${CLOSURE.source}${GAP}{0,40}${ROAD_TOKEN}`, 'i');
   const unhedged = (c, rx) => {
     const g = new RegExp(rx.source, rx.flags.includes('g') ? rx.flags : rx.flags + 'g');
-    for (const m of c.matchAll(g))
-      if (!MODAL_HEDGE.test(c.slice(0, m.index + m[0].length))) return true;
+    for (const m of c.matchAll(g)) {
+      const end = m.index + m[0].length;
+      // A trailing subordinator is the one thing that scopes backwards: "the
+      // 550 is icy if that band sets up" is conditional on the band.
+      if (!MODAL_HEDGE.test(c.slice(0, end)) && !/\b(?:if|unless)\b/i.test(c.slice(end)))
+        return true;
+    }
     return false;
   };
   for (const s of S) {
     if (conditional(s)) continue;
     for (const c of clauses(claimBody(s))) {
-      if (CLOSURE_G.test(c)) {
+      if (CLOSURE_G.test(c) || CLOSURE_REV.test(c)) {
         fails.push(['road-status', `Road closure claim with no CDOT data: ${q(s)}`]);
         break;
       }
       if (unhedged(c, ROAD_STATE_CLAIM) || unhedged(c, ROAD_NOUN) ||
-          unhedged(c, ROAD_TELEGRAPHIC)) {
+          unhedged(c, ROAD_TELEGRAPHIC) || unhedged(c, ROAD_REVERSE)) {
         fails.push(['road-status', `Present-tense road condition with no CDOT data: ${q(s)}`]);
         break;
       }
