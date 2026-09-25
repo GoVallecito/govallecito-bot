@@ -207,6 +207,41 @@ test('an uncommaed coordination is a known miss', () => {
   assert.deepEqual(r.fails, []);
 });
 
+// Round four.
+for (const [label, text] of [
+  // A modal governs what FOLLOWS it; report-then-advice is not hedged.
+  ['trailing-modal', 'Roads are wet and it should dry out by noon.'],
+  ['trailing-modal2', 'The 550 is icy this morning and you should leave early.'],
+  // The pass copula list must accept the same verbs ROAD_STATE does.
+  ['passes-run-icy', 'The snowy passes run icy.'],
+  // "to close TO" excludes numbers, not traffic.
+  ['close-to-traffic', 'Red Mountain is set to close to traffic at six.'],
+  // Everything the deleted duplicate rule set uniquely caught.
+  ['all-clear', 'Coal Bank and Molas all clear.'],
+  ['currently', 'The 550 is currently dry.'],
+  ['time-tail', 'Red Mountain all clear this morning.'],
+]) {
+  test(`${label} is caught`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, ['road-status']);
+    assert.equal(r.code, 1);
+  });
+}
+
+for (const [label, text] of [
+  // A proximity window may not cross a coordination: the subject changes.
+  ['closure-across-and', 'Molas and Coal Bank both pick up snow and the districts may close.'],
+  ['surface-across-and', 'The front moves through Wolf Creek and the ski area is open.'],
+  ['proximity', 'Snow piles up on Red Mountain and the window is clear.'],
+  ['proximity2', 'Molas and Coal Bank pick up a few inches and the valley stays dry.'],
+]) {
+  test(`${label} is not a road-status claim`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, []);
+    assert.equal(r.code, 0);
+  });
+}
+
 test('a traction law forecast is still allowed', () => {
   // constants.py holds "expect traction law by morning" up as the product: it
   // is a consequence of weather we have, unlike a gate coming down.

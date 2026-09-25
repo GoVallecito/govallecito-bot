@@ -660,3 +660,93 @@ def test_the_infinitive_closure_survived_dropping_the_bare_form():
     # "close out" is weather, not a road.
     assert G.road_status_claim(
         "The front moves over the passes, closing out the showers.")[0] is None
+
+
+# --- the fourth review round ---------------------------------------------
+
+def test_a_modal_governs_what_follows_it_not_what_precedes_it():
+    """Report-then-advice was being laundered by the trailing modal.
+
+    Asking the hedge per clause meant "Roads are wet and it should dry out by
+    noon" counted as hedged. It is not: the claim is stated flat and the advice
+    comes after. This shape is commoner than modal-first, and it was un-gated
+    in both gates.
+    """
+    for claim in ["Roads are wet and it should dry out by noon.",
+                  "The 550 is icy this morning and you should leave early.",
+                  "The passes are dry and we will see rain later.",
+                  "Dry roads for the bus run and I would not expect that to "
+                  "change."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+    # Modal first still governs both halves of a coordination.
+    for ok in ["I'd expect wet pavement in town and icy roads for the bus run.",
+               "Coal Bank should stay dry through the morning."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+
+
+def test_a_proximity_window_may_not_cross_a_coordination():
+    """The subject changes at the "and", so the state is not the road's.
+
+    Both of these were unrecoverable BLOCKs -- the second is the sentence
+    road_status_claim's own docstring cites as the reason closures are judged
+    per clause.
+    """
+    for ok in ["The front moves through Wolf Creek and the ski area is open.",
+               "Molas and Coal Bank both pick up snow and the districts may "
+               "close.",
+               "Snow piles up on Red Mountain and the window is clear.",
+               "Molas and Coal Bank pick up a few inches and the valley stays "
+               "dry."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+    # Where the coordination really is two roads, the scan restarts at the
+    # second one.
+    assert G.road_status_claim(
+        "The 501 and the 240 are both dry for the school run.")[0]
+
+
+def test_there_is_only_one_set_of_surface_rules():
+    """ROAD_STATUS_CLAIMS carried a second copy, written before the named ones.
+
+    It had unbounded windows, a bare `passes` that also matched the verb, and
+    its own ad-hoc hedging, and it was what actually fired on "Snow piles up on
+    Red Mountain and the window is clear". Four rounds of fixing the named
+    patterns never touched it because nothing said there were two sets.
+    """
+    assert not any("surface" in why for _, why in G.ROAD_STATUS_CLAIMS), (
+        "surface claims belong to the three named patterns only")
+    # Everything the deleted copy uniquely caught is still caught.
+    for claim in ["The passes are dry, Coal Bank, Molas, Red Mountain and "
+                  "Wolf Creek all clear.",
+                  "Coal Bank and Molas all clear.",
+                  "The 550 is currently dry.",
+                  "Red Mountain all clear this morning."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+
+
+def test_the_pass_copula_list_matches_the_state_verbs():
+    """The lookahead omitted verbs _ROAD_STATE_CLAIM accepts."""
+    for claim in ["The snowy passes run icy.", "The high passes sit dry."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+
+
+def test_close_to_traffic_is_still_a_closure():
+    """The "to close TO" guard must name the numeric contexts, not every "to"."""
+    assert G.road_status_claim("Red Mountain is set to close to traffic at six.")[0]
+    for ok in ["The snow line drops down to close to 11,000 feet on the passes.",
+               "Temps get to close to freezing on Red Mountain."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+
+
+def test_a_forecast_consequence_is_not_a_present_claim():
+    """2026-09-22 (issue #32) again, from the other direction.
+
+    Extending the telegraphic rule to route numbers and a bare trailing "this"
+    re-broke the very draft whose lint failure started this work. "enough to
+    make the 240 slick this evening" forecasts what the rain will do, and in a
+    5:45am post "this evening" is a forecast where "this morning" is now.
+    """
+    for ok in ["That's heavy enough to make the 240 and the upper 501 slick "
+               "this evening.",
+               "Enough rain to leave the 550 wet tonight."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+    assert G.road_status_claim("Red Mountain all clear this morning.")[0]

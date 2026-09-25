@@ -42,7 +42,7 @@ const ROADS = [
 // a word of slack plus a list of words only a moving system takes; it read
 // "the front passes" as a road and threw away "The passes over the divide".
 // Mirrors guardrails._ROAD_NAME.
-const PASS_NOUN = /(?:\b(?:the|these|those|both|all|either|our)\s+pass(?:es)?\b|\bpass(?:es)?(?=\s+(?:is|are|'s|was|were|remains?|stays?|looks?)))/i;
+const PASS_NOUN = /(?:\b(?:the|these|those|both|all|either|our)\s+pass(?:es)?\b|\bpass(?:es)?(?=\s+(?:is|are|'s|was|were|remains?|stays?|looks?|runs?|sits?|gets?)))/i;
 // A bare route number, which the list above only caught when it carried its
 // article. The article was there because "the 160 cfs" style numbers bite:
 // this persona writes elevations as "(6,500')" and flows as "running 160 cfs",
@@ -54,7 +54,19 @@ const PASS_NOUN = /(?:\b(?:the|these|those|both|all|either|our)\s+pass(?:es)?\b|
 // possessive -- "The 550's closed this morning" is the most direct closure
 // claim there is. So a quote only excludes when it is not followed by an s.
 const ROUTE_NUMBER = /(?<![\d,])\b(?:550|160|172|240|500|501)\b(?!\s*(?:cfs|ft|feet|af|%|,\d|"|'(?!s\b)))/i;
-const ROAD_STATE = /(?:\b(?:is|are|remain|remains|sit|sits|stay|stays)|\w's)\s+(?:still\s+|both\s+|all\s+|already\s+|completely\s+)?(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\b/i;
+// The bare `'s` matters now that this is composed after a road token: in "The
+// 501's fine" the digit is consumed by the token, so `\w's` has nothing left to
+// anchor on. guardrails._ROAD_STATE_CLAIM has always carried both forms.
+// Every way a clause can name a road, as one token, so a claim can be bounded
+// by distance from it the way guardrails does. The gap may not cross a
+// coordination: "The front moves through Wolf Creek and the ski area is open"
+// changes subject at the "and". This file had NO proximity bound at all --
+// hasRoad and ROAD_STATE were tested independently against the whole clause,
+// so "Snow piles up on Red Mountain and the window is clear" failed.
+const ROAD_TOKEN = `(?:${PASS_NOUN.source}|${ROUTE_NUMBER.source}|\\b(?:${ROADS.map(r => r.replace(/[-]/g, '\\-')).join('|')})\\b|\\b(?:roads?|pavement|highways?|blacktop)\\b)`;
+const GAP = '(?:(?!\\s+and\\s+)[^.\\n])';
+const ROAD_STATE = /(?:\b(?:is|are|'s|re|remain|remains|sit|sits|stay|stays|look|looks|run|runs|get|gets|(?:is|are)\s+getting)|\w's)\s+(?:still\s+|both\s+|all\s+|already\s+|completely\s+|currently\s+)?(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\b/i;
+const ROAD_STATE_CLAIM = new RegExp(`${ROAD_TOKEN}${GAP}{0,50}?${ROAD_STATE.source}`, 'i');
 // A surface claim with no verb at all: "clear roads and dry pavement."
 //
 // The `to` lookbehind: "wet" is a verb at least as often as an adjective here,
@@ -71,7 +83,13 @@ const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|o
 // A coordination ends the claim as surely as punctuation: "roads wet and icy
 // on the 550" states "roads wet" whatever follows. That used to come free from
 // clause splitting on a bare "and", which no longer happens.
-const ROAD_TELEGRAPHIC = /\b(?:roads?|pavement|highways?|blacktop)\s+(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\s*(?=[,.;:!?]|\s+(?:and|but)\b|$)/i;
+const SURFACE = 'dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean';
+// The generic nouns plus the four pass names, NOT route numbers: "heavy enough
+// to make the 240 and the upper 501 slick this evening" is a forecast, and
+// including them re-broke 2026-09-22. The trailing time words are present ones
+// only, for the same reason -- in a 5:45am post "this evening" is a forecast.
+const ROAD_TELEGRAPHIC_SRC = `\\b(?:roads?|pavement|highways?|blacktop|coal bank|molas|red mountain|wolf creek)\\b${GAP}{0,30}?\\s(?:all\\s+|both\\s+)?(?:${SURFACE})\\s*(?=[,.;:!?]|\\s+(?:and|but)\\b|\\s+(?:this morning|right now|today|so far|out there|up there)\\b|$)`;
+const ROAD_TELEGRAPHIC = new RegExp(ROAD_TELEGRAPHIC_SRC, 'i');
 // A CLOSURE is not hedgeable: it is the one road claim the hedges below do not
 // apply to. The conditional opener still exempts it. A surface forecast is a weather
 // claim, so hedging is what makes it honest; whether a gate is down is CDOT's
@@ -89,7 +107,8 @@ const ROAD_TELEGRAPHIC = /\b(?:roads?|pavement|highways?|blacktop)\s+(?:dry|wet|
 // the copula branch already has `be` and `closed`. "close out"/"closing out" is
 // weather, not a road. The `to close` branch keeps the infinitive that dropping
 // the bare alternative had also dropped ("is set to close", "going to close").
-const CLOSURE = /(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?(?:closed|open|shut)\b|\b(?:will|would|may|might|could|should|gonna)\s+(?:close|shut|reopen)\b|\bto\s+(?:close\b(?!\s+(?:out|to)\b)|shut|reopen)\b|\bclos(?:es|ing|ed)\b(?!\s+out\b)|\breopen(?:s|ed|ing)?\b|\bshuts?\b)/i;
+const CLOSURE = /(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?(?:closed|open|shut)\b|\b(?:will|would|may|might|could|should|gonna)\s+(?:close|shut|reopen)\b|\bto\s+(?:close\b(?!\s+out\b)(?!\s+to\s+(?:\d|about|around|roughly|freezing|the\s+freezing))|shut|reopen)\b|\bclos(?:es|ing|ed)\b(?!\s+out\b)|\breopen(?:s|ed|ing)?\b|\bshuts?\b)/i;
+
 // Hedges, in two tiers, because they are not all the same thing.
 //
 // A MODAL turns the clause into a forecast outright. system.md gives "I'd
@@ -230,23 +249,33 @@ function lint(raw, dateStr, historyDir) {
     else if (/\s--\s|\w--\w|\s--\w|\w--\s/.test(s)) fails.push(['em-dash', `Contains "--": ${q(s)}`]);
   }
 
-  // 2. Road and pass conditions. Judged per clause, so a "should" in one half
-  // of a sentence cannot launder "the 501 is fine" in the other. A closure is
-  // checked first and the hedges do not apply to it -- see CLOSURE. A
-  // weather-contingent conditional opener still exempts the whole sentence; a
-  // reader-addressed one exempts nothing.
+  // 2. Road and pass conditions. A closure is checked first and the hedge does
+  // not apply to it -- see CLOSURE. A weather-contingent conditional opener
+  // exempts the whole sentence; a reader-addressed one exempts nothing.
+  //
+  // The hedge is asked PER CLAIM, not per clause, because a modal governs what
+  // FOLLOWS it: "I'd expect wet pavement in town and icy roads for the bus
+  // run" hedges both conjuncts, while "Roads are wet and it should dry out by
+  // noon" hedges neither. Testing the clause as a whole let the trailing modal
+  // launder the leading claim, and report-then-advice is the commoner shape.
+  // The window runs to the END of the match because the modal usually sits
+  // inside the claim it governs ("Coal Bank should stay dry").
+  const CLOSURE_G = new RegExp(`${ROAD_TOKEN}${GAP}{0,50}${CLOSURE.source}`, 'i');
+  const unhedged = (c, rx) => {
+    const g = new RegExp(rx.source, rx.flags.includes('g') ? rx.flags : rx.flags + 'g');
+    for (const m of c.matchAll(g))
+      if (!MODAL_HEDGE.test(c.slice(0, m.index + m[0].length))) return true;
+    return false;
+  };
   for (const s of S) {
     if (conditional(s)) continue;
     for (const c of clauses(claimBody(s))) {
-      const hasRoad = PASS_NOUN.test(c) || ROUTE_NUMBER.test(c) ||
-        ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
-      if (hasRoad && CLOSURE.test(c)) {
+      if (CLOSURE_G.test(c)) {
         fails.push(['road-status', `Road closure claim with no CDOT data: ${q(s)}`]);
         break;
       }
-      if (hedged(c)) continue;
-      if ((hasRoad && ROAD_STATE.test(c)) || ROAD_NOUN.test(c) ||
-          ROAD_TELEGRAPHIC.test(c)) {
+      if (unhedged(c, ROAD_STATE_CLAIM) || unhedged(c, ROAD_NOUN) ||
+          unhedged(c, ROAD_TELEGRAPHIC)) {
         fails.push(['road-status', `Present-tense road condition with no CDOT data: ${q(s)}`]);
         break;
       }

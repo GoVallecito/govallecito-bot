@@ -67,37 +67,21 @@ _ROUTE = (r"(?<![\d,])(?:550|160|172|240|500|501)"
 # behind a sentence like "Red Mountain is closed" -- and a wrong one sends
 # somebody on a three-hour detour or at a pass that is actually shut. Allowed
 # only when live roads data is present in the bundle.
-# Open/closed lives in CLOSURE_CLAIMS below, which is not hedgeable. What
-# remains here is judged per clause and yields to a forecast.
+# Open/closed lives in CLOSURE_CLAIMS below, which is not hedgeable. Surface
+# claims live in the three named patterns below it. What remains here is the
+# handful that are neither.
+#
+# This list used to carry surface patterns of its own as well, a second copy
+# written before the named ones existed. They had unbounded windows, a bare
+# `passes` that also matched the verb, and their own ad-hoc hedging by negative
+# lookahead, and they were what actually fired on "Snow piles up on Red
+# Mountain and the window is clear" -- four review rounds of fixing the named
+# patterns never touched them, because nothing said there were two sets.
 ROAD_STATUS_CLAIMS = [
     (r"\bchain law(?:'s| is| are)?\s*(?:on|in effect|up)\b", "asserts chain law status"),
     (r"\btraction law(?:'s| is)?\s*(?:on|in effect|up)\b", "asserts traction law status"),
     (r"\bthey(?:'re| are) doing control work\b", "asserts avalanche control is underway"),
 
-    # THE GAP THAT SHIPPED. Every pattern above keys on "open" or "closed", so
-    # the 2026-09-02 draft sailed through with "The passes are dry, Coal Bank,
-    # Molas, Red Mountain and Wolf Creek all clear." That is a road SURFACE
-    # claim about four passes with no CDOT data behind it, which is exactly the
-    # thing that gets someone over Coal Bank on black ice at 6am believing a
-    # weather page told them it was fine.
-    #
-    # Forecasting the surface is fine and is the whole point of passes.py.
-    # Asserting it in the present tense is not. The distinction the patterns
-    # draw is tense: "should stay dry" and "any ice would be early" pass;
-    # "are dry" and "all clear" do not.
-    (rf"\b(?:pass|passes|road|roads|highway|{_ROUTE})\b[^.\n]{{0,60}}"
-     r"\b(?:is|are|'s|re)\s+(?:currently\s+)?"
-     r"(?:dry|wet|clear|bare|icy|slick|snowpacked|snow[- ]packed|"
-     r"plowed|sanded|passable|impassable|fine|good|clean)\b",
-     "states a present-tense road surface condition"),
-    (rf"\b(?:all|both)\s+(?:clear|dry|open|passable)\b[^.\n]{{0,60}}"
-     rf"\b(?:pass|passes|coal bank|molas|red mountain|wolf creek|{_ROUTE})\b",
-     "states a present-tense road surface condition"),
-    (r"\b(?:coal bank|molas|red mountain|wolf creek)\b[^.\n]{0,80}"
-     r"\b(?:all\s+)?(?:clear|dry|bare|icy|slick|snowpacked|snow[- ]packed)\b"
-     r"(?![^.\n]{0,40}\b(?:should|expect|likely|by|through|overnight|"
-     r"tonight|tomorrow|forecast)\b)",
-     "states a present-tense road surface condition"),
 ]
 
 # THE SECOND GAP. Every pattern in ROAD_STATUS_CLAIMS is anchored on a verb --
@@ -146,11 +130,20 @@ _ROAD_NOUN = r"roads?|pavement|highways?|blacktop"
 # "Wolf Creek Pass" matches on the proper name. "at pass level" correctly does
 # not -- that phrase is an elevation, not a road.
 _ROAD_NAME = (rf"(?:the|these|those|both|all|either|our)\s+pass(?:es)?|"
-              rf"pass(?:es)?(?=\s+(?:is|are|'s|was|were|remains?|stays?|looks?))|"
+              rf"pass(?:es)?(?=\s+(?:is|are|'s|was|were|remains?|stays?|"
+              rf"looks?|runs?|sits?|gets?))|"
               rf"coal bank|molas|red mountain|wolf creek|cumbres|"
               rf"lizard head|hesperus|florida road|vallecito road|"
               rf"bayfield parkway|elmore|middle mountain road|"
               rf"missionary ridge road|{_ROUTE}")
+
+# The gap between the road and the closure word may not cross a coordination.
+# "Molas and Coal Bank both pick up snow and the districts may close" is a
+# snow sentence whose subject changes at the "and", and a plain 50-character
+# window reached straight over it -- an unrecoverable BLOCK, since closures are
+# hedge-exempt. It is also the exact sentence road_status_claim's docstring
+# cites as the reason this is judged per clause.
+_GAP = r"(?:(?!\s+and\s+)[^.\n])"
 
 # "clear roads", "dry pavement" -- a condition with no verb at all.
 #
@@ -170,17 +163,34 @@ _ROAD_NOUN_CLAIM = re.compile(
 # free because the clause splitter broke on a bare "and"; it no longer does,
 # so the boundary is named here instead. "Vallecito Road, fine gravel past the
 # turn" is still an ordinary noun phrase, because a noun follows the adjective.
+# The road side is the generic nouns plus the four pass names, which is the
+# scope the rule this replaced had. NOT route numbers: "heavy enough to make
+# the 240 and the upper 501 slick this evening" forecasts what the rain will
+# do, and including them re-broke 2026-09-22, one of the drafts whose lint
+# failure started all this.
+#
+# The trailing time words are PRESENT ones only, for the same reason. In a
+# 5:45am post "this morning" is now and "this evening" is a forecast, so a bare
+# "this" let the future in.
 _ROAD_TELEGRAPHIC_CLAIM = re.compile(
-    rf"\b(?:{_ROAD_NOUN})\s+(?:{_SURFACE})\s*(?=[,.;:!?]|\s+(?:and|but)\b|$)",
+    rf"\b(?:{_ROAD_NOUN}|coal bank|molas|red mountain|wolf creek)\b"
+    rf"{_GAP}{{0,30}}?\s(?:all\s+|both\s+)?(?:{_SURFACE})\s*"
+    rf"(?=[,.;:!?]|\s+(?:and|but)\b"
+    rf"|\s+(?:this morning|right now|today|so far|out there|up there)\b|$)",
     re.IGNORECASE)
 
 # "the 501 is fine", "Molas stays clear", "the passes are getting wet pavement".
 # "getting" is here because the brief used to ask for it in as many words.
+# The gap uses _GAP for the same reason CLOSURE_CLAIMS does: "The front moves
+# through Wolf Creek and the ski area is open" changes subject at the "and",
+# and a plain window reached from the pass name to a state that is not the
+# pass's. Where the coordination really is two roads -- "The 501 and the 240
+# are both dry" -- the scan simply starts again at the second one.
 _ROAD_STATE_CLAIM = re.compile(
-    rf"\b(?:{_ROAD_NAME}|{_ROAD_NOUN})\b[^.\n]{{0,50}}?"
+    rf"\b(?:{_ROAD_NAME}|{_ROAD_NOUN})\b{_GAP}{{0,50}}?"
     rf"(?:\b(?:is|are|'s|re|remains?|sits?|stays?|looks?|runs?|"
     rf"(?:is|are)\s+getting)|\w's)\s+"
-    rf"(?:still\s+|both\s+|all\s+|already\s+|completely\s+)?"
+    rf"(?:still\s+|both\s+|all\s+|already\s+|completely\s+|currently\s+)?"
     rf"(?:{_SURFACE})\b", re.IGNORECASE)
 
 # CLOSURES ARE NOT HEDGEABLE. This is the one road rule the hedge tiers below
@@ -227,15 +237,18 @@ _CLOSURE_STATE = (
     r"(?:closed|open|shut)\b"
     r"|\b(?:will|would|may|might|could|should|gonna)\s+(?:close|shut|reopen)\b"
     # "is set to close", "going to close" -- the infinitive, which dropping the
-    # bare alternative had also dropped. "to close TO" is the adjective again,
-    # as in "the snow line drops down to close to 11,000 feet".
-    r"|\bto\s+(?:close\b(?!\s+(?:out|to)\b)|shut|reopen)\b"
+    # bare alternative had also dropped. "to close to A NUMBER" is the
+    # adjective again ("the snow line drops down to close to 11,000 feet"), but
+    # "set to close to traffic" is a real closure, so the exclusion names the
+    # numeric and freezing-point contexts rather than every following "to".
+    r"|\bto\s+(?:close\b(?!\s+out\b)(?!\s+to\s+(?:\d|about|around|roughly|"
+    r"freezing|the\s+freezing))|shut|reopen)\b"
     rf"|\bclos(?:es|ing|ed)\b(?!\s+out\b)|\breopen(?:s|ed|ing)?\b|\bshuts?\b)")
 
 CLOSURE_CLAIMS = [
-    (rf"\b(?:{_ROAD_NAME}|{_ROAD_NOUN})\b[^.\n]{{0,50}}{_CLOSURE_STATE}",
+    (rf"\b(?:{_ROAD_NAME}|{_ROAD_NOUN})\b{_GAP}{{0,50}}{_CLOSURE_STATE}",
      "states whether a road is open or closed"),
-    (rf"{_CLOSURE_STATE}[^.\n]{{0,40}}\b(?:{_ROAD_NAME})\b",
+    (rf"{_CLOSURE_STATE}{_GAP}{{0,40}}\b(?:{_ROAD_NAME})\b",
      "states whether a road is open or closed"),
     (r"\bCDOT has (?:closed|opened|lifted)\b", "asserts a CDOT action"),
 ]
@@ -266,22 +279,25 @@ _MODAL_HEDGE = re.compile(
 # phrases and strips the modal off the back one: "I'd expect wet pavement in
 # town and icy roads on the 550" left "icy roads on the 550" to be judged
 # alone, and blocked the phrasing compose.py prescribes.
-def _clause_is_hedged(clause):
-    """Is this clause a forecast rather than a report?
+def _hedged_at(clause, end):
+    """Does a modal govern the claim ending at `end`?
 
-    A modal, and nothing else. Three review rounds went into trying to carry a
-    hedge across a coordination -- "I'd expect wet pavement in town and icy
-    roads for the bus run" splits into two clauses and only the first has the
-    modal -- and every version of it was wrong, because deciding whether a
-    fragment is a second predicate or a second object needs to tell a noun from
-    a verb. "run", "look", "stay" and "pick" are all both, and "the bus run" is
-    this persona's commonest idiom.
+    A MODAL GOVERNS WHAT FOLLOWS IT, NOT WHAT PRECEDES IT. That is the whole
+    rule, and asking it per claim rather than per clause is what makes the
+    coordination cases work without trying to parse them.
 
-    So _CLAUSE_SPLIT no longer breaks on a bare "and" at all, and the
-    coordination stays in one clause with the modal that governs it. See the
-    note there for what that costs.
+    "I'd expect wet pavement in town and icy roads for the bus run" hedges both
+    conjuncts, because the modal opens the sentence. "Roads are wet and it
+    should dry out by noon" hedges neither: the claim is stated flat and the
+    advice comes after. An earlier cut tested the clause as a whole, so the
+    trailing modal laundered the leading claim -- and report-then-advice is the
+    more common of the two shapes.
+
+    The window runs to the END of the match, not its start, because the modal
+    usually sits inside the claim it governs: "Coal Bank should stay dry" is
+    one _ROAD_STATE_CLAIM match with the "should" in the middle of it.
     """
-    return bool(_MODAL_HEDGE.search(clause))
+    return bool(_MODAL_HEDGE.search(clause[:end]))
 
 # A sentence that opens conditionally hedges every clause in it, including the
 # ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is
@@ -393,15 +409,16 @@ def _claim_in_sentence(sentence):
         for pattern, why in CLOSURE_CLAIMS:
             if re.search(pattern, clause, re.IGNORECASE):
                 return why
-        if _clause_is_hedged(clause):
-            continue
+        # Every match, not just the first: a hedged claim earlier in the clause
+        # must not stop us looking at an unhedged one after it.
         for pattern, why in ROAD_STATUS_CLAIMS:
-            if re.search(pattern, clause, re.IGNORECASE):
-                return why
-        if (_ROAD_NOUN_CLAIM.search(clause)
-                or _ROAD_TELEGRAPHIC_CLAIM.search(clause)
-                or _ROAD_STATE_CLAIM.search(clause)):
-            return "states a present-tense road surface condition"
+            for m in re.finditer(pattern, clause, re.IGNORECASE):
+                if not _hedged_at(clause, m.end()):
+                    return why
+        for rx in (_ROAD_NOUN_CLAIM, _ROAD_TELEGRAPHIC_CLAIM, _ROAD_STATE_CLAIM):
+            for m in rx.finditer(clause):
+                if not _hedged_at(clause, m.end()):
+                    return "states a present-tense road surface condition"
     return None
 
 
