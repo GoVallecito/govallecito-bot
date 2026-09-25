@@ -23,6 +23,8 @@ import sys
 import tempfile
 import urllib.error
 
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -327,6 +329,78 @@ def test_a_late_run_is_told_it_is_late():
     }
     brief = CO.render_bundle(bundle, post_type="school_call")
     assert "RUNNING LATE" in brief
+
+
+# --- what counts as late ---------------------------------------------------------
+
+@pytest.mark.parametrize("hour", [19, 20, 21, 22, 23, 0, 12])
+def test_an_evening_hour_is_never_late(hour):
+    """A school call composed at 21:56 for the next morning is not late.
+
+    The old _is_late scanned EVERY slot window and returned hour > its start,
+    so 21 was "late" for the evening window (19-22). On 2026-09-25 that put
+    "Late start this morning." at the top of a post composed four hours before
+    the morning it was for, and the panel rejected the draft.
+    """
+    from wx import bundle as B
+    assert B._is_late(hour) is False
+
+
+@pytest.mark.parametrize("hour,late", [(5, False), (6, False), (7, True),
+                                       (8, True), (9, False)])
+def test_lateness_is_measured_against_the_hour_constants_already_named(hour, late):
+    """C.LATE_AFTER_HOUR documented the threshold and nothing read it."""
+    from wx import bundle as B
+    from wx import constants as C
+    assert C.LATE_AFTER_HOUR == 7
+    assert B._is_late(hour) is late
+
+
+def _late_bundle():
+    return {
+        "post_for_weekday": "Friday", "post_for_date": "2026-09-25",
+        "post_for_stamp": "09/25/26", "generated_at": "2026-09-25T07:40:00-06:00",
+        "season": "fall", "day_type": "school day", "is_late": True,
+        "composed_hour": 7, "recent_posts": [], "alerts": [], "bands": {},
+        "missing": [],
+    }
+
+
+def test_an_evening_post_never_carries_the_morning_late_clause():
+    """Belt and braces: the wording says "this morning", so gate it here too."""
+    from wx import compose as CO
+    assert "RUNNING LATE" not in CO.render_bundle(_late_bundle(), post_type="evening")
+    assert "RUNNING LATE" in CO.render_bundle(_late_bundle(), post_type="school_call")
+
+
+def test_the_late_block_no_longer_dictates_the_sentence():
+    """It handed over "Late start this morning," and two drafts used it verbatim.
+
+    The editor then flagged the second one critical against the brief's own
+    forbidden-openers block. An instruction cannot supply the exact words and
+    also forbid reusing them.
+    """
+    from wx import compose as CO
+    brief = CO.render_bundle(_late_bundle(), post_type="school_call")
+    assert "Late start this morning" not in brief
+    assert "Write that" in brief and "clause fresh" in brief
+
+
+def test_a_late_run_is_not_told_to_stamp_the_time_it_missed():
+    """RUNNING LATE exists so the post does not pretend it arrived at 5:45."""
+    from wx import compose as CO
+    brief = CO.render_bundle(_late_bundle(), post_type="school_call")
+    head = brief.split("COMPOSED AT:", 1)[0]
+    assert "5:45am" not in head
+    assert "the stamp's clock time is 7:40am" in head
+
+
+def test_an_unparseable_generated_at_still_gives_a_late_run_a_sentence():
+    from wx import compose as CO
+    b = _late_bundle()
+    b["generated_at"] = None
+    brief = CO.render_bundle(b, post_type="school_call")
+    assert "the stamp's clock time is the time it finishes" in brief
 
 
 # --- the clock time in the stamp -------------------------------------------------
