@@ -243,16 +243,16 @@ def _trim_afd(text, limit=6000):
     return result[:limit]
 
 
-def _disagreement(spread):
-    """Turn four model totals into the sentence the forecaster actually says.
+_LEVEL_RANK = {"none -- all models dry": 0, "tight": 1, "moderate": 2, "wide": 3}
 
-    Model disagreement IS the uncertainty statement in this voice. A blended
-    mean would erase the most characteristic thing the forecaster does.
-    """
-    vals = {k: v.get("total_snow_in") for k, v in (spread or {}).items()
-            if v.get("total_snow_in") is not None}
-    if len(vals) < 2:
-        return None
+
+def _model_totals(spread, key):
+    return {k: v.get(key) for k, v in (spread or {}).items()
+            if v.get(key) is not None}
+
+
+def _level(vals):
+    """(level, lo_model, hi_model, span) for one metric across the models."""
     lo_k = min(vals, key=vals.get)
     hi_k = max(vals, key=vals.get)
     lo, hi = vals[lo_k], vals[hi_k]
@@ -265,10 +265,42 @@ def _disagreement(spread):
         level = "moderate"
     else:
         level = "wide"
+    return level, lo_k, hi_k, span
+
+
+def _disagreement(spread):
+    """Turn four model totals into the sentence the forecaster actually says.
+
+    Model disagreement IS the uncertainty statement in this voice. A blended
+    mean would erase the most characteristic thing the forecaster does.
+
+    Judged on TWO totals, liquid (rain plus melted snow) and snowfall, and the
+    result carries whichever disagrees more. It used to look at snowfall only.
+    On 2026-09-25 all four models had 0.54-0.93in of rain at Vallecito and
+    0.0in of snow, so the brief said "none -- all models dry" beside a band
+    forecast of 0.79in, and the draft invented a Euro-versus-the-rest split
+    to reconcile the two. "Dry" means liquid is dry; snow is only ever the
+    frozen part of it.
+    """
+    liquid = _model_totals(spread, "total_precip_in")
+    snow = _model_totals(spread, "total_snow_in")
+    judged = {}
+    if len(liquid) >= 2:
+        judged["liquid"] = (liquid,) + _level(liquid)
+    if len(snow) >= 2:
+        judged["snow"] = (snow,) + _level(snow)
+    if not judged:
+        return None
+    # Liquid wins a tie, so a wet day with no snow is described by its rain.
+    basis = max(judged, key=lambda b: (_LEVEL_RANK[judged[b][1]], b == "liquid"))
+    vals, level, lo_k, hi_k, span = judged[basis]
     return {
         "level": level,
-        "low_model": lo_k, "low_snow_in": round(lo, 2),
-        "high_model": hi_k, "high_snow_in": round(hi, 2),
+        "basis": basis,
+        "low_model": lo_k, "low_in": round(vals[lo_k], 2),
+        "high_model": hi_k, "high_in": round(vals[hi_k], 2),
         "spread_in": round(span, 2),
         "all": {k: round(v, 2) for k, v in vals.items()},
+        "all_liquid": {k: round(v, 2) for k, v in liquid.items()},
+        "all_snow": {k: round(v, 2) for k, v in snow.items()},
     }
