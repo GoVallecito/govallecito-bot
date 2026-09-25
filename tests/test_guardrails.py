@@ -558,3 +558,92 @@ def test_a_route_number_may_take_the_possessive():
     # And the foot mark is still not a route.
     assert G.road_status_claim(
         "Vallecito sits at 7,650' and the lake is clear.")[0] is None
+
+
+# --- the second review round ---------------------------------------------
+#
+# Four of the seven fixes above were incomplete, and two of those were
+# self-defeating: the fix re-admitted through one branch what it removed from
+# another. The tests written alongside them passed because they used examples
+# that dodged the defect, so each case below is taken from the corpus idiom
+# rather than invented.
+
+def test_a_modal_does_not_re_admit_the_adjective():
+    """`(?:be\\s+)?(?:close)` put "close" back in the same hunk that removed it.
+
+    "will be closed" needs no help from that branch: the copula branch has both
+    `be` and `closed`.
+    """
+    for ok in ["The snow line will be close to 11,000 feet on the passes.",
+               "Molas should be close to freezing by dawn.",
+               "It could be close to a foot up high."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+    for claim in ["The 550 will close at six.", "Molas may shut this afternoon.",
+                  "Red Mountain will be closed by noon."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+
+
+def test_the_bus_run_is_a_noun():
+    """"run", "look", "stay", "pick" are all nouns too.
+
+    Listing them as finite verbs meant "icy roads for the bus run" counted as
+    having its own predicate, did not inherit the governing modal, and blocked.
+    "bus run" and "school run" appear 33 times in the recorded corpus and in
+    tools/fixtures/clean.md.
+    """
+    for ok in ["I'd expect wet pavement in town and icy roads for the bus run.",
+               "I'd expect slick spots and wet roads for the school run.",
+               "Look for wet pavement and icy roads for the morning run."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+
+
+def test_a_clause_with_its_own_predicate_does_not_inherit():
+    """Narrowing the verb list must not let a real claim ride a modal.
+
+    "Molas stays clear" has road + verb + surface, so it asserts on its own
+    even though "stays" is no longer in the finite-verb list.
+    """
+    for claim in ["Coal Bank should stay dry and Molas stays clear.",
+                  "The passes should be wet and the 501 looks fine."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+
+
+def test_only_and_carries_a_hedge_across():
+    """A semicolon or a "but" joins independent statements.
+
+    The inheritance was applied across every delimiter, so a modal in the first
+    half silently covered a flat claim in the second.
+    """
+    for claim in ["The front should clear by noon; roads wet and icy on the 550.",
+                  "The front should clear by noon but roads wet and icy on the 550.",
+                  "It should dry out; dry roads for the bus run."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+
+
+def test_the_passes_with_an_adjective_in_between():
+    """Requiring the determiner adjacent missed the ordinary forms.
+
+    Allowing any gap re-admitted "The storm passes overnight", so it is one
+    word of slack plus a guard on the words only a moving system takes.
+    """
+    for claim in ["The high passes are closed this morning.",
+                  "Our passes are closed right now.",
+                  "Passes are closed.",
+                  "Both passes are dry."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+    for ok in ["The cold front passes through around noon, closing out the showers.",
+               "That band passes east of us by dawn.",
+               "The storm passes overnight and clears by dawn.",
+               "Coal Bank should stay rain at pass level."]:
+        assert G.road_status_claim(ok)[0] is None, f"blocked: {ok!r}"
+
+
+def test_the_infinitive_closure_survived_dropping_the_bare_form():
+    """Removing bare "close" also removed "set to close" and "going to close"."""
+    for claim in ["Molas is set to close this afternoon.",
+                  "CDOT is going to close Molas at noon.",
+                  "They expect to close the 550 overnight."]:
+        assert G.road_status_claim(claim)[0], f"missed: {claim!r}"
+    # "close out" is weather, not a road.
+    assert G.road_status_claim(
+        "The front moves over the passes, closing out the showers.")[0] is None

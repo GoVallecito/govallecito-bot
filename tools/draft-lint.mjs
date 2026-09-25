@@ -32,8 +32,15 @@ const ROADS = [
   'CO 172','Highway 172','the 172','County Road 501','CR 501','the 501',
   'County Road 500','CR 500','the 500','CR 240','the 240','Florida Road',
   'Vallecito Road','Bayfield Parkway','Elmore',
-  'the pass','the passes','Middle Mountain Road','Missionary Ridge Road'
+  'Middle Mountain Road','Missionary Ridge Road'
 ];
+// "passes" is also the verb for weather moving through ("the cold front passes
+// through around noon"). A determiner adjacent missed "The HIGH passes are
+// closed"; any gap re-admitted "The storm passes overnight". So: a determiner,
+// at most one word between, and not followed by a word only a moving system
+// takes -- plus a bare "Passes are closed", unambiguous on the copula.
+// Mirrors guardrails._ROAD_NAME.
+const PASS_NOUN = /(?:\b(?:the|these|those|both|all|either|our)\s+(?:\w+\s+)?pass(?:es)?\b(?!\s+(?:through|over|east|west|north|south|by|along|off|quickly|overnight))|\bpass(?:es)?(?=\s+(?:is|are|'s|was|were|remains?|stays?|looks?)))/i;
 // A bare route number, which the list above only caught when it carried its
 // article. The article was there because "the 160 cfs" style numbers bite:
 // this persona writes elevations as "(6,500')" and flows as "running 160 cfs",
@@ -52,7 +59,14 @@ const ROAD_STATE = /(?:\b(?:is|are|remain|remains|sit|sits|stay|stays)|\w's)\s+(
 // and "enough to wet pavement for the evening commute" forecasts what the rain
 // will do rather than reporting what the road is. An infinitive is never a
 // present-tense claim. 2026-09-22 failed on that sentence.
-const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?)\b/i;
+const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|open|closed)\s+(?:roads?|pavement|highways?|blacktop)\b/i;
+// The telegraphic form, noun then adjective, copula dropped. system.md forbids
+// "Roads wet, no ice." BY NAME and this file did not catch it -- guardrails
+// grew the rule and the lint never did, so the two gates disagreed on a
+// sentence the persona names as the canonical mistake. The trailing lookahead
+// keeps it to that clipped register, so "Vallecito Road, fine gravel past the
+// turn" is an ordinary noun phrase. Mirrors guardrails._ROAD_TELEGRAPHIC_CLAIM.
+const ROAD_TELEGRAPHIC = /\b(?:roads?|pavement|highways?|blacktop)\s+(?:dry|wet|icy|slick|snow[- ]?packed|clear|closed|open|plowed|bare|greasy|sanded|passable|impassable|fine|good|clean)\s*(?=[,.;:!?]|$)/i;
 // A CLOSURE is not hedgeable: it is the one road claim the hedges below do not
 // apply to. The conditional opener still exempts it. A surface forecast is a weather
 // claim, so hedging is what makes it honest; whether a gate is down is CDOT's
@@ -64,7 +78,13 @@ const ROAD_NOUN = /(?<!\bto )\b(?:clear|dry|wet|icy|bare|slick|snow[- ]?packed|o
 // here -- "the snow line ends up close to 11,000 feet on the passes" -- and
 // because this rule is hedge-exempt a match is an unrecoverable fail on the
 // product's signature sentence.
-const CLOSURE = /(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?(?:closed|open|shut)\b|\b(?:will|would|may|might|could|should|gonna)\s+(?:be\s+)?(?:close|shut|reopen)\b|\bclos(?:es|ing|ed)\b|\breopen(?:s|ed|ing)?\b|\bshuts?\b)/i;
+// The modal branch has NO optional "be": "will be close to 11,000 feet" is the
+// adjective again, and `(?:be\s+)?` in front of a bare "close" re-admits exactly
+// what dropping the bare alternative removed. "will be closed" needs no help --
+// the copula branch already has `be` and `closed`. "close out"/"closing out" is
+// weather, not a road. The `to close` branch keeps the infinitive that dropping
+// the bare alternative had also dropped ("is set to close", "going to close").
+const CLOSURE = /(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?(?:closed|open|shut)\b|\b(?:will|would|may|might|could|should|gonna)\s+(?:close|shut|reopen)\b|\bto\s+(?:close\b(?!\s+out\b)|shut|reopen)\b|\bclos(?:es|ing|ed)\b(?!\s+out\b)|\breopen(?:s|ed|ing)?\b|\bshuts?\b)/i;
 // Hedges, in two tiers, because they are not all the same thing.
 //
 // A MODAL turns the clause into a forecast outright. system.md gives "I'd
@@ -85,9 +105,18 @@ const MODAL_HEDGE = /\b(should|shouldn't|will|won't|\w+'ll|\w+'d|would|expect|ex
 // breaks on a bare "and", which also splits coordinated noun phrases and
 // strips the modal off -- "I'd expect wet pavement in town and icy roads on
 // the 550" left "icy roads on the 550" to be judged alone.
-const FINITE_VERB = /(?:\b(?:is|are|was|were|be|been|am|has|have|had|do|does|did|looks?|stays?|runs?|sits?|remains?|gets?|turns?|picks?|comes?|go(?:es)?|see|sees|expect|expects|will|would|should|could|may|might|can|clos(?:es|ing|ed)|reopens?)\b|\w's\b)/i;
-const hedged = (c, prev = false) =>
-  MODAL_HEDGE.test(c) ? true : (FINITE_VERB.test(c) ? false : prev);
+// ONLY unambiguous verbs. The first cut listed `runs?`, `looks?`, `stays?` and
+// friends, every one of which is also a noun -- and "the bus run" appears 33
+// times in the recorded corpus and in clean.md, so "icy roads for the bus run"
+// counted as having a verb, did not inherit its modal, and failed.
+const FINITE_VERB = /(?:\b(?:is|are|was|were|be|been|am|has|have|had|do|does|did|will|would|should|could|may|might|can)\b|\w's\b)/i;
+// `inherits` is false across a ";" or a "but", which join independent
+// statements rather than coordinating one predicate over two objects.
+// `ownPredicate` is road + verb + surface: such a clause is its own claim
+// however few auxiliaries it has, so a modal beside it cannot launder it.
+const hedged = (c, prev = false, inherits = true, ownPredicate = false) =>
+  MODAL_HEDGE.test(c) ? true
+    : (!inherits || FINITE_VERB.test(c) || ownPredicate) ? false : prev;
 // A sentence that opens conditionally hedges every clause in it, including the
 // ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is slick."
 const CONDITIONAL_OPEN = /^(?:if|when|once|unless|should)\b/i;
@@ -171,7 +200,18 @@ const sentences = t => t.split('\n')
   .filter(Boolean);
 const lines = t => t.split('\n').map(s => s.trim()).filter(Boolean);
 const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\s+/).filter(Boolean);
-const clauses = s => s.split(/,\s*(?:and|but)\s+|;\s*|\s+and\s+|\s+but\s+/i).filter(Boolean);
+// The delimiter is captured, because only a coordinating "and" carries a hedge
+// from one clause to the next; a ";" or a "but" joins independent statements.
+// Returns [{text, inherits}] with the delimiters folded into the clause after.
+const clauses = s => {
+  const parts = s.split(/(,\s*(?:and|but)\s+|;\s*|\s+and\s+|\s+but\s+)/i);
+  const out = [];
+  for (let i = 0; i < parts.length; i += 2)
+    if (parts[i])
+      out.push({ text: parts[i],
+                 inherits: i === 0 || /^,?\s*and\s+$/i.test(parts[i - 1]) });
+  return out;
+};
 const q = s => `"${s.trim()}"`;
 
 function jaccard(a, b) {
@@ -204,16 +244,17 @@ function lint(raw, dateStr, historyDir) {
   for (const s of S) {
     if (conditional(s)) continue;
     let wasHedged = false;
-    for (const c of clauses(claimBody(s))) {
-      const hasRoad = ROUTE_NUMBER.test(c) ||
+    for (const { text: c, inherits } of clauses(claimBody(s))) {
+      const hasRoad = PASS_NOUN.test(c) || ROUTE_NUMBER.test(c) ||
         ROADS.some(r => new RegExp(`\\b${r.replace(/[-]/g, '\\-')}\\b`, 'i').test(c));
       if (hasRoad && CLOSURE.test(c)) {
         fails.push(['road-status', `Road closure claim with no CDOT data: ${q(s)}`]);
         break;
       }
-      wasHedged = hedged(c, wasHedged);
+      wasHedged = hedged(c, wasHedged, inherits, hasRoad && ROAD_STATE.test(c));
       if (wasHedged) continue;
-      if ((hasRoad && ROAD_STATE.test(c)) || ROAD_NOUN.test(c)) {
+      if ((hasRoad && ROAD_STATE.test(c)) || ROAD_NOUN.test(c) ||
+          ROAD_TELEGRAPHIC.test(c)) {
         fails.push(['road-status', `Present-tense road condition with no CDOT data: ${q(s)}`]);
         break;
       }

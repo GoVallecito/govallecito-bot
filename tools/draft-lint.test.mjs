@@ -159,6 +159,45 @@ for (const [label, text] of [
   });
 }
 
+// A second review round found four of the seven fixes above incomplete, two of
+// them self-defeating. Cases are taken from the corpus idiom, not invented.
+for (const [label, text] of [
+  // `(?:be\s+)?(?:close)` put the adjective back in the same hunk that removed it.
+  ['modal-be-close', 'The snow line will be close to 11,000 feet on the passes.'],
+  // "run" is a noun: "bus run"/"school run" appears 33x in the corpus.
+  ['bus-run', "I'd expect wet pavement in town and icy roads for the bus run."],
+  ['school-run', "I'd expect slick spots and wet roads for the school run."],
+  // A noun phrase is not a road-status claim.
+  ['gravel', 'Vallecito Road, fine gravel past the turn.'],
+]) {
+  test(`${label} is not a road-status claim`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, []);
+    assert.equal(r.code, 0);
+  });
+}
+
+for (const [label, text] of [
+  // Only a coordinating "and" carries a hedge across.
+  ['semicolon', 'The front should clear by noon; wet roads and icy pavement on the 550.'],
+  ['but-clause', 'The front should clear by noon but wet roads and icy pavement on the 550.'],
+  // The determiner needs a word of slack, and the bare copula form counts.
+  ['high-passes', 'The high passes are closed this morning.'],
+  ['bare-passes', 'Passes are closed.'],
+  // The infinitive, which dropping bare "close" had also dropped.
+  ['set-to-close', 'Molas is set to close this afternoon.'],
+  // system.md forbids this one BY NAME and this file used to miss it entirely.
+  ['telegraphic', 'Roads wet, no ice.'],
+  // A clause with road + verb + surface asserts on its own.
+  ['own-predicate', 'Coal Bank should stay dry and Molas stays clear.'],
+]) {
+  test(`${label} is caught`, () => {
+    const r = lintBody(`road-status-${label}.md`, text);
+    assert.deepEqual(r.fails, ['road-status']);
+    assert.equal(r.code, 1);
+  });
+}
+
 test('a traction law forecast is still allowed', () => {
   // constants.py holds "expect traction law by morning" up as the product: it
   // is a consequence of weather we have, unlike a gate coming down.

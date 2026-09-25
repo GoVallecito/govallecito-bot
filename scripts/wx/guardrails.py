@@ -126,13 +126,23 @@ _ROAD_NOUN = r"roads?|pavement|highways?|blacktop"
 # Route numbers come from _ROUTE, so this rule and the ones above agree about
 # what counts as a road and neither of them reads an elevation as one.
 #
-# "pass" and "passes" carry a determiner, because "passes" is also the verb the
-# persona uses for weather moving through: "The cold front passes through
-# around noon, closing out the showers" has no road in it, and a bare `passes`
-# made that a road claim. "the passes", "both passes", "Wolf Creek Pass" (on
-# the proper name) all still match; "at pass level" correctly does not, since
-# that phrase describes an elevation rather than a road.
-_ROAD_NAME = (rf"(?:the|these|those|both|all|either)\s+pass(?:es)?|"
+# "pass" and "passes" need care, because "passes" is also the verb the persona
+# uses for weather moving through: "The cold front passes through around noon,
+# closing out the showers" has no road in it, and a bare `passes` made that a
+# road claim.
+#
+# A determiner alone is not enough in either direction. Requiring it adjacent
+# missed "The HIGH passes are closed"; allowing any gap re-admitted "The storm
+# passes overnight". So: a determiner, at most one word in between, and not
+# followed by a word that only a moving weather system takes. Plus a bare
+# "Passes are closed", which is unambiguous because a copula follows.
+#
+# "Wolf Creek Pass" matches on the proper name. "at pass level" correctly does
+# not -- that phrase is an elevation, not a road.
+_ROAD_NAME = (rf"(?:the|these|those|both|all|either|our)\s+(?:\w+\s+)?"
+              rf"pass(?:es)?\b(?!\s+(?:through|over|east|west|north|south|by|"
+              rf"along|off|quickly|overnight))|"
+              rf"pass(?:es)?(?=\s+(?:is|are|'s|was|were|remains?|stays?|looks?))|"
               rf"coal bank|molas|red mountain|wolf creek|cumbres|"
               rf"lizard head|hesperus|florida road|vallecito road|"
               rf"bayfield parkway|elmore|middle mountain road|"
@@ -192,13 +202,25 @@ _ROAD_STATE_CLAIM = re.compile(
 # snow-line sentence about the passes, which is the product's signature output.
 # The finite forms are what a closure actually reads like, plus the modal
 # forms, which are safe now that this is judged per clause.
+# The modal branch has NO optional "be". "will be close to 11,000 feet" is the
+# adjective again, and putting `(?:be\s+)?` in front of a bare "close" re-admits
+# through the modal exactly what dropping the bare alternative removed -- the
+# first version of this fix did that, in the same hunk whose comment claims to
+# prevent it. "will be closed" needs no help here: the copula branch already
+# has `be` and `closed`.
+#
+# "close out" and "closing out" are about weather, not roads: "the front passes
+# through around noon, closing out the showers".
+_CLOSE = r"clos(?:e|es|ing|ed)\b(?!\s+out\b)"
 _CLOSURE_STATE = (
     r"(?:\b(?:is|are|'s|re|was|were|be|been|being|gets?|got|stays?|stayed|"
     r"remains?|remained)\s+(?:still\s+|already\s+|back\s+|all\s+)?"
     r"(?:closed|open|shut)\b"
-    r"|\b(?:will|would|may|might|could|should|gonna)\s+(?:be\s+)?"
-    r"(?:close|shut|reopen)\b"
-    r"|\bclos(?:es|ing|ed)\b|\breopen(?:s|ed|ing)?\b|\bshuts?\b)")
+    r"|\b(?:will|would|may|might|could|should|gonna)\s+(?:close|shut|reopen)\b"
+    # "is set to close", "going to close" -- the infinitive, which dropping the
+    # bare alternative had also dropped.
+    r"|\bto\s+(?:close\b(?!\s+out\b)|shut|reopen)\b"
+    rf"|\bclos(?:es|ing|ed)\b(?!\s+out\b)|\breopen(?:s|ed|ing)?\b|\bshuts?\b)")
 
 CLOSURE_CLAIMS = [
     (rf"\b(?:{_ROAD_NAME}|{_ROAD_NOUN})\b[^.\n]{{0,50}}{_CLOSURE_STATE}",
@@ -234,20 +256,36 @@ _MODAL_HEDGE = re.compile(
 # phrases and strips the modal off the back one: "I'd expect wet pavement in
 # town and icy roads on the 550" left "icy roads on the 550" to be judged
 # alone, and blocked the phrasing compose.py prescribes.
+# ONLY unambiguous verbs. The first cut of this listed `runs?`, `looks?`,
+# `stays?`, `picks?` and friends, every one of which is also a noun -- and the
+# persona's most common idiom is "the bus run", which appears 33 times in the
+# recorded corpus and in the lint's own clean fixture. So "icy roads for the
+# bus run" counted as having a verb, did not inherit its modal, and blocked.
+# The test that was supposed to cover this used "icy roads on the 550" and
+# passed while the real phrasing failed.
 _FINITE_VERB = re.compile(
     r"(?:\b(?:is|are|was|were|be|been|am|has|have|had|do|does|did|"
-    r"looks?|stays?|runs?|sits?|remains?|gets?|turns?|picks?|comes?|go(?:es)?|"
-    r"see|sees|expect|expects|will|would|should|could|may|might|can|"
-    r"clos(?:es|ing|ed)|reopens?)\b|\w's\b)", re.IGNORECASE)
+    r"will|would|should|could|may|might|can)\b|\w's\b)", re.IGNORECASE)
 
 
-def _clause_is_hedged(clause, previous_hedged=False):
-    """Is this clause a forecast rather than a report?"""
+def _clause_is_hedged(clause, previous_hedged=False, inherits=True):
+    """Is this clause a forecast rather than a report?
+
+    `inherits` is false across a semicolon or a "but", which join independent
+    statements rather than coordinating one predicate over two objects. "The
+    front should clear by noon; roads wet and icy on the 550" is two claims,
+    and the modal in the first does not reach the second.
+    """
     if _MODAL_HEDGE.search(clause):
         return True
-    if not _FINITE_VERB.search(clause):
-        return previous_hedged
-    return False
+    if not inherits:
+        return False
+    # A clause carrying road + verb + surface has its own predicate, so it is
+    # an independent claim however few auxiliaries it contains: "Coal Bank
+    # should stay dry and Molas stays clear" must not launder the second half.
+    if _FINITE_VERB.search(clause) or _ROAD_STATE_CLAIM.search(clause):
+        return False
+    return previous_hedged
 
 # A sentence that opens conditionally hedges every clause in it, including the
 # ones after "and": "If that band sets up, the 550 is icy by 6am and Molas is
@@ -298,7 +336,10 @@ def _claim_body(sentence):
     return sentence
 
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
-_CLAUSE_SPLIT = re.compile(r",\s*(?:and|but)\s+|;\s*|\s+and\s+|\s+but\s+",
+# The delimiter is captured, because only a coordinating "and" carries a hedge
+# from one clause to the next. A semicolon or a "but" joins independent
+# statements.
+_CLAUSE_SPLIT = re.compile(r"(,\s*(?:and|but)\s+|;\s*|\s+and\s+|\s+but\s+)",
                            re.IGNORECASE)
 
 
@@ -343,14 +384,21 @@ def road_status_claim(text):
 def _claim_in_sentence(sentence):
     """The reason this sentence is a road-status claim, or None."""
     hedged = False
-    for clause in _CLAUSE_SPLIT.split(_claim_body(sentence)):
-        if not clause:
+    inherits = True
+    for i, part in enumerate(_CLAUSE_SPLIT.split(_claim_body(sentence))):
+        if not part:
             continue
+        # Odd indices are the captured delimiters, not clauses.
+        if i % 2:
+            inherits = bool(re.fullmatch(r",?\s*and\s+", part, re.IGNORECASE))
+            continue
+        clause = part
         # Ahead of the hedge, which does not apply to it: see CLOSURE_CLAIMS.
         for pattern, why in CLOSURE_CLAIMS:
             if re.search(pattern, clause, re.IGNORECASE):
                 return why
-        hedged = _clause_is_hedged(clause, previous_hedged=hedged)
+        hedged = _clause_is_hedged(clause, previous_hedged=hedged,
+                                   inherits=inherits)
         if hedged:
             continue
         for pattern, why in ROAD_STATUS_CLAIMS:
