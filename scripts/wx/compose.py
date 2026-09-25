@@ -204,7 +204,9 @@ def render_bundle(bundle, post_type="school_call"):
         A("     today: the sky out the kitchen window, the drive, the dog, the")
         A("     woodpile, the truck, the yard. Never an inch figure for the")
         A("     stake and never a total for the gauge. Saying the gauge is dry")
-        A("     or empty is fine; putting a number on it is not.")
+        A("     or empty is fine; putting a number on it is not. Do not write")
+        A("     'the gauge caught / showed / read ...' at all today, and if a")
+        A("     reviewer's suggested wording does, that wording is wrong.")
         A("")
 
     basin = bundle.get("basin")

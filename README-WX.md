@@ -97,7 +97,16 @@ Only an APPROVE on the exact text publishes it, and the deterministic rule
 gate re-checks that text: the magistrate can never clear a hard BLOCK. A
 REJECT, or no approval after `WX_PANEL_MAX_ROUNDS` (default 3), falls back to
 the old path: staged in `site/weather/_pending/` and a review issue opened.
-Every round is written to `state/panel/<date>-<slot>.md`.
+Every round is written to `state/panel/<date>-<slot>.md`. A reviewer or
+magistrate reply that could not be read is kept there verbatim with its
+`stop_reason` (`max_tokens` means it was cut off), and the run log says which
+round it happened in.
+
+Rules that keep the three roles from contradicting each other live in one place,
+`SHARED_RULES` in `review_panel.py`, and every role's prompt carries it. The
+fact checker must cite the brief line behind each critical or major flag; a flag
+whose evidence is not in the brief is downgraded to minor. An approval from a
+reply that was cut off never counts.
 
 The panel replaces the human for the **website only**. Facebook and email
 still wait for `WX_FIRST_30_DAYS=false`.
