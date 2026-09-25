@@ -202,7 +202,9 @@ def _body(draft, verdict, reasons, bundle, slot):
 
     dis = bundle.get("model_disagreement")
     if dis:
-        L.append(f"### Model spread: {dis['level']}\n`{dis['all']}`\n")
+        L.append(f"### Model spread: {dis['level']} (judged on {dis['basis']})\n"
+                 f"Liquid inches: `{dis['all_liquid']}`\n\n"
+                 f"Snow inches: `{dis['all_snow']}`\n")
 
     if bundle.get("missing"):
         L.append(f"### Missing data\n`{bundle['missing']}`\n")

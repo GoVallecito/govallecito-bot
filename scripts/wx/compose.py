@@ -151,11 +151,12 @@ def render_bundle(bundle, post_type="school_call"):
     # --- model disagreement: this IS the uncertainty statement ---
     dis = bundle.get("model_disagreement")
     if dis:
-        A(f"MODEL DISAGREEMENT at Vallecito: {dis['level']}")
-        A(f"  {dis['low_model']} {dis['low_snow_in']}in ... "
-          f"{dis['high_model']} {dis['high_snow_in']}in "
+        A(f"MODEL DISAGREEMENT at Vallecito (next 48h): {dis['level']}")
+        A(f"  liquid precipitation (rain plus melted snow): {dis['all_liquid']} inches")
+        A(f"  snowfall: {dis['all_snow']} inches")
+        A(f"  judged on {dis['basis']}: {dis['low_model']} {dis['low_in']}in ... "
+          f"{dis['high_model']} {dis['high_in']}in "
           f"(spread {dis['spread_in']}in)")
-        A(f"  all models: {dis['all']}")
         A("  -> Name the models and their disagreement. Do not average them.")
         A("")
 
