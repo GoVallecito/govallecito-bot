@@ -30,6 +30,19 @@ def load_system_prompt():
         return fh.read()
 
 
+# The publication time each slot is stamped for. Only stated where it is
+# actually known: 5:45am is the school call's promise, the same figure the TASK
+# line below hands the writer, so both read it from here and cannot drift. For
+# any other slot the brief says what the stamp time is NOT, which is what the
+# reviewers were missing, rather than inventing a clock nobody has agreed on.
+_PUBLISH_TIME = {"school_call": "5:45am"}
+
+
+def _publish_hint(post_type):
+    when = _PUBLISH_TIME.get(post_type)
+    return f", about {when}" if when else ""
+
+
 def render_bundle(bundle, post_type="school_call"):
     """Turn the bundle into the compact brief the model actually reads."""
     L = []
@@ -40,8 +53,19 @@ def render_bundle(bundle, post_type="school_call"):
       f"{bundle.get('post_for_date')}")
     A(f"  -> Open with the stamp {bundle.get('post_for_stamp')} and, if you name")
     A(f"     the day, it is {bundle.get('post_for_weekday')}. Use no other weekday.")
+    # The clock time in the stamp had nowhere to come from. The brief handed
+    # over the DATE and stopped, so the model invented a time and the review
+    # panel, reading the same brief, had nothing to check it against -- and
+    # reached for COMPOSED AT, which sits two lines below. On 2026-09-25 both
+    # the fact checker and the magistrate called a correct 5:52am stamp
+    # "fabricated (claims 5:52am when composed at 9:56pm)", and the magistrate
+    # rejected the post partly on that. Same failure as the road block: an
+    # absence that is merely implied gets filled in.
+    A(f"  -> The stamp's clock time is when the post GOES OUT{_publish_hint(post_type)},")
+    A("     not when you are writing. It is never the COMPOSED AT time below.")
     A(f"COMPOSED AT: {bundle.get('generated_at')} (this is NOT necessarily the")
-    A(f"  date the post is for, an evening run writes tomorrow's post)")
+    A("  date OR the time the post is for. An evening run writes tomorrow's")
+    A("  post, and the stamp above is the one to use.)")
     A(f"SEASON: {bundle.get('season')}")
     A(f"DAY TYPE: {bundle.get('day_type')} (approximate calendar, hedge it)")
     if bundle.get("day_type") != "school day" and post_type == "school_call":
@@ -353,7 +377,8 @@ def build_messages(bundle, post_type="school_call", recent_posts=None,
 
     task = {
         "school_call": (
-            "Write the morning school call. It publishes at 5:45am and the "
+            f"Write the morning school call. It publishes at "
+            f"{_PUBLISH_TIME['school_call']} and the "
             "districts decide by 6:30, so lead with what a parent driving the "
             "501 or the 240 needs. Give the snow line in feet. Walk the bands "
             "in order. Say plainly which routes the weather puts in question "

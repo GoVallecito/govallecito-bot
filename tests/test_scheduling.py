@@ -329,6 +329,49 @@ def test_a_late_run_is_told_it_is_late():
     assert "RUNNING LATE" in brief
 
 
+# --- the clock time in the stamp -------------------------------------------------
+
+def _evening_written_bundle():
+    """A 9:56pm run writing the next morning's post. The real 2026-09-25 shape."""
+    return {
+        "post_for_weekday": "Friday", "post_for_date": "2026-09-25",
+        "post_for_stamp": "09/25/26",
+        "generated_at": "2026-09-24T21:56:00-06:00",
+        "season": "fall", "day_type": "school day", "is_late": False,
+        "recent_posts": [], "alerts": [], "bands": {}, "missing": [],
+    }
+
+
+def test_the_school_call_brief_says_what_the_stamps_clock_time_is():
+    """The brief handed over the date and stopped, so the time was invented.
+
+    post_for_stamp is date only. Nothing told the model, or the review panel
+    reading the same brief, where 5:52am came from, and COMPOSED AT sits two
+    lines below looking like an answer.
+    """
+    from wx import compose as CO
+    brief = CO.render_bundle(_evening_written_bundle(), post_type="school_call")
+    assert "when the post GOES OUT, about 5:45am" in brief
+    assert "never the COMPOSED AT time" in brief
+
+
+def test_the_composed_at_line_disclaims_the_time_as_well_as_the_date():
+    from wx import compose as CO
+    brief = CO.render_bundle(_evening_written_bundle(), post_type="school_call")
+    stated = brief.split("COMPOSED AT:", 1)[1]
+    assert "NOT necessarily the" in stated
+    assert "date OR the time the post is for" in stated
+
+
+def test_a_slot_with_no_agreed_publish_time_invents_none():
+    """Saying the wrong time would be worse than saying only what it is not."""
+    from wx import compose as CO
+    brief = CO.render_bundle(_evening_written_bundle(), post_type="evening")
+    assert "when the post GOES OUT," in brief
+    assert "never the COMPOSED AT time" in brief
+    assert "about" not in brief.split("GOES OUT", 1)[1].split("\n", 1)[0]
+
+
 def test_the_system_prompt_contains_no_dash_it_forbids():
     """The prompt banned em dashes in a document full of them.
 
