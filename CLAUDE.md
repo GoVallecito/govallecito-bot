@@ -53,7 +53,11 @@ scripts/wx/              the forecaster
   run_storm_watch.py, selftest.py, promote_draft.py, email_digest.py
 tools/
   draft-lint.mjs         deterministic draft linter (Node 20+, zero deps)
-  draft-lint.test.mjs    its fixtures-based self-test (`npm test`)
+  draft-lint.test.mjs    its fixtures-based self-test (`npm test`), and the
+                         cross-gate parity check over fixtures/road-cases.json
+  road-gate-probe.py     runs that corpus through guardrails, so `npm test`
+                         (the only suite CI runs) checks BOTH road gates
+  fixtures/road-cases.json  the shared road-status corpus
   lint-review-issue.sh   prepends the lint verdict to the review issue
   daily-audit.sh         the daily deterministic review
 state/                   the ONLY memory across runs; workflows commit it back
@@ -61,7 +65,7 @@ site/weather/            published forecasts + feed.json (the site reads this)
 site/weather/_pending/   HELD drafts, awaiting promotion. The feed ignores them.
 site-astro/              copies of the Astro pages that belong in the SITE repo
 config/                  hand-edited inputs (emergency_override.json, almanac)
-tests/                   176 offline pytest tests, no network, no API key
+tests/                   214 offline pytest tests, no network, no API key
 ```
 
 ## Workflows (all in `.github/workflows/`)
@@ -132,9 +136,15 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
   conditions", not present progressive ("are getting wet pavement"). Only
   forecast/conditional: "should", "I'd expect", "looks like it'll", then link
   cotrip.org for status. Enforced in three places that must agree:
-  `guardrails.ROAD_STATUS_CLAIMS` + `present_tense_road_claim()`, the roads block
-  in `compose.render_bundle()`, and rule 2 of `tools/draft-lint.mjs`. The
-  guardrail relaxes automatically if real CDOT data ever lands in the bundle.
+  `guardrails.road_status_claim()`, the roads block in `compose.render_bundle()`,
+  and rule 2 of `tools/draft-lint.mjs`. The guardrail relaxes automatically if
+  real CDOT data ever lands in the bundle.
+  **Both gates are pinned to one corpus, `tools/fixtures/road-cases.json`** —
+  add a case there, never to a single suite. These rules are shallow syntax done
+  with regexes, so a change that looks local usually is not: five review rounds
+  on PR #37 found 31 defects, about two thirds of them regressions introduced by
+  the previous round's fix. The corpus is what holds that rate down, and each
+  case carries a note saying what it guards.
 - **Other non-negotiables** (persona + gate, BLOCK unless noted): never claim a
   meteorology credential; never state a number, event or trend the brief does not
   contain; never a bare percentage (only "% of median" / "of full pool"); never
@@ -150,8 +160,8 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
 
 ```bash
 pip install -r requirements.txt && pip install pytest   # pytest is not pinned
-python -m pytest tests/ -q      # 176 passed, offline, no keys, no network
-npm test                        # 20 subtests: node --test tools/draft-lint.test.mjs
+python -m pytest tests/ -q      # 214 passed, offline, no keys, no network
+npm test                        # 69 subtests: node --test tools/draft-lint.test.mjs
 ```
 
 Both were run in this repo and both pass. In Claude Code on the web,

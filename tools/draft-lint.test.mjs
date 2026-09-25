@@ -325,3 +325,60 @@ test('missing --date is a usage error', () => {
   const r = spawnSync(process.execPath, [LINT, join(FIX, 'clean.md')], { encoding: 'utf8' });
   assert.equal(r.status, 2);
 });
+
+// --- cross-gate parity -----------------------------------------------------
+//
+// tools/fixtures/road-cases.json is the shared road-status corpus. This block
+// runs it through rule 2, and through the PUBLISHING gate via
+// tools/road-gate-probe.py, and requires all three to agree.
+//
+// It lives here rather than only in tests/test_road_gate_parity.py because
+// `npm test` is the only suite CI runs (daily-audit.yml), so this is the one
+// place a divergence gets caught automatically. The two gates drifting apart
+// is not hypothetical: it is the bug PR #35 was opened for -- draft-lint.mjs
+// caught road claims hours later on the review issue that guardrails.py never
+// saw, so the rewrite loop that could have fixed them never fired.
+
+const CASES = JSON.parse(readFileSync(join(FIX, 'road-cases.json'), 'utf8')).cases;
+
+// Only rule 2's verdict; a bare sentence dropped into clean.md trips other
+// rules (personal-count and friends) that this corpus says nothing about.
+const roadVerdict = (name, text) =>
+  lintBody(name, text).fails.includes('road-status') ? 'claim' : 'clean';
+
+test('the linter agrees with the road corpus', () => {
+  const wrong = [];
+  CASES.forEach((c, i) => {
+    const got = roadVerdict(`road-cases-${i}.md`, c.text);
+    if (got !== c.verdict)
+      wrong.push(`  wanted ${c.verdict.padEnd(5)} got ${got.padEnd(5)} ${JSON.stringify(c.text)}\n      ${c.note}`);
+  });
+  assert.equal(wrong.length, 0,
+    `draft-lint.mjs disagrees with tools/fixtures/road-cases.json:\n${wrong.join('\n')}`);
+});
+
+test('both gates reach the same verdict on every case', () => {
+  const probe = spawnSync('python3', [join(here, 'road-gate-probe.py')], { encoding: 'utf8' });
+  if (probe.error || probe.status === null) {
+    // Not a silent pass: say so loudly, because a skipped parity check looks
+    // exactly like a passing one in the TAP output.
+    assert.fail(`could not run tools/road-gate-probe.py (${probe.error?.code ?? 'no status'}). ` +
+      'python3 must be on PATH for the cross-gate check; guardrails.py needs only the stdlib.');
+  }
+  assert.equal(probe.status, 0, `road-gate-probe.py exited ${probe.status}: ${probe.stderr}`);
+
+  const gate = JSON.parse(probe.stdout).results;
+  assert.equal(gate.length, CASES.length, 'the probe saw a different corpus');
+
+  const disagreements = [];
+  CASES.forEach((c, i) => {
+    assert.equal(gate[i].text, c.text, 'corpus order changed under the probe');
+    const lint = roadVerdict(`road-cases-x-${i}.md`, c.text);
+    if (lint !== gate[i].verdict)
+      disagreements.push(`  guardrails ${gate[i].verdict.padEnd(5)} lint ${lint.padEnd(5)} ` +
+        `${JSON.stringify(c.text)}\n      ${c.note}`);
+  });
+  assert.equal(disagreements.length, 0,
+    'the two gates disagree. system.md decides and the linter is the one that is wrong:\n' +
+    disagreements.join('\n'));
+});
