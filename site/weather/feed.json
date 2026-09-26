@@ -1,8 +1,57 @@
 {
-  "generatedAt": "2026-09-18T05:23:49-06:00",
-  "count": 8,
+  "generatedAt": "2026-09-26T15:25:51-06:00",
+  "count": 9,
   "truncated": false,
   "posts": [
+    {
+      "title": "Snow line near 11,350 ft",
+      "date": "2026-09-26T05:14:56.879437-06:00",
+      "forDate": "2026-09-26",
+      "postType": "school_call",
+      "snowLineFt": 11350,
+      "snowLineTrend": "steady",
+      "bands": {
+        "durango": {
+          "elevationFt": 6500,
+          "precipType": "rain",
+          "label": "Durango and the Animas Valley"
+        },
+        "bayfield": {
+          "elevationFt": 6900,
+          "precipType": "rain",
+          "label": "Bayfield and up the Pine"
+        },
+        "vallecito": {
+          "elevationFt": 7650,
+          "precipType": "rain",
+          "label": "Vallecito and the Florida"
+        },
+        "weminuche": {
+          "elevationFt": 10500,
+          "precipType": "rain",
+          "label": "The high Weminuche"
+        }
+      },
+      "basinPercentOfMedian": null,
+      "alerts": [],
+      "sources": [
+        "CAIC map-layer",
+        "CDOT",
+        "Colorado DWR (CDSS)",
+        "NRCS SNOTEL",
+        "NWS GJT AFD",
+        "NWS alerts",
+        "Open-Meteo bayfield",
+        "Open-Meteo durango",
+        "Open-Meteo vallecito",
+        "Open-Meteo weminuche",
+        "Pass forecast (Open-Meteo)",
+        "USGS NWIS"
+      ],
+      "generatedBy": "govallecito-wx",
+      "slug": "2026-09-26-snow-line-near-11350-ft",
+      "body": "09/26/26 5:45am: The dog wanted out early and the air's got that cool edge to it this morning.\n\nDry day across the board. Durango and the Animas Valley (6,500') should hit the low to mid 70s with clear skies through the afternoon. Bayfield and up the Pine (6,900') looking at the same, topping out in the low 70s. Vallecito and the Florida (7,650') will run a few degrees cooler, upper 60s, but still plenty of sun. The high Weminuche (10,500'+) stays in the mid 50s.\n\nZero precip in the forecast for today. The models all agree on that, which doesn't happen often enough to ignore when it does.\n\nTomorrow's where it gets interesting. The GFS is keeping things mostly dry through Sunday evening, maybe a hundredth or two. The Euro, ICON and GEM are all wetter, with the GEM pushing 0.07\" for the Florida drainage by late evening. That's not much, but the discussion out of Grand Junction is flagging early next week as the real question. They're watching tropical moisture from a pair of hurricanes, Odalys and Polo, that could get pulled north into the Four Corners by Monday. PWATs running 200% of normal if that setup holds, and they're saying 1-3\" of rain Monday through Wednesday for the southern San Juans, with localized heavier amounts possible. The Euro's more bullish on it than the GFS, and the clusters aren't lining up yet, so confidence is low on how much actually makes it here versus staying south in Arizona and New Mexico.\n\nSnow line for Sunday evening sits around 11,350 feet, so the passes stay rain at pass level. Coal Bank, Molas and Red Mountain should stay dry through the weekend. Wolf Creek could see wet pavement Sunday evening. Current status is at cotrip.org, the forecast's mine and the road conditions are theirs.\n\nAnybody planning to get on the water at the lake this weekend?"
+    },
     {
       "title": "Wet overnight, drying out",
       "date": "2026-09-18T05:01:39.174590-06:00",
