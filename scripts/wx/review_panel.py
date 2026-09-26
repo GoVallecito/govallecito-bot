@@ -139,11 +139,22 @@ Check hardest, because these keep shipping:
 the construction of any recent post, even with nouns swapped.
 - Exactly one personal detail, and it must not contain a measurement unless the \
 brief supports one.
-- Roads and passes only in future or conditional tense.
 - Ranges, not point values, for gusts and amounts.
 - No bold, no headers, no bullet lists, no em dashes, no hashtags, no emoji.
 - The zones walk in order with elevations.
 - Rotated hedging: not the same grain-of-salt phrasing as recent posts.
+
+ROAD AND PASS TENSE IS NOT YOURS. An automated rule gate decides it before you \
+see the draft, deterministically, and it is the authority. DO NOT raise a road \
+or pass tense issue at any severity, not critical, not major, not minor. A road \
+or pass sentence hedged with should, would, could, might, I'd expect, looks \
+like, or looking like is CORRECT BY CONSTRUCTION and needs no further hedging \
+-- "Coal Bank should stay dry through the weekend" and "Wolf Creek could see \
+wet pavement Sunday evening" are exactly the shape the rulebook asks for. A \
+road sentence that is genuinely wrong states what a road IS in the present \
+tense, and the gate has already caught it and blocked the draft before this \
+review. If you think a hedged road sentence still needs work, you are wrong: \
+say nothing about it.
 
 === PERSONA RULEBOOK START ===
 {persona}
@@ -483,6 +494,62 @@ def _recent_context(bundle, recent_bodies):
     return "\n".join(parts) or "(no recent posts on file)"
 
 
+def _apply_fixes(text, reports):
+    """Spend the fixes the panel is already holding, on the last round.
+
+    THE BUG THIS FIXES: the final round used to be told "if it is not
+    publishable as written, REJECT rather than REVISE", and the magistrate
+    obeyed it literally. On 2026-09-26 it wrote "while all four issues are
+    fixable with simple edits, the rules for this round require rejection" --
+    and every one of those four arrived with an exact replacement string from
+    the editor. The panel threw away the answer it was holding and the day
+    went dark.
+
+    This is a literal string substitution, deliberately: no extra model call,
+    so nothing new can be invented here. A suggestion whose quoted sentence is
+    no longer in the draft (an earlier fix already rewrote it) is skipped
+    rather than guessed at.
+
+    Returns (patched_text, applied, skipped) where applied/skipped are lists
+    of {"who", "severity", "quote", "fix"} for the transcript.
+    """
+    applied, skipped = [], []
+    for who, rep in reports:
+        for i in rep.get("issues", []):
+            quote, fix = (i.get("quote") or "").strip(), (i.get("fix") or "").strip()
+            rec = {"who": who, "severity": i.get("severity", "minor"),
+                   "quote": quote, "fix": fix}
+            if not quote or not fix or fix == quote:
+                continue                       # advisory, nothing concrete to spend
+            if quote not in text:
+                skipped.append(rec)            # superseded by an earlier substitution
+                continue
+            text = text.replace(quote, fix, 1)
+            applied.append(rec)
+    return text, applied, skipped
+
+
+def _blocking_fact_issues(facts, text):
+    """Critical/major fact-checker issues whose sentence is still in the text.
+
+    The fact checker is the only guard against stating a number or an event the
+    brief does not contain, and a wrong forecast at 5:45am is not recoverable.
+    So the auto-patch above may never approve over one of these: if the quoted
+    sentence survived the patch, the claim it objected to is still in the post.
+
+    Issues sharing a quote are deduplicated last-wins, because a reviewer that
+    speaks twice about the same sentence is revising its own opinion -- on
+    2026-09-26 it flagged a hurricane pair, then immediately wrote "on second
+    review ... this is actually supported" about the very same sentence.
+    """
+    by_quote = {}
+    for i in facts.get("issues", []):
+        if i.get("severity") in ("critical", "major"):
+            by_quote[_norm(i.get("quote"))] = i
+    return [i for i in by_quote.values()
+            if (i.get("quote") or "").strip() and (i.get("quote") or "").strip() in text]
+
+
 def _gate_flags(bundle, text, calibrated):
     """What the deterministic gate says about this text, minus the review-
     everything policy flag, which is this panel's job now."""
@@ -529,15 +596,36 @@ def fact_check(llm, brief, text):
     return _normalize_report(obj, "fact checker", diag, brief=brief)
 
 
-def edit_review(llm, text, bundle, recent_bodies, brief=None):
+def edit_review(llm, text, bundle, recent_bodies, brief=None,
+                gate_verdict=None, gate_reasons=None):
     system = EDITOR_SYSTEM.replace("{persona}", CO.load_system_prompt())
     # The editor gets the brief so its fixes can only draw on numbers and
     # readings that exist. Without it, on 2026-09-25 it wrote replacements
     # containing "The gauge caught 0.08 overnight" and "2-4 inches" out of the
     # persona's own examples, and the reviser dutifully used them.
     brief = brief or CO.render_bundle(bundle, "school_call")
+    # It also gets the gate's verdict, because on 2026-09-26 it raised two
+    # [critical] road issues against sentences the gate had just passed
+    # ("should stay dry", "could see wet pavement" -- both correctly hedged),
+    # and the magistrate leaned on those two false positives to reject.
+    if gate_verdict is None:
+        gate_block = ""
+    elif gate_reasons:
+        gate_block = ("AUTOMATED RULE GATE, ALREADY RUN ON THIS DRAFT: "
+                      f"{gate_verdict.upper()}\n"
+                      + "\n".join(f"- {r}" for r in gate_reasons)
+                      + "\nEverything the gate did NOT flag has passed the "
+                        "mechanical rules. Do not re-litigate it.\n\n")
+    else:
+        gate_block = (f"AUTOMATED RULE GATE, ALREADY RUN ON THIS DRAFT: "
+                      f"{gate_verdict.upper()}, nothing flagged.\n"
+                      "Every mechanical rule it owns -- road and pass tense "
+                      "above all -- has passed on this exact text. Do not "
+                      "re-litigate any of them. Judge voice, structure, "
+                      "repetition and local accuracy.\n\n")
     msgs = [{"role": "system", "content": system},
             {"role": "user", "content":
+                f"{gate_block}"
                 f"DATA BRIEF THE WRITER HAD (reference only):\n{brief}\n\n"
                 f"THE FORECASTER'S RECENT POSTS:\n{_recent_context(bundle, recent_bodies)}"
                 f"\n\nDRAFT TO REVIEW:\n{text}"}]
@@ -548,8 +636,18 @@ def edit_review(llm, text, bundle, recent_bodies, brief=None):
 def rule(llm, brief, text, facts, editor, gate_verdict, gate_reasons, round_no, rounds):
     gate = ("none" if not gate_reasons else
             f"{gate_verdict.upper()}:\n" + "\n".join(f"- {r}" for r in gate_reasons))
-    last = ("\nTHIS IS THE FINAL ROUND. If it is not publishable as written, "
-            "REJECT rather than REVISE." if round_no >= rounds else "")
+    # Not "REJECT rather than REVISE": that line cost eight consecutive days.
+    # The magistrate obeyed it literally on 2026-09-26 and rejected a draft
+    # whose four issues all arrived with exact replacement strings. After this
+    # ruling the panel applies those replacements itself and re-runs the gate,
+    # so the useful answer here is which issues genuinely stand.
+    last = ("\nTHIS IS THE FINAL ROUND: there is no revision pass after you. "
+            "Rule on the draft as written. Any issue you or a reviewer leaves "
+            "standing WITH a concrete replacement will be applied to the text "
+            "automatically and re-checked against the rule gate, so list the "
+            "replacement you want rather than withholding it. REJECT only if "
+            "what stands cannot be fixed by substituting sentences."
+            if round_no >= rounds else "")
     msgs = [{"role": "system", "content": MAGISTRATE_SYSTEM},
             {"role": "user", "content":
                 f"ROUND {round_no} of {rounds}.{last}\n\n"
@@ -587,7 +685,8 @@ def run_panel(bundle, text, *, slot, writer_llm, review_llm=None, calibrated=Fal
     for n in range(1, rounds + 1):
         gate_verdict, gate_reasons = _gate_flags(bundle, text, calibrated)
         facts = fact_check(review_llm, brief, text)
-        editor = edit_review(review_llm, text, bundle, recent_bodies, brief=brief)
+        editor = edit_review(review_llm, text, bundle, recent_bodies, brief=brief,
+                             gate_verdict=gate_verdict, gate_reasons=gate_reasons)
         ruling = rule(review_llm, brief, text, facts, editor,
                       gate_verdict, gate_reasons, n, rounds)
 
@@ -628,6 +727,34 @@ def run_panel(bundle, text, *, slot, writer_llm, review_llm=None, calibrated=Fal
             return {"approved": True, "text": text, "title": ruling.get("title", ""),
                     "rounds": history,
                     "reason": f"approved by the magistrate in round {n}"}
+        # FINAL ROUND: spend the fixes rather than discarding them. Anything the
+        # reviewers supplied a concrete replacement for is applied literally,
+        # the deterministic gate re-runs on the result, and the post publishes
+        # only if that gate PASSES and no fact-checker objection survived the
+        # patch. Reject stays reachable: a draft whose remaining issues carry no
+        # replacement, or that still fails the gate, is held exactly as before.
+        if n == rounds and ruling["ruling"] != APPROVE:
+            patched, applied, skipped = _apply_fixes(text, (("fact checker", facts),
+                                                            ("editor", editor)))
+            auto = {"applied": applied, "skipped": skipped, "patched": patched != text}
+            if patched != text:
+                g2_verdict, g2_reasons = _gate_flags(bundle, patched, calibrated)
+                blocking = _blocking_fact_issues(facts, patched)
+                auto["gate"] = [g2_verdict, g2_reasons]
+                auto["blocking_facts"] = [i.get("quote") for i in blocking]
+                record["autopatch"] = auto
+                log(f"panel round {n}: final-round auto-patch applied "
+                    f"{len(applied)} replacement(s), skipped {len(skipped)}; "
+                    f"gate={g2_verdict}, unresolved fact issues={len(blocking)}")
+                if g2_verdict == G.PASS and not blocking:
+                    return {"approved": True, "text": patched,
+                            "title": ruling.get("title", ""), "rounds": history,
+                            "reason": (f"approved in round {n} after applying "
+                                       f"{len(applied)} reviewer replacement(s) "
+                                       f"to the writer's text")}
+            else:
+                record["autopatch"] = auto
+
         if ruling["ruling"] == REJECT:
             return {"approved": False, "text": text, "title": "", "rounds": history,
                     "reason": f"rejected by the magistrate in round {n}: "
@@ -677,6 +804,24 @@ def transcript(result, bundle, slot):
             L += ["Required changes:"] + [f"- {c}" for c in ru["required_changes"]] + [""]
         if ru.get("dismissed"):
             L += ["Dismissed:"] + [f"- {d}" for d in ru["dismissed"]] + [""]
+        ap = r.get("autopatch")
+        if ap and (ap.get("applied") or ap.get("skipped")):
+            L += ["### Final-round edits applied to the writer's text", "",
+                  "The published text below is NOT byte-identical to what the "
+                  "writer composed. These reviewer replacements were substituted "
+                  "literally, with no further model call:", ""]
+            L += [f"- [{a['severity']}, {a['who']}] \"{a['quote']}\" -> \"{a['fix']}\""
+                  for a in ap.get("applied", [])] or ["- (none applied)"]
+            if ap.get("skipped"):
+                L += ["", "Skipped, the quoted sentence was no longer present:"]
+                L += [f"- [{s['who']}] \"{s['quote']}\"" for s in ap["skipped"]]
+            if ap.get("gate"):
+                L += ["", f"Rule gate on the patched text: {ap['gate'][0]}"]
+                L += [f"- {x}" for x in ap["gate"][1]] or ["- nothing flagged"]
+            if ap.get("blocking_facts"):
+                L += ["", "Fact-checker objections still standing after the patch:"]
+                L += [f"- \"{q}\"" for q in ap["blocking_facts"]]
+            L += [""]
         for who, rep in (("Fact checker", r["fact_check"]), ("Editor", r["editor"]),
                          ("Magistrate", ru)):
             if rep.get("raw_reply") is not None:

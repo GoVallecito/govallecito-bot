@@ -67,7 +67,27 @@ def slot_for_hour(hour):
 def determine_slot(now=None, forced=None, ledger=None):
     forced = forced or os.environ.get("FORCE_SLOT")
     if forced in ("school_call", "evening", "storm_setup", "totals", "life_safety"):
-        print(f"FORCE_SLOT={forced} -- skipping the clock check.")
+        # A forced run outside the slot's real window is a smoke test, and a
+        # smoke test must not claim the day.
+        #
+        # THE BUG THIS FIXES: on 2026-09-24 at 22:02 a FORCE_SLOT smoke test
+        # composed a school_call for 2026-09-25 and recorded the slot in the
+        # ledger. Its draft was then thrown away (commit e6b2bbe, "wx: discard
+        # smoke-test draft"), but the ledger entry stayed, so every real run on
+        # 09-25 exited with "school_call for 2026-09-25 already went out at
+        # 2026-09-24T22:02:12-06:00". 09-25 has no post at all, published or
+        # staged: a test consumed the morning.
+        lo, hi = C.SLOT_WINDOWS.get(forced, (None, None))
+        at = now or datetime.now(TZ)
+        in_window = lo is not None and lo <= at.hour < hi
+        if not in_window and os.environ.get("WX_DRY_LEDGER") is None:
+            os.environ["WX_DRY_LEDGER"] = "true"
+        dry = _dry_ledger()
+        where = ("inside" if in_window else "OUTSIDE") + " its real window"
+        print(f"FORCE_SLOT={forced} -- skipping the clock check. "
+              f"{at:%Y-%m-%d %H:%M %Z} is {where}; this run "
+              + ("will NOT claim the slot (WX_DRY_LEDGER)."
+                 if dry else "WILL claim the slot in the ledger."))
         return forced
     now = now or datetime.now(TZ)
     slot = slot_for_hour(now.hour)
@@ -520,8 +540,23 @@ def _write_panel_transcript(panel, bundle, slot):
         print(f"[panel] could not write transcript: {exc}")
 
 
+def _dry_ledger():
+    """True when this run must not claim the day in the ledger.
+
+    Set automatically for a FORCE_SLOT run outside the slot's real window (see
+    determine_slot), or by hand with WX_DRY_LEDGER=true for any dry exercise of
+    the pipeline. An explicit WX_DRY_LEDGER always wins over the default.
+    """
+    return (os.environ.get("WX_DRY_LEDGER") or "").strip().lower() in ("1", "true", "yes")
+
+
 def _record_day(bundle, slot, verdict):
     """Mark the slot done for the day the post was FOR."""
+    if _dry_ledger():
+        print(f"[ledger] WX_DRY_LEDGER set -- NOT recording {slot} for "
+              f"{bundle.get('post_for_date') or bundle.get('local_date')}. "
+              f"The next in-window run for this date will compose normally.")
+        return
     try:
         _ledger().record(bundle.get("post_for_date") or bundle.get("local_date"),
                          slot, note=verdict)
@@ -600,6 +635,38 @@ def _stage_for_site(text, bundle, slot, site_dir=None):
         print(f"[site] could not stage draft: {exc}")
 
 
+def held_day_streak(state_dir=None, site_dir=None):
+    """Consecutive days, newest first, that produced a draft but no published post.
+
+    THE SILENCE THIS ENDS: the forecaster composed a draft every morning from
+    2026-09-19 to 2026-09-26 and the panel held all eight. Every run exited
+    zero, every log looked ordinary, and nothing anywhere counted. One held
+    draft is a bad morning; eight in a row is a broken pipeline, and the only
+    way to tell them apart is to count.
+
+    A day is held when state/drafts has a draft for it and site/weather has no
+    post for it. The walk stops at the first day that published, so a normal
+    morning resets the counter to 0.
+    """
+    import glob
+    import re as _re
+    try:
+        drafts = {_re.match(r"(\d{4}-\d{2}-\d{2})", os.path.basename(p)).group(1)
+                  for p in glob.glob(os.path.join(state_dir or _state_dir(), "drafts", "*.md"))
+                  if _re.match(r"\d{4}-\d{2}-\d{2}", os.path.basename(p))}
+        published = {_re.match(r"(\d{4}-\d{2}-\d{2})", os.path.basename(p)).group(1)
+                     for p in glob.glob(os.path.join(site_dir or SITE.site_dir(), "20*.md"))
+                     if _re.match(r"\d{4}-\d{2}-\d{2}", os.path.basename(p))}
+    except Exception:  # noqa: BLE001 -- a counter must never break a run
+        return 0
+    streak = 0
+    for day in sorted(drafts, reverse=True):
+        if day in published:
+            break
+        streak += 1
+    return streak
+
+
 def write_status(state, detail, bundle=None, slot=None, hint=None, draft=None):
     """Leave a readable record of what this run did, committed to the repo.
 
@@ -614,6 +681,14 @@ def write_status(state, detail, bundle=None, slot=None, hint=None, draft=None):
     L.append(f"When: {C.local_now().isoformat(timespec='seconds')} (Mountain)")
     if slot:
         L.append(f"Slot: `{slot}`")
+    held = held_day_streak()
+    L.append(f"heldDays: {held}")
+    if held > 2:
+        L.append("")
+        L.append(f"> **STANDING FAILURE: {held} consecutive days held, nothing published.** "
+                 "This is a pipeline problem, not a run of bad drafts. Check the panel "
+                 "transcripts in `state/panel/` for the same objection repeating, and "
+                 "`site/weather/_pending/` for what is stacking up.")
     L.append("")
     if detail:
         L.append("## Detail")

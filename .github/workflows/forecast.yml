@@ -231,3 +231,15 @@ jobs:
         if: success() && env.HEALTHCHECK_URL != ''
         run: curl -fsS -m 10 --retry 3 "$HEALTHCHECK_URL"
 
+      # The step above skips itself when the secret is absent, which made an
+      # unmonitored repo look exactly like a healthy one: the forecaster held
+      # every draft from 2026-09-19 to 2026-09-26 and nothing anywhere said so.
+      # This says it, in every run, so the gap is visible from the run list.
+      - name: Heartbeat NOT configured
+        if: always() && env.HEALTHCHECK_URL == ''
+        run: |
+          echo "::warning title=No forecast heartbeat::HEALTHCHECK_URL_FORECAST is not set. \
+          Nothing will alert if this workflow stops running or starts failing. \
+          Create a check at healthchecks.io and store its ping URL as the repo \
+          secret HEALTHCHECK_URL_FORECAST (see the comment at the top of this file)."
+
