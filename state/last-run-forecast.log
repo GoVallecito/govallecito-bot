@@ -1,3 +1,16 @@
-2026-09-26 04:17 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
-2026-09-26 04:17 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
+=== Vallecito forecast: school_call @ 2026-09-26 05:14 MDT ===
+snow-line calibration: offset=0.0ft active=False
+guardrails: REVIEW
+  - first-30-days policy: review everything
+review panel: fact checker + editor -> magistrate
+panel round 1/3: facts=clean editor=issues (critical/major=4) gate=pass -> magistrate REVISE
+panel round 2/3: facts=clean editor=issues (critical/major=2) gate=pass -> magistrate REVISE
+panel round 3/3: facts=issues editor=issues (critical/major=6) gate=pass -> magistrate REJECT
+panel transcript -> state/panel/2026-09-26-school_call.md
+Archived draft -> state/drafts/2026-09-26-school_call.md
+HELD FOR REVIEW -- draft saved to output/draft.txt
+staged for review -> site/weather/_pending/2026-09-26-snow-line-near-11350-ft.md
+  promote with: python scripts/wx/promote_draft.py 2026-09-26
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/52
+Wrote state/forecast-status.md
 exit=0

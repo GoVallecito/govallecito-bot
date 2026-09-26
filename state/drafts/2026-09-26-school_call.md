@@ -1,24 +1,9 @@
-# Forecast run: held for review
+# Saturday, 2026-09-26, school_call
 
-When: 2026-09-26T05:16:53-06:00 (Mountain)
-Slot: `school_call`
+Verdict: `review` | Snow line: 11350 | Alerts: none
 
-## Detail
+---
 
-```
-review panel: rejected by the magistrate in round 3: The editor correctly identifies four issues that must be fixed, two critical (road status statements) and two major (double personal detail, reused closing construction). However, this is Round 3, the final round. The instructions state: 'THIS IS THE FINAL ROUND. If it is not publishable as written, REJECT rather than REVISE.' While all four issues are fixable with simple edits, the rules for this round require rejection of any draft that is not publishable as written. The draft cannot publish with road status statements that violate the road rule, and it cannot publish with a reused closing question construction.
-```
-
-## What the data looked like
-
-- Snow line: 11350
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/26/26 5:45am: The dog wanted out early and the air's got that cool edge to it this morning.
 
 Dry day across the board. Durango and the Animas Valley (6,500') should hit the low to mid 70s with clear skies through the afternoon. Bayfield and up the Pine (6,900') looking at the same, topping out in the low 70s. Vallecito and the Florida (7,650') will run a few degrees cooler, upper 60s, but still plenty of sun. The high Weminuche (10,500'+) stays in the mid 50s.
@@ -30,4 +15,3 @@ Tomorrow's where it gets interesting. The GFS is keeping things mostly dry throu
 Snow line for Sunday evening sits around 11,350 feet, so the passes stay rain at pass level. Coal Bank, Molas and Red Mountain should stay dry through the weekend. Wolf Creek could see wet pavement Sunday evening. Current status is at cotrip.org, the forecast's mine and the road conditions are theirs.
 
 Anybody planning to get on the water at the lake this weekend?
-```
