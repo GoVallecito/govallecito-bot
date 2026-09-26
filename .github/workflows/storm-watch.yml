@@ -112,6 +112,23 @@ jobs:
           echo "::error::could not push after 5 attempts"
           exit 1
 
+      # An absent secret makes the heartbeat below skip itself, which makes an
+      # unmonitored workflow look exactly like a healthy one. That is how the
+      # forecaster held every draft from 2026-09-19 to 2026-09-26 with nothing
+      # anywhere saying so. This says it, in every run, so the gap shows up in
+      # the run list instead of being silent.
+      #
+      # Deliberately BEFORE the heartbeat, so that step keeps its "last step"
+      # guarantee. The two can never both run: this one fires only when the
+      # secret is missing, the heartbeat only when it is present.
+      - name: Heartbeat NOT configured
+        if: always() && env.HEALTHCHECK_URL == ''
+        run: |
+          echo "::warning title=No storm watch heartbeat::HEALTHCHECK_URL_STORM_WATCH is not set. \
+          Nothing will alert if this workflow stops running or starts failing. \
+          Create a check at healthchecks.io and store its ping URL as the repo \
+          secret HEALTHCHECK_URL_STORM_WATCH (see the comment at the top of this file)."
+
       # Heartbeat -- MUST stay the last step in this job.
       #
       # `if: success()` is the whole point: it does not run when any earlier
