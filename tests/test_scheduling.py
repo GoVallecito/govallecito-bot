@@ -801,3 +801,74 @@ class TestHeldDayStreak:
         from wx import run_forecast as RF
         assert RF.held_day_streak(state_dir=str(tmp_path / "nope"),
                                   site_dir=str(tmp_path / "also-nope")) == 0
+
+
+class TestHeldStreakAlarm:
+    """heldDays only ever wrote a number into a file somebody had to go read.
+
+    That is the same passivity that let 2026-09-19..26 pass unnoticed. A
+    heartbeat cannot catch this failure -- every one of those runs succeeded --
+    so the streak needs an alarm of its own.
+    """
+
+    def _wire(self, monkeypatch, streak, flags=None):
+        from wx import run_forecast as RF
+        sent, flagged = [], dict(flags or {})
+        monkeypatch.setattr(RF, "held_day_streak", lambda *a, **k: streak)
+        monkeypatch.setattr(RF.N, "held_streak_reported",
+                            lambda *a, **k: sent.append(a) or {"notified": True})
+
+        class L:
+            def flagged(self, day, name): return flagged.get((day, name), False)
+            def flag(self, day, name): flagged[(day, name)] = True
+        monkeypatch.setattr(RF, "_ledger", lambda *a, **k: L())
+        return RF, sent, flagged
+
+    def test_quiet_below_the_threshold(self, monkeypatch):
+        """A held draft is normal. Two is not yet a pattern."""
+        for streak in (0, 1, 2):
+            RF, sent, _ = self._wire(monkeypatch, streak)
+            RF._report_held_streak_if_needed()
+            assert sent == [], f"alarmed at streak={streak}"
+
+    def test_fires_at_three(self, monkeypatch):
+        RF, sent, _ = self._wire(monkeypatch, 3)
+        RF._report_held_streak_if_needed()
+        assert len(sent) == 1
+        assert sent[0][0] == 3
+
+    def test_only_once_a_day(self, monkeypatch):
+        RF, sent, _ = self._wire(monkeypatch, 8)
+        RF._report_held_streak_if_needed()
+        RF._report_held_streak_if_needed()
+        RF._report_held_streak_if_needed()
+        assert len(sent) == 1, "the forecaster runs hourly; one issue a day"
+
+    def test_a_notify_failure_never_breaks_the_run(self, monkeypatch):
+        from wx import run_forecast as RF
+        monkeypatch.setattr(RF, "held_day_streak", lambda *a, **k: 9)
+
+        def boom(*a, **k):
+            raise RuntimeError("GitHub down")
+        monkeypatch.setattr(RF.N, "held_streak_reported", boom)
+
+        class L:
+            def flagged(self, *a): return False
+            def flag(self, *a): pass
+        monkeypatch.setattr(RF, "_ledger", lambda *a, **k: L())
+        RF._report_held_streak_if_needed()   # must not raise
+
+    def test_one_issue_per_streak_not_one_per_day(self, monkeypatch):
+        """The title is constant so the dedup check collapses a whole streak
+        into a single issue. Eight held days must not file eight issues."""
+        from wx import notify as N
+        monkeypatch.setattr(N, "_repo", lambda: "o/r")
+        monkeypatch.setattr(N, "_token", lambda: "t")
+        monkeypatch.setattr(N, "_open_issue_titled",
+                            lambda repo, token, title: {"number": 41})
+        posted = []
+        monkeypatch.setattr(N.urllib.request, "urlopen",
+                            lambda *a, **k: posted.append(1))
+        out = N.held_streak_reported(8, "2026-09-18", "six drafts")
+        assert out["notified"] is False and out["reason"] == "already open"
+        assert posted == [], "filed a duplicate issue for the same streak"

@@ -293,3 +293,98 @@ def miss_reported(slot, date_iso, streak=None):
     except Exception as exc:  # noqa: BLE001
         print(f"[notify] could not open miss issue: {exc}")
         return {"notified": False, "reason": str(exc)}
+
+
+HELD_STREAK_TITLE = "[held] the forecaster is drafting but not publishing"
+
+
+def held_streak_reported(days, last_published=None, pending=None):
+    """Open an issue when several days in a row draft but never publish.
+
+    THE FAILURE THIS EXISTS FOR: 2026-09-19 to 2026-09-26. The forecaster
+    composed a draft every morning and the review panel held all eight. Every
+    run exited zero, every workflow was green, and the heartbeat, had it been
+    configured, would have pinged happily each time -- because nothing was
+    broken in the sense a heartbeat understands. The pipeline was running
+    perfectly and publishing nothing.
+
+    A heartbeat answers "did it run". This answers "did it produce anything",
+    which is the question that was actually going unanswered. One held draft is
+    a bad morning; three in a row is a standing failure.
+
+    ONE issue per streak, not one per day: the title is deliberately constant
+    so _open_issue_titled dedupes against it for as long as the streak lasts.
+    Close it and a later streak opens a fresh one.
+    """
+    repo, token = _repo(), _token()
+    title = HELD_STREAK_TITLE
+    lines = [
+        f"**{days} days in a row have produced a draft and published nothing.**",
+        "",
+        "This is not a run of bad drafts. A draft being held is normal and"
+        " happens; a streak means something is holding every one of them, and"
+        " the pipeline cannot clear itself.",
+        "",
+    ]
+    if last_published:
+        lines += [f"Last published post: **{last_published}**.", ""]
+    if pending:
+        lines += [f"Staged and waiting in `site/weather/_pending/`: {pending}.", ""]
+    lines += [
+        "**Where to look, in order:**",
+        "",
+        "1. `state/panel/` -- the transcripts for those days. Read them together,"
+        " not one at a time: the same objection repeating across days is the"
+        " pipeline failing, and the objection names the cause.",
+        "2. `state/forecast-status.md` -- `heldDays` and the last run's verdict.",
+        "3. `site/weather/_pending/` -- what has stacked up. Anything dated"
+        " before today forecasts a day that has passed and can never publish;"
+        " delete those.",
+        "",
+        "**To clear a good draft by hand:** `python scripts/wx/promote_draft.py"
+        " --list`, then `promote_draft.py <date>`. That publishes the exact"
+        " staged text, unchanged.",
+        "",
+    ]
+    body = "\n".join(lines)
+
+    if not repo or not token:
+        print("=" * 66)
+        print(title)
+        print("=" * 66)
+        print(body)
+        return {"notified": False, "reason": "no GITHUB_REPOSITORY/GITHUB_TOKEN"}
+
+    existing = _open_issue_titled(repo, token, title)
+    if existing:
+        print(f"[notify] held-streak issue already open (#{existing.get('number')})"
+              f"; not filing a second one")
+        return {"notified": False, "reason": "already open",
+                "issue": existing.get("number")}
+
+    def _post(with_labels):
+        fields = {"title": title, "body": body}
+        if with_labels:
+            fields["labels"] = ["wx-held"]
+        req = urllib.request.Request(
+            f"{API}/repos/{repo}/issues", data=json.dumps(fields).encode(),
+            method="POST",
+            headers={"Authorization": f"Bearer {token}",
+                     "Accept": "application/vnd.github+json",
+                     "User-Agent": "govallecito-wx"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode())
+
+    try:
+        try:
+            issue = _post(True)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 422:          # label does not exist yet
+                issue = _post(False)
+            else:
+                raise
+        print(f"[notify] opened held-streak issue #{issue.get('number')}")
+        return {"notified": True, "issue": issue.get("number")}
+    except Exception as exc:  # noqa: BLE001
+        print(f"[notify] could not open held-streak issue: {exc}")
+        return {"notified": False, "reason": str(exc)}

@@ -172,6 +172,52 @@ def _report_miss_if_needed(now, ledger=None):
         N.miss_reported(slot, today, streak)
     except Exception as exc:  # noqa: BLE001
         print(f"[notify] miss report failed: {exc}")
+    # A missed day is also a day that published nothing, so the streak may have
+    # crossed its threshold on a morning that never composed at all.
+    _report_held_streak_if_needed(now=now, ledger=ledger)
+
+
+HELD_STREAK_ALARM_AT = 3
+
+
+def _report_held_streak_if_needed(now=None, ledger=None):
+    """Turn a run of held days into a signal, at most once a day.
+
+    held_day_streak() has counted this since the 2026-09 outage, but it only
+    ever wrote the number into state/forecast-status.md, where it waits for
+    somebody to go and read it. That is the same passivity that let eight days
+    pass: the information existed and nothing carried it.
+
+    Deliberately a different alarm from _report_miss_if_needed. That one fires
+    when NO draft exists -- the schedule did not run, or every run aborted.
+    This one fires when drafts exist and none of them reach the site, which is
+    the failure a heartbeat cannot see, because every one of those runs
+    succeeded.
+    """
+    streak = held_day_streak()
+    if streak < HELD_STREAK_ALARM_AT:
+        return
+    now = now or C.local_now()
+    today = now.date().isoformat()
+    LG = _ledger(ledger)
+    if LG.flagged(today, "held_streak_reported"):
+        return
+    LG.flag(today, "held_streak_reported")
+
+    last_published, pending = None, None
+    try:
+        import glob
+        pub = sorted(glob.glob(os.path.join(SITE.site_dir(), "20*.md")), reverse=True)
+        last_published = os.path.basename(pub[0])[:10] if pub else "none on file"
+        pending = ", ".join(SITE.list_pending()) or "nothing"
+    except Exception:  # noqa: BLE001 -- detail is a nicety, the alarm is not
+        pass
+
+    print(f"HELD STREAK: {streak} consecutive days drafted and published nothing.")
+    try:
+        N.held_streak_reported(streak, last_published, pending)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[notify] held-streak report failed: {exc}")
 
 
 class LLMError(RuntimeError):
@@ -588,6 +634,11 @@ def _hold_for_review(text, verdict, reasons, bundle, slot, site_dir):
     _stage_for_site(text, bundle, slot, site_dir)
     result = N.review_requested(text, verdict, reasons, bundle, slot=slot) or {}
     for_date = bundle.get("post_for_date") or bundle.get("local_date")
+
+    # One held draft is a bad morning and this issue is the whole response to
+    # it. Several in a row is a different problem with a different fix, so it
+    # gets its own alarm rather than another copy of this one.
+    _report_held_streak_if_needed()
 
     if not result.get("notified"):
         why = result.get("reason") or "unknown"
