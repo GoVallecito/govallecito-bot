@@ -1,0 +1,10 @@
+Keeps site/weather/_pending/ in the tree when it is empty.
+
+git does not track directories, so when the last staged draft is promoted or
+deleted the directory disappears with it. Nothing breaks -- site.write_post
+calls makedirs(exist_ok=True), so staging recreates it on the next hold, and
+list_pending() returns [] when it is absent. But the staging path is easier to
+reason about when it is visibly there, and promote_draft.py --list reads as
+"nothing staged" rather than pointing at a path that does not exist.
+
+list_pending() filters to *.md, so this file is never mistaken for a draft.
