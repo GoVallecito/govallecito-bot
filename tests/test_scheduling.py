@@ -657,3 +657,147 @@ def test_the_four_review_drafts_would_now_be_caught_and_rewritten():
         v, why = G.evaluate(GOOD_BUNDLE, GOOD_DRAFT + " " + shipped)
         assert v == G.BLOCK, f"{shipped!r} -> {why}"
         assert G.text_fixable(why), "a rewrite, not a silent morning"
+
+
+def test_recent_shapes_come_from_published_posts_not_held_drafts(tmp_path, monkeypatch):
+    """Issue: eight consecutive held days, 2026-09-19 to 2026-09-26.
+
+    _recent_post_shapes() used to glob state/drafts, which archives every
+    draft whether it published or not. The editor is told the opener and the
+    closing question must not reuse the construction of any recent post, so
+    from the first hold onward every draft was judged against posts no reader
+    had ever seen -- and each hold added another phantom to the avoid list,
+    which is why one bad morning became eight. The shapes have to come from
+    what was PUBLISHED.
+    """
+    from wx import bundle
+
+    site = tmp_path / "weather"
+    pending = site / "_pending"
+    pending.mkdir(parents=True)
+
+    def post(p, name, opener, closer):
+        (p / name).write_text(
+            '---\ntitle: "t"\ndate: "x"\n---\n\n'
+            f"{opener}\n\nmiddle\n\n{closer}\n", encoding="utf-8")
+
+    post(site, "2026-09-18-published.md", "09/18/26 5:45am: PUBLISHED OPENER A", "PUBLISHED CLOSER A?")
+    post(site, "2026-09-16-published.md", "09/16/26 5:45am: PUBLISHED OPENER B", "PUBLISHED CLOSER B?")
+    for d in ("2026-09-20", "2026-09-22", "2026-09-24"):
+        post(pending, f"{d}-held.md", f"{d[5:]} 5:45am: HELD OPENER", "HELD CLOSER?")
+
+    monkeypatch.setenv("WX_SITE_DIR", str(site))
+    shapes = bundle._recent_post_shapes()
+
+    assert [s["date"] for s in shapes] == ["2026-09-18", "2026-09-16"]
+    blob = repr(shapes)
+    assert "HELD" not in blob, "a held draft reached the repetition check"
+    # front matter must be stripped, or the "opener" is a title: line
+    assert shapes[0]["opened"] == "PUBLISHED OPENER A"
+    assert shapes[0]["closed"] == "PUBLISHED CLOSER A?"
+
+
+class TestForcedRunDoesNotClaimTheDay:
+    """Issue: 2026-09-25 has no post at all, published or staged.
+
+    A FORCE_SLOT smoke test at 22:02 on 09-24 composed a school_call for 09-25
+    and recorded the slot. Its draft was discarded in commit e6b2bbe, but the
+    ledger entry stayed, so every real morning run on 09-25 exited with
+    "already went out at 2026-09-24T22:02:12-06:00". A test consumed the
+    morning.
+    """
+
+    def _at(self, hour, minute=0):
+        import datetime
+        from zoneinfo import ZoneInfo
+        return datetime.datetime(2026, 9, 24, hour, minute,
+                                 tzinfo=ZoneInfo("America/Denver"))
+
+    def _clean_env(self, monkeypatch):
+        monkeypatch.delenv("WX_DRY_LEDGER", raising=False)
+        monkeypatch.delenv("FORCE_SLOT", raising=False)
+
+    def test_forced_outside_the_window_records_nothing(self, monkeypatch):
+        from wx import run_forecast as RF
+        self._clean_env(monkeypatch)
+        assert RF.determine_slot(now=self._at(22, 2), forced="school_call") == "school_call"
+        assert RF._dry_ledger() is True
+
+        recorded = []
+        monkeypatch.setattr(RF, "_ledger",
+                            lambda: type("L", (), {"record": lambda s, *a, **k: recorded.append(a)})())
+        RF._record_day({"post_for_date": "2026-09-25"}, "school_call", "pass")
+        assert recorded == [], "the smoke test claimed the day again"
+
+    def test_forced_inside_the_window_still_claims_the_slot(self, monkeypatch):
+        from wx import run_forecast as RF
+        self._clean_env(monkeypatch)
+        assert RF.determine_slot(now=self._at(5, 46), forced="school_call") == "school_call"
+        assert RF._dry_ledger() is False
+
+        recorded = []
+        monkeypatch.setattr(RF, "_ledger",
+                            lambda: type("L", (), {"record": lambda s, *a, **k: recorded.append(a)})())
+        RF._record_day({"post_for_date": "2026-09-25"}, "school_call", "pass")
+        assert len(recorded) == 1, "a real forced run must still be idempotent"
+
+    def test_an_explicit_flag_beats_the_default(self, monkeypatch):
+        from wx import run_forecast as RF
+        self._clean_env(monkeypatch)
+        monkeypatch.setenv("WX_DRY_LEDGER", "false")
+        RF.determine_slot(now=self._at(22, 2), forced="school_call")
+        assert RF._dry_ledger() is False
+
+    def test_the_forced_log_line_says_whether_it_claimed_the_slot(self, monkeypatch, capsys):
+        from wx import run_forecast as RF
+        self._clean_env(monkeypatch)
+        RF.determine_slot(now=self._at(22, 2), forced="school_call")
+        out = capsys.readouterr().out
+        assert "OUTSIDE its real window" in out
+        assert "will NOT claim the slot" in out
+
+
+class TestHeldDayStreak:
+    """The eight-day outage counted itself nowhere. Now it does."""
+
+    def _mk(self, tmp_path, drafts, published):
+        d = tmp_path / "state" / "drafts"
+        s = tmp_path / "site" / "weather"
+        (s / "_pending").mkdir(parents=True)
+        d.mkdir(parents=True)
+        for day in drafts:
+            (d / f"{day}-school_call.md").write_text("x", encoding="utf-8")
+        for day in published:
+            (s / f"{day}-post.md").write_text("---\na: 1\n---\nbody\n", encoding="utf-8")
+        return str(d.parent), str(s)
+
+    def test_counts_the_run_of_held_days(self, tmp_path):
+        from wx import run_forecast as RF
+        state, site = self._mk(
+            tmp_path,
+            drafts=["2026-09-18", "2026-09-19", "2026-09-20", "2026-09-21",
+                    "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-26"],
+            published=["2026-09-18"])
+        assert RF.held_day_streak(state_dir=state, site_dir=site) == 8
+
+    def test_a_published_morning_resets_it(self, tmp_path):
+        from wx import run_forecast as RF
+        state, site = self._mk(tmp_path,
+                               drafts=["2026-09-25", "2026-09-26"],
+                               published=["2026-09-25", "2026-09-26"])
+        assert RF.held_day_streak(state_dir=state, site_dir=site) == 0
+
+    def test_a_held_draft_in_pending_is_not_mistaken_for_published(self, tmp_path):
+        """_pending is a subdirectory of the site dir; a held draft there must
+        not count as published or the counter always reads 0."""
+        from wx import run_forecast as RF
+        state, site = self._mk(tmp_path, drafts=["2026-09-26"], published=[])
+        import pathlib
+        pathlib.Path(site, "_pending", "2026-09-26-held.md").write_text(
+            "---\na: 1\n---\nbody\n", encoding="utf-8")
+        assert RF.held_day_streak(state_dir=state, site_dir=site) == 1
+
+    def test_the_counter_never_breaks_a_run(self, tmp_path):
+        from wx import run_forecast as RF
+        assert RF.held_day_streak(state_dir=str(tmp_path / "nope"),
+                                  site_dir=str(tmp_path / "also-nope")) == 0

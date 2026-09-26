@@ -187,23 +187,40 @@ def _is_late(hour):
 
 
 def _recent_post_shapes(n=6):
-    """First and last sentence of the last n archived drafts, newest first.
+    """First and last sentence of the last n PUBLISHED posts, newest first.
 
-    Read from state/drafts rather than kept in a separate file so it stays true
-    to what actually went out, and cwd-relative so the test suite cannot reach
-    a real draft.
+    Read from the site directory, not from state/drafts, because these shapes
+    exist to stop the writer repeating itself to READERS: the editor is told
+    the opener, the pivot and the closing question must not reuse the
+    construction of any recent post, and a reader can only have seen what was
+    published. Cwd-relative so the test suite cannot reach real content.
+
+    THE BUG THIS FIXES: this used to glob state/drafts, which archives EVERY
+    draft, held or published. Its docstring claimed that stayed "true to what
+    actually went out", and that stopped being true on 2026-09-19, the first
+    day a draft was held. From then on every draft was judged against posts no
+    reader had ever seen, and each hold added another phantom to the avoid
+    list, so a hold made the next hold more likely. On 2026-09-26 the editor
+    rejected the closer for echoing 2026-09-20, a draft still sitting
+    unpublished in site/weather/_pending. Eight days, no post.
+
+    Note that _pending/ is a SUBDIRECTORY of the site dir, so this top-level
+    glob excludes held drafts by construction, which is the whole point.
     """
     import glob
     import os as _os
-    root = _os.path.join(_os.environ.get("WX_STATE_DIR") or "state", "drafts")
+    root = _os.environ.get("WX_SITE_DIR") or _os.path.join("site", "weather")
     out = []
-    for path in sorted(glob.glob(_os.path.join(root, "*.md")), reverse=True)[:n]:
+    for path in sorted(glob.glob(_os.path.join(root, "20*.md")), reverse=True)[:n]:
         try:
             with open(path, encoding="utf-8") as fh:
                 raw = fh.read()
         except OSError:
             continue
-        body = raw.split("---", 1)[-1].strip()
+        # A published post fences its front matter in ---, so the body starts
+        # after the CLOSING fence. (The archived drafts this used to read had a
+        # single --- rule instead, which is why one split used to be enough.)
+        body = (raw.split("---", 2)[-1] if raw.startswith("---") else raw).strip()
         lines = [ln.strip() for ln in body.splitlines() if ln.strip()]
         if not lines:
             continue
