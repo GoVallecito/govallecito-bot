@@ -34,7 +34,7 @@ it.
 ## What it actually does
 
 Every hour, a free GitHub Actions job wakes up, checks the time in Colorado,
-and does nothing unless it's morning (7-11am) or afternoon (2-6pm) local time and that slot hasn't posted yet today. When it is, it:
+and does nothing unless it's morning (7-11am) or afternoon (2-6pm) local time and that slot hasn't posted yet today. (If a slot's window closes with no post, the bot opens a GitHub Issue titled `[miss] ...`, which emails you, so a silent gap can't go unnoticed again.) When it is, it:
 
 1. Pulls current weather, lake storage, streamflow, and fire-restriction /
    nearby-wildfire status from **govallecito.com's own live-conditions

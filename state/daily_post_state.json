@@ -1,5 +1,15 @@
 {
   "nearby_wildfires": {
     "last_known_count": 2
+  },
+  "miss_reports": {
+    "2026-09-25": [
+      "morning",
+      "afternoon"
+    ],
+    "2026-09-26": [
+      "morning",
+      "afternoon"
+    ]
   }
 }
