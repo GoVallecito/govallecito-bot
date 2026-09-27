@@ -872,3 +872,69 @@ class TestHeldStreakAlarm:
         out = N.held_streak_reported(8, "2026-09-18", "six drafts")
         assert out["notified"] is False and out["reason"] == "already open"
         assert posted == [], "filed a duplicate issue for the same streak"
+
+
+# --- a drifted run stamps the time it actually is ------------------------------
+#
+# On 2026-09-27 the school call composed at 6:21 and stamped 5:45am.
+# LATE_AFTER_HOUR is 7, so 6:21 is not "late", and the brief handed over the
+# published time: 36 minutes that did not happen. Survivable on a dated web
+# page, not beside the timestamp Facebook prints on its own.
+
+def _today_bundle(hhmm):
+    return {
+        "post_for_weekday": "Sunday", "post_for_date": "2026-09-27",
+        "post_for_stamp": "09/27/26",
+        "generated_at": f"2026-09-27T{hhmm}:00-06:00",
+        "season": "fall", "day_type": "weekend", "is_late": False,
+        "recent_posts": [], "alerts": [], "bands": {}, "missing": [],
+    }
+
+
+def test_a_0621_run_stamps_621_and_is_not_marked_late():
+    from wx import bundle as B
+    from wx import compose as CO
+    assert B._is_late(6) is False
+    brief = CO.render_bundle(_today_bundle("06:21"), post_type="school_call")
+    head = brief.split("COMPOSED AT:", 1)[0]
+    assert "the stamp's clock time is 6:21am" in head
+    assert "Do NOT stamp 5:45am" in head
+    assert "RUNNING LATE" not in brief
+    assert "late" not in head.lower(), "is_late owns that word and its apology"
+
+
+def test_a_0552_run_still_stamps_545():
+    from wx import compose as CO
+    brief = CO.render_bundle(_today_bundle("05:52"), post_type="school_call")
+    assert "when the post GOES OUT, about 5:45am" in brief
+    assert "5:52am" not in brief.split("COMPOSED AT:", 1)[0]
+
+
+def test_an_early_run_is_not_drifted():
+    from wx import compose as CO
+    brief = CO.render_bundle(_today_bundle("05:05"), post_type="school_call")
+    assert "when the post GOES OUT, about 5:45am" in brief
+    assert "Do NOT stamp" not in brief
+
+
+def test_the_2156_evening_run_is_never_drift_stamped():
+    """It writes the NEXT morning's post. Without _writing_for_today it would
+    be told to stamp 9:56pm on a 5:45am school call."""
+    from wx import compose as CO
+    brief = CO.render_bundle(_evening_written_bundle(), post_type="school_call")
+    head = brief.split("COMPOSED AT:", 1)[0]
+    assert "about 5:45am" in head
+    assert "9:56pm" not in head and "Do NOT stamp" not in head
+
+
+def test_minutes_past_reads_both_halves_of_the_clock():
+    from wx import compose as CO
+    assert CO._minutes_past("2026-09-27T06:21:00-06:00", "5:45am") == 36
+    assert CO._minutes_past("2026-09-27T21:56:00-06:00", "9:45pm") == 11
+    assert CO._minutes_past("2026-09-27T12:30:00-06:00", "12:15pm") == 15
+    assert CO._minutes_past("2026-09-27T00:10:00-06:00", "12:00am") == 10
+    assert CO._minutes_past("2026-09-27T05:05:00-06:00", "5:45am") == 0
+    for iso, pub in ((None, "5:45am"), ("garbage", "5:45am"),
+                     ("2026-09-27T06:21:00", "25:00am"),
+                     ("2026-09-27T06:21:00", "5:45"), ("2026-09-27T06:21:00", None)):
+        assert CO._minutes_past(iso, pub) == 0, (iso, pub)

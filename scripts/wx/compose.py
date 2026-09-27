@@ -48,6 +48,41 @@ def _clock(iso):
     return f"{t.hour % 12 or 12}:{t.minute:02d}{'am' if t.hour < 12 else 'pm'}"
 
 
+# How far past a slot's published time a run may compose and still stamp that
+# time. A few minutes is the honest slack of a job that started on schedule;
+# beyond it the stamp states the real clock time instead.
+STAMP_DRIFT_MINUTES = 10
+
+
+def _minutes_past(iso, published):
+    """Minutes the ISO time `iso` is past the clock time `published` ('5:45am')
+    on the same day. 0 when it is not past, or when either will not parse."""
+    try:
+        t = _dt.datetime.fromisoformat(iso)
+        p = str(published).strip().lower()
+        hm, half = p[:-2], p[-2:]
+        h, m = (int(x) for x in hm.split(":"))
+        if half not in ("am", "pm") or not (1 <= h <= 12 and 0 <= m < 60):
+            return 0
+    except (TypeError, ValueError):
+        return 0
+    pub = (h % 12 + (12 if half == "pm" else 0)) * 60 + m
+    return max(0, t.hour * 60 + t.minute - pub)
+
+
+def _writing_for_today(bundle):
+    """Is this run composing the post for the same day it is running on?
+
+    Not optional. An evening run at 21:56 writes the NEXT morning's post, and
+    without this check it would be told to stamp 9:56pm on a 5:45am post.
+    """
+    try:
+        ran = _dt.datetime.fromisoformat(bundle.get("generated_at")).date()
+    except (TypeError, ValueError):
+        return False
+    return ran.isoformat() == str(bundle.get("post_for_date") or "")
+
+
 def _stamp_time_lines(bundle, post_type):
     """What the stamp's clock time IS, stated rather than left to be derived.
 
@@ -58,7 +93,7 @@ def _stamp_time_lines(bundle, post_type):
     Every other run goes out at its slot's published time, which for the school
     call is 5:45am and for anything else is not a figure anyone has agreed on.
 
-    In all three cases the brief states the answer outright. Telling the model
+    In every case the brief states the answer outright. Telling the model
     how to work the time out would put COMPOSED AT back in play, and the review
     panel is told COMPOSED AT is never evidence about the stamp.
     """
@@ -68,6 +103,16 @@ def _stamp_time_lines(bundle, post_type):
         return ["  -> This run is late, so the post goes out as it finishes and",
                 f"     the stamp's clock time {tail}, not the usual time."]
     when = _PUBLISH_TIME.get(post_type)
+    # Drifted but not late: a 6:21 run is inside the hour LATE_AFTER_HOUR
+    # forgives, so it used to stamp 5:45am, 36 minutes that did not happen.
+    # Survivable on a dated web page; not beside Facebook's own timestamp.
+    # Says nothing about lateness: is_late owns that word and its apology.
+    if (when and _writing_for_today(bundle)
+            and _minutes_past(bundle.get("generated_at"), when) > STAMP_DRIFT_MINUTES):
+        now = _clock(bundle.get("generated_at"))
+        return [f"  -> This post goes out as it finishes, so the stamp's clock "
+                f"time is {now}.",
+                f"     Do NOT stamp {when}; that time has already passed."]
     hint = f", about {when}" if when else ""
     return [f"  -> The stamp's clock time is when the post GOES OUT{hint},",
             "     not when you are writing. It is never the COMPOSED AT time below."]

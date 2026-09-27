@@ -101,6 +101,11 @@ jobs:
           CDOT_API_KEY: ${{ secrets.CDOT_API_KEY }}
           WX_MODEL: ${{ vars.WX_MODEL }}
           WX_FIRST_30_DAYS: ${{ vars.WX_FIRST_30_DAYS }}
+          # Comma-separated slots whose panel-approved post also goes to the
+          # Facebook Page on its own (run_forecast._fb_auto_slots). Unset or
+          # empty = none; Facebook is then reached only by facebook-post.yml.
+          # Independent of DRY_RUN, which also gates four other posting paths.
+          WX_FB_AUTO_SLOTS: ${{ vars.WX_FB_AUTO_SLOTS }}
           # Review panel (scripts/wx/review_panel.py). On by default: two
           # reviewers and a magistrate replace the human for the WEBSITE only.
           # Facebook and email still wait for WX_FIRST_30_DAYS=false.

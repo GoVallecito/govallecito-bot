@@ -45,7 +45,11 @@ scripts/wx/              the forecaster
   guardrails.py          the gate: PASS / REVIEW / BLOCK
   sanitize.py            strips em dashes and other machine tells pre-gate
   site.py                site markdown, feed.json, _pending staging, promote
-  publish.py             Facebook page/group (respects DRY_RUN)
+  publish.py             Facebook page/group (respects DRY_RUN; post_to_page's
+                         force_live has exactly two callers, listed below)
+  post_to_fb.py          mirrors ONE published post to the Page, byte for
+                         byte; posts only with --live (facebook-post.yml)
+  fb_preflight.py        read-only token check, GETs only, exit 0/1
   notify.py              opens the "[review] <slot> draft for <date>" issue
   ledger.py              per-day idempotency: one post per slot per day
   verify.py / run_verify.py     scoring + snow-line calibration
@@ -68,7 +72,7 @@ site/weather/            published forecasts + feed.json (the site reads this)
 site/weather/_pending/   HELD drafts, awaiting promotion. The feed ignores them.
 site-astro/              copies of the Astro pages that belong in the SITE repo
 config/                  hand-edited inputs (emergency_override.json, almanac)
-tests/                   215 offline pytest tests, no network, no API key
+tests/                   397 offline pytest tests, no network, no API key
 ```
 
 ## Workflows (all in `.github/workflows/`)
@@ -79,7 +83,7 @@ DST without YAML edits.
 
 | Workflow | Schedule (UTC → MT) | What it does | Publishes? |
 |---|---|---|---|
-| `daily-post.yml` | `0 * * * *` hourly | Conditions card; `scripts/main.py` acts in the 7:00-10:59 and 14:00-17:59 Denver windows, once per slot per day (first surviving run wins; `post_history.json` is the ledger). A slot that closes with no post opens one `[miss] no <slot> conditions post for <date>` issue (`scripts/post_miss.py`; remembered in `state/daily_post_state.json` so it is never filed twice; silent under DRY_RUN) | **Yes**, FB Page (unless `DRY_RUN`); commits state |
+| `daily-post.yml` | **schedule paused 2026-09-27** (was `0 * * * *` hourly; commented out, `workflow_dispatch` kept; it shares `DRY_RUN` with the forecaster) | Conditions card; `scripts/main.py` acts in the 7:00-10:59 and 14:00-17:59 Denver windows, once per slot per day (first surviving run wins; `post_history.json` is the ledger). A slot that closes with no post opens one `[miss] no <slot> conditions post for <date>` issue (`scripts/post_miss.py`; remembered in `state/daily_post_state.json` so it is never filed twice; silent under DRY_RUN) | **Yes**, FB Page (unless `DRY_RUN`); commits state |
 | `emergency-alert.yml` | `*/10 * * * *`; also **push to `main` touching `config/emergency_override.json`** | Flood/fire/evac/disaster check, posts at once | **Yes**, FB Page (unless `DRY_RUN`); commits state |
 | `engagement-check.yml` | `0 10` → 04:00 MDT / 03:00 MST | Engagement on 48h+ posts, recomputes preferences | No; commits state |
 | `forecast.yml` | `5,20,35,50 11-15` → 05:05–09:50 MDT / 04:05–08:50 MST; `5,35 1-6` → 19:05–00:35 MDT / 18:05–23:35 MST; `45 * * * *` heartbeat | The forecaster. Windows + ledger, because GitHub drops scheduled runs | **Yes**, `site/weather/` + FB Page on PASS; commits `state/` and `site/`; pings `SITE_DEPLOY_HOOK` |
@@ -87,6 +91,7 @@ DST without YAML edits.
 | `storm-watch.yml` | `10 17`, `10 22`, `10 03` → ~11:10/16:10/21:10 MDT (~10:10/15:10/20:10 MST) | Storm setup post when a system shows 2–5 days out | Same gate as forecast; commits state |
 | `daily-audit.yml` | `15 15` and `15 16` → 09:15/10:15 MDT, 08:15/09:15 MST (script skips runs before 09:00 local) | Runs `npm test`, lints the day's draft onto its review issue, or opens a `[miss]` issue | No public output; issues only |
 | `wx-selftest.yml` | `17 13 * * 1` → Mon 07:17 MDT / 06:17 MST | Live endpoint check; writes `state/selftest-latest.md` | No; commits state |
+| `facebook-post.yml` | **manual only** | `mode` = `preflight` (default) / `dry-run` / `post`. Preflight (`fb_preflight.py`) runs in all three; `post` runs `post_to_fb.py --live` and commits the `fb:<slot>` ledger flag. Refuses held drafts, a second post, and stale dates unless told otherwise | **Yes** in `post` mode only, FB Page; ignores `DRY_RUN` by design |
 | `site-publish.yml` | **manual only** | `promote_draft.py`: moves one reviewed post from `_pending/` to `site/weather/`, rebuilds the feed | **Yes**, to the site only |
 
 ## The draft pipeline, end to end
@@ -132,7 +137,9 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
   `HEALTHCHECK_URL_{FORECAST,VERIFY,STORM_WATCH,SELFTEST,DAILY_POST,EMERGENCY_ALERT,ENGAGEMENT_CHECK}`,
   the built-in `GITHUB_TOKEN`, and `SMTP_USER`/`SMTP_PASSWORD` for the digest.
   Variables: `DRY_RUN`, `FB_PAGE_ID`, `FB_GROUP_ID`, `WX_FIRST_30_DAYS`,
-  `WX_SITE_DIR`, `WX_MODEL`, `WX_SLOTS`. Never print, commit or echo a value.
+  `WX_SITE_DIR`, `WX_MODEL`, `WX_SLOTS`, `WX_FB_AUTO_SLOTS` (comma-separated
+  slots whose panel-approved post also goes to the Page; empty by default).
+  Never print, commit or echo a value.
 - **Road status is CDOT's, never ours** (see PR #35). There is no public CDOT
   feed, so the passes are *forecast*. A draft may never say what a road **is** —
   not "the passes are dry", not "dry roads for the bus run", not "clear
@@ -176,7 +183,7 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
 
 ```bash
 pip install -r requirements.txt && pip install pytest   # pytest is not pinned
-python -m pytest tests/ -q      # 215 passed, offline, no keys, no network
+python -m pytest tests/ -q      # 397 passed, offline, no keys, no network
                                 # (one shells out to node, two to git;
                                 #  they skip if those are missing)
 npm test                        # 69 subtests: node --test tools/draft-lint.test.mjs

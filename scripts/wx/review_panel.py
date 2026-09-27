@@ -510,23 +510,120 @@ def _apply_fixes(text, reports):
     no longer in the draft (an earlier fix already rewrote it) is skipped
     rather than guessed at.
 
+    Each report is {"issues": [...]} or a plain list of issues. A report
+    marked {"overrides": True} (the magistrate's ruling, applied last) wins
+    over an earlier reviewer's DIFFERENT replacement for the same sentence:
+    that replacement is itself replaced. A replacement a reviewer already
+    applied, word for word, is neither applied twice nor counted as skipped.
+
     Returns (patched_text, applied, skipped) where applied/skipped are lists
     of {"who", "severity", "quote", "fix"} for the transcript.
     """
     applied, skipped = [], []
+    standing = {}                              # quote -> the fix now in the text
     for who, rep in reports:
-        for i in rep.get("issues", []):
+        issues = rep if isinstance(rep, list) else (rep or {}).get("issues", [])
+        overrides = isinstance(rep, dict) and rep.get("overrides")
+        for i in issues:
             quote, fix = (i.get("quote") or "").strip(), (i.get("fix") or "").strip()
             rec = {"who": who, "severity": i.get("severity", "minor"),
                    "quote": quote, "fix": fix}
             if not quote or not fix or fix == quote:
                 continue                       # advisory, nothing concrete to spend
             if quote not in text:
+                prior = standing.get(quote)
+                if prior == fix:
+                    continue                   # already in, from an earlier reviewer
+                if overrides and prior and prior in text:
+                    text = text.replace(prior, fix, 1)
+                    standing[quote] = fix
+                    applied.append(rec)
+                    continue
                 skipped.append(rec)            # superseded by an earlier substitution
                 continue
             text = text.replace(quote, fix, 1)
+            standing[quote] = fix
             applied.append(rec)
     return text, applied, skipped
+
+
+# The magistrate's required_changes are "<quote> -> <replacement or
+# instruction>", and about half are instructions. Splicing an instruction into
+# the post literally is worse than dropping it, so a fix must pass BOTH of
+# these before it is substituted: a word blacklist, and a shape test.
+_INSTRUCTION_START = re.compile(
+    r"^\s*(?:add|adjust|avoid|change|clarify|combine|consider|cut|delete|drop|"
+    r"either|ensure|fix|hedge|include|keep|make|mention|move|note|omit|"
+    r"rephrase|replace|remove|reword|rewrite|say|shorten|soften|split|"
+    r"state|strike|swap|trim|use|instead|something like)\b"
+    r"|^\s*(?:e\.g\.|i\.e\.|\(|\[)", re.IGNORECASE)
+_QUOTE_CHARS = "\"'\u201c\u201d\u2018\u2019"
+_TERMINAL = ".!?"
+
+
+def _unquote(s):
+    s = (s or "").strip()
+    if len(s) >= 2 and s[0] in _QUOTE_CHARS and s[-1] in _QUOTE_CHARS:
+        s = s[1:-1].strip()
+    return s
+
+
+def _looks_like_prose(quote, fix):
+    """Is `fix` shaped like a sentence that can stand where `quote` stood?
+
+    A SHAPE test, because a word list alone is not enough: an early version
+    passed "write a fresh closer" because "write" was not on the list, and
+    that phrase would have become the post's closing line. A replacement
+    sentence ends the way the sentence it replaces ends and opens in the same
+    case; an instruction almost never does both.
+    """
+    if not quote or not fix:
+        return False
+    q_end = quote[-1] if quote[-1] in _TERMINAL else ""
+    f_end = fix[-1] if fix[-1] in _TERMINAL else ""
+    if q_end != f_end:
+        return False
+    q0 = next((c for c in quote if c.isalpha()), "")
+    f0 = next((c for c in fix if c.isalpha()), "")
+    return bool(q0 and f0) and q0.isupper() == f0.isupper()
+
+
+def _magistrate_fixes(ruling, text):
+    """(issues, unapplied) out of the ruling's required_changes.
+
+    THE BUG THIS FIXES: _apply_fixes was fed only the reviewers' reports. On
+    2026-09-27 the magistrate required five changes and the fifth ("Today's
+    dry everywhere." -> "Today stays dry.") existed only in the ruling,
+    because the editor had flagged that sentence without supplying a fix. It
+    vanished, the post published with a sentence the magistrate had ruled must
+    change, and the log said "skipped 0".
+
+    issues: substitutable {"severity", "quote", "fix"}, fed to _apply_fixes
+    LAST so the ruling wins.
+    unapplied: {"quote", "fix", "why"} for each change that names a sentence
+    in the text but whose right-hand side is not safe to splice in. The
+    caller decides which of those still stand once the patch is done.
+    """
+    issues, unapplied = [], []
+    for raw in (ruling or {}).get("required_changes") or []:
+        if " -> " not in str(raw):
+            continue                           # no quoted sentence to act on
+        left, right = str(raw).split(" -> ", 1)
+        quote, fix = _unquote(left), _unquote(right)
+        if not quote or not fix or fix == quote or quote not in text:
+            continue
+        why = None
+        if "--" in fix or "\u2014" in fix or "\u2013" in fix:
+            why = "the replacement carries a dash the persona forbids"
+        elif _INSTRUCTION_START.match(fix):
+            why = "the replacement reads as an instruction, not a sentence"
+        elif not _looks_like_prose(quote, fix):
+            why = "the replacement is not shaped like the sentence it replaces"
+        if why:
+            unapplied.append({"quote": quote, "fix": fix, "why": why})
+        else:
+            issues.append({"severity": "major", "quote": quote, "fix": fix})
+    return issues, unapplied
 
 
 def _blocking_fact_issues(facts, text):
@@ -734,19 +831,57 @@ def run_panel(bundle, text, *, slot, writer_llm, review_llm=None, calibrated=Fal
         # patch. Reject stays reachable: a draft whose remaining issues carry no
         # replacement, or that still fails the gate, is held exactly as before.
         if n == rounds and ruling["ruling"] != APPROVE:
-            patched, applied, skipped = _apply_fixes(text, (("fact checker", facts),
-                                                            ("editor", editor)))
-            auto = {"applied": applied, "skipped": skipped, "patched": patched != text}
+            mag_fixes, unapplied = _magistrate_fixes(ruling, text)
+            patched, applied, skipped = _apply_fixes(
+                text, (("fact checker", facts), ("editor", editor),
+                       ("magistrate", {"issues": mag_fixes, "overrides": True})))
+            # A required change that could not be substituted, and whose
+            # sentence is still in the text, stands unmet. Four of five
+            # applied is not the ruling the magistrate made.
+            outstanding = [u for u in unapplied if u["quote"] in patched]
+            auto = {"applied": applied, "skipped": skipped, "patched": patched != text,
+                    "outstanding": outstanding}
+            if outstanding:
+                log(f"panel round {n}: {len(outstanding)} required change(s) "
+                    "could not be applied and still stand: "
+                    + "; ".join(repr(o["quote"][:60]) for o in outstanding))
             if patched != text:
                 g2_verdict, g2_reasons = _gate_flags(bundle, patched, calibrated)
                 blocking = _blocking_fact_issues(facts, patched)
+                # Every substitution is text a reviewer wrote, spliced in with
+                # no model call, and _blocking_fact_issues can only speak about
+                # sentences the fact checker already saw. So a claim introduced
+                # BY a fix is unverified by construction: on 2026-09-27 the
+                # editor's own minor fix appended "and none of them have been
+                # consistent run to run", which nothing in the pipeline holds.
+                # One more fact check, on patch days only. A missing review is
+                # not a clean review, so failing to get one holds the post.
+                recheck_problem = None
+                if applied:
+                    try:
+                        recheck = fact_check(review_llm, brief, patched)
+                    except Exception as exc:  # noqa: BLE001
+                        recheck = None
+                        recheck_problem = (f"the fact re-check of the patched "
+                                           f"text failed ({type(exc).__name__})")
+                    if recheck is not None:
+                        auto["recheck"] = recheck
+                        if recheck.get("unparseable"):
+                            recheck_problem = ("the fact re-check of the patched "
+                                               "text could not be read")
+                        else:
+                            blocking = blocking + _blocking_fact_issues(recheck, patched)
+                auto["recheck_problem"] = recheck_problem
                 auto["gate"] = [g2_verdict, g2_reasons]
                 auto["blocking_facts"] = [i.get("quote") for i in blocking]
                 record["autopatch"] = auto
                 log(f"panel round {n}: final-round auto-patch applied "
-                    f"{len(applied)} replacement(s), skipped {len(skipped)}; "
-                    f"gate={g2_verdict}, unresolved fact issues={len(blocking)}")
-                if g2_verdict == G.PASS and not blocking:
+                    f"{len(applied)} replacement(s), skipped {len(skipped)}, "
+                    f"outstanding {len(outstanding)}; gate={g2_verdict}, "
+                    f"unresolved fact issues={len(blocking)}"
+                    + (f"; holding: {recheck_problem}" if recheck_problem else ""))
+                if (g2_verdict == G.PASS and not blocking and not outstanding
+                        and not recheck_problem):
                     return {"approved": True, "text": patched,
                             "title": ruling.get("title", ""), "rounds": history,
                             "reason": (f"approved in round {n} after applying "
@@ -805,7 +940,7 @@ def transcript(result, bundle, slot):
         if ru.get("dismissed"):
             L += ["Dismissed:"] + [f"- {d}" for d in ru["dismissed"]] + [""]
         ap = r.get("autopatch")
-        if ap and (ap.get("applied") or ap.get("skipped")):
+        if ap and (ap.get("applied") or ap.get("skipped") or ap.get("outstanding")):
             L += ["### Final-round edits applied to the writer's text", "",
                   "The published text below is NOT byte-identical to what the "
                   "writer composed. These reviewer replacements were substituted "
@@ -818,6 +953,17 @@ def transcript(result, bundle, slot):
             if ap.get("gate"):
                 L += ["", f"Rule gate on the patched text: {ap['gate'][0]}"]
                 L += [f"- {x}" for x in ap["gate"][1]] or ["- nothing flagged"]
+            if ap.get("outstanding"):
+                L += ["", "Required by the magistrate but NOT applied, and the "
+                          "sentence is still in the text:"]
+                L += [f"- \"{o['quote']}\" -> \"{o['fix']}\" ({o['why']})"
+                      for o in ap["outstanding"]]
+            if ap.get("recheck") is not None:
+                L += ["", "Fact re-check of the patched text:", "",
+                      _fmt_report(ap["recheck"])]
+            if ap.get("recheck_problem"):
+                L += ["", f"HELD: {ap['recheck_problem']}. A missing review "
+                          "is not a clean review."]
             if ap.get("blocking_facts"):
                 L += ["", "Fact-checker objections still standing after the patch:"]
                 L += [f"- \"{q}\"" for q in ap["blocking_facts"]]
