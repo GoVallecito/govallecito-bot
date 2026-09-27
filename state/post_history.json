@@ -1095,6 +1095,20 @@
       "alert_id": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122133481875360003",
+      "posted_at": "2026-09-27T22:42:04.265035+00:00",
+      "slot": "afternoon",
+      "hook_line": "Afternoon bite report from the lake.",
+      "had_image": true,
+      "image_topic": "fishing",
+      "fire_stage": 0,
+      "post_type": "daily",
+      "alert_category": null,
+      "alert_id": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
