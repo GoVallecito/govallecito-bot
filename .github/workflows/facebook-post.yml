@@ -1,0 +1,123 @@
+name: Post forecast to Facebook
+
+# Mirrors ONE already-published forecast from site/weather/ to the GoVallecito
+# Facebook Page, byte for byte. Manual only; nothing schedules this.
+#
+# Why it exists: vars.DRY_RUN gates five posting paths at once (conditions bot,
+# emergency alerts, storm watch, verification post, forecast), so it cannot be
+# flipped to put the morning forecast on Facebook alone. This workflow posts
+# exactly one post, only in mode "post", and leaves DRY_RUN alone.
+#
+# Modes:
+#   preflight  read-only token check (GETs only). The default.
+#   dry-run    preflight, then print exactly what would be posted. Posts nothing.
+#   post       preflight, then post, then commit the ledger flag that stops the
+#              same forecast going to the Page twice.
+#
+# Refusals (see scripts/wx/post_to_fb.py): a held draft without allow_pending;
+# a slot already posted today without force; a date that is not today, or a
+# school call after 11:00, without allow_stale.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "preflight = check the token only; dry-run = show the post; post = publish it"
+        type: choice
+        options: [preflight, dry-run, post]
+        default: preflight
+      date:
+        description: "Date of the published forecast, e.g. 2026-09-28. Blank = today."
+        required: false
+        default: ""
+      slot:
+        description: "Which slot"
+        type: choice
+        options: [school_call, evening]
+        default: school_call
+      allow_pending:
+        description: "Allow a HELD draft from _pending/ (read its panel transcript first)"
+        type: boolean
+        default: false
+      force:
+        description: "Post even though the ledger says this slot already went to Facebook"
+        type: boolean
+        default: false
+      allow_stale:
+        description: "Allow a date other than today, or a school call after 11:00"
+        type: boolean
+        default: false
+
+# Same lock as every other workflow that writes state/: the ledger flag this
+# commits must not race a forecast run's push.
+concurrency:
+  group: govallecito-bot-state
+  cancel-in-progress: false
+
+jobs:
+  facebook:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      # Runs in all three modes. A token problem is reported by name here, not
+      # discovered as an opaque Graph error halfway through a post.
+      - name: Preflight (read-only token check)
+        env:
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+        run: python scripts/wx/fb_preflight.py
+
+      # Inputs reach the script through env, never pasted into the shell line,
+      # so a stray character in the date box cannot become a command.
+      - name: Mirror the post
+        if: inputs.mode != 'preflight'
+        env:
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+          WX_SITE_DIR: ${{ vars.WX_SITE_DIR }}
+          MODE: ${{ inputs.mode }}
+          IN_DATE: ${{ inputs.date }}
+          IN_SLOT: ${{ inputs.slot }}
+          ALLOW_PENDING: ${{ inputs.allow_pending }}
+          FORCE: ${{ inputs.force }}
+          ALLOW_STALE: ${{ inputs.allow_stale }}
+        run: |
+          set -e
+          args=(--slot "$IN_SLOT")
+          [ -n "$IN_DATE" ] && args+=(--date "$IN_DATE")
+          [ "$ALLOW_PENDING" = "true" ] && args+=(--allow-pending)
+          [ "$FORCE" = "true" ] && args+=(--force)
+          [ "$ALLOW_STALE" = "true" ] && args+=(--allow-stale)
+          [ "$MODE" = "post" ] && args+=(--live)
+          python scripts/wx/post_to_fb.py "${args[@]}"
+
+      # An unpushed flag is how the same forecast reaches the Page twice: the
+      # next run would not see it. Same five-attempt rebase loop as forecast.yml.
+      - name: Commit the ledger flag
+        if: inputs.mode == 'post'
+        run: |
+          git config user.name  "govallecito-wx"
+          git config user.email "bot@govallecito.com"
+          git add state/post_ledger.json || true
+          git diff --staged --quiet && { echo "no ledger change"; exit 0; }
+          git commit -m "wx: facebook post ledger [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "pushed on attempt $attempt"
+              exit 0
+            fi
+            echo "push rejected, rebasing and retrying ($attempt/5)"
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+            sleep $((attempt * 3))
+          done
+          echo "::error::could not push the ledger flag after 5 attempts. The post IS on Facebook; a rerun would post it again. Do not rerun without checking the Page."
+          exit 1

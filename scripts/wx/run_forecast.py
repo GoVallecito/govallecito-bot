@@ -540,16 +540,65 @@ def _publish_site_only(text, reasons, bundle, slot, title, site_dir):
     print(f"site post -> {paths['post']}")
     print(f"site feed -> {paths['feed']}")
     _record_day(bundle, slot, G.PASS)
+    _mirror_to_facebook(paths["post"], bundle, slot)
     write_status("published to website (approved by review panel)",
                  "\n".join(reasons), bundle, slot, draft=text,
-                 hint="Facebook and email stay off until WX_FIRST_30_DAYS is "
-                      "set to false. The panel transcript is in state/panel/.")
+                 hint="Email stays off until WX_FIRST_30_DAYS is set to false. "
+                      "Facebook gets this post only if its slot is in "
+                      "WX_FB_AUTO_SLOTS, or via the facebook-post workflow. "
+                      "The panel transcript is in state/panel/.")
     try:
         fid = V.record_forecast(bundle, _predicted_ranges(bundle), post_id=None)
         print(f"logged forecast {fid} for tomorrow's verification")
     except Exception as exc:  # noqa: BLE001 -- the post is out; bookkeeping only
         print(f"[verify] could not log forecast: {exc}")
     return 0
+
+
+def _fb_auto_slots():
+    """Slots whose panel-approved post also goes to the Facebook Page on its
+    own, from WX_FB_AUTO_SLOTS (comma separated). Empty by default: until a
+    slot is named here, Facebook is reached only by a person running the
+    facebook-post workflow. This is deliberately NOT DRY_RUN, which also gates
+    the conditions bot, emergency alerts, the storm watch and the verification
+    post; naming a slot here publishes that slot and nothing else."""
+    raw = os.environ.get("WX_FB_AUTO_SLOTS") or ""
+    return {s.strip() for s in raw.split(",") if s.strip()}
+
+
+def _mirror_to_facebook(post_path, bundle, slot):
+    """Post the just-published site post to the Page, if the slot is allowlisted.
+
+    The body is read back off the file the site now serves, not taken from
+    memory, so the Page cannot drift from the website. Never raises: the site
+    post is already out and the day already spent, so a Facebook failure is a
+    warning pointing at the manual workflow, not a crashed run.
+    """
+    allowed = _fb_auto_slots()
+    if slot not in allowed:
+        print(f"facebook: {slot} is not in WX_FB_AUTO_SLOTS "
+              f"({sorted(allowed) or 'empty'}); not posting. Use the "
+              "facebook-post workflow to mirror it by hand.")
+        return
+    date = bundle.get("post_for_date") or bundle.get("local_date")
+    name = f"fb:{slot}"
+    try:
+        LG = _ledger()
+        if LG.flagged(date, name):
+            print(f"facebook: {slot} for {date} is already on the Page; not "
+                  "posting again.")
+            return
+        body = SITE.read_post(post_path)["body"]
+        result = P.post_to_page(body, force_live=True)
+        post_id = (result or {}).get("id")
+        if not post_id:
+            raise RuntimeError(f"no post id in the Graph reply ({result!r})")
+        LG.flag(date, name)
+        print(f"facebook: posted {slot} for {date} to the Page: {post_id}")
+    except Exception as exc:  # noqa: BLE001 -- the site post is already out
+        print(f"::warning::facebook auto-post of {slot} for {date} failed: "
+              f"{exc}. The website post is live. Mirror it by hand with the "
+              "facebook-post workflow (mode: post).")
 
 
 def _site_publish_allowed():

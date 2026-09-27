@@ -50,12 +50,34 @@ def _graph_post(path, fields):
         return json.loads(resp.read().decode("utf-8", "replace"))
 
 
-def post_to_page(text, page_id=None, token=None, link=None):
+def post_to_page(text, page_id=None, token=None, link=None, force_live=False):
+    """Text post to the Page's /feed.
+
+    force_live=True bypasses DRY_RUN for THIS call only. DRY_RUN is one repo
+    variable gating five posting paths (the conditions bot, emergency alerts,
+    storm watch, the verification post and the forecast), so flipping it to
+    publish the morning forecast would publish the other four too. The
+    per-call override lets exactly one post through while the variable stays
+    true for everything else.
+
+    It has exactly two legitimate callers, and a third is a bug:
+      - wx/post_to_fb.py, a human-triggered mirror of an already-published
+        post, which posts only with --live;
+      - the WX_FB_AUTO_SLOTS path in run_forecast._publish_site_only, which
+        posts only for slots named in that allowlist (empty by default).
+
+    post_photo_to_page() and post_to_group() have no such override and stay
+    fully governed by DRY_RUN.
+    """
     page_id = page_id or os.environ.get("FB_PAGE_ID") or DEFAULT_PAGE_ID
     token = token or os.environ.get("FB_PAGE_ACCESS_TOKEN")
 
-    if is_dry_run():
+    if is_dry_run() and not force_live:
         return _dry("page", text, page_id)
+    if is_dry_run() and force_live:
+        # Never silent: an override of the repo-wide switch must show in the log.
+        print(f"[publish] DRY_RUN is on, but force_live=True: posting to page "
+              f"{page_id} for real.")
     if not token:
         raise RuntimeError("FB_PAGE_ACCESS_TOKEN is not set")
 
