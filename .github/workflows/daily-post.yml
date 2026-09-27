@@ -74,6 +74,7 @@ concurrency:
 # memory the engagement-check workflow and the learning loop run on.
 permissions:
   contents: write
+  issues: write          # the missed-post alarm opens an issue (scripts/post_miss.py)
 
 jobs:
   post:
@@ -112,6 +113,7 @@ jobs:
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || vars.DRY_RUN }}
           FORCE_SLOT: ${{ github.event.inputs.force_slot }}
           FORCE_GROUNDED_DAY: ${{ github.event.inputs.force_grounded_day }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     # for the missed-post alarm only
         run: python scripts/main.py
 
       # So a dry run's rendered card + caption (or a failed live run's

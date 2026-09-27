@@ -40,6 +40,7 @@ import generate_post_text
 import render_card
 import post_to_facebook
 import post_history
+import post_miss
 
 TIMEZONE = ZoneInfo("America/Denver")
 SLOT_HOURS = {7: "morning", 14: "afternoon"}   # the nominal hours, kept for docs and tests
@@ -108,6 +109,9 @@ def main():
     now = datetime.now(TIMEZONE)
     slot = determine_slot(now)
     if slot is None:
+        # Nothing to post now. This is also the moment to notice a slot that CLOSED without a post:
+        # a green run that did nothing is exactly how 47 of 64 slots vanished unseen (scripts/post_miss.py).
+        post_miss.report_if_needed(now, sys.modules[__name__])
         return 0
 
     print(f"=== GoVallecito daily post: {slot} slot, {now.strftime('%Y-%m-%d %H:%M %Z')} ===")
