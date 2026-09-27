@@ -102,6 +102,21 @@ def test_an_instruction_is_never_spliced_into_the_post():
     assert RP._looks_like_prose(closer, "Anybody still got a dock in the water?")
 
 
+def test_a_note_about_the_writing_is_never_spliced_in_even_when_shaped_like_prose():
+    """Capital first letter, terminal period, no blacklisted opening verb, and
+    still not a sentence that belongs in a forecast."""
+    for note in ("Needs a hedge.", "Too close to the 09-14 opener.",
+                 "This sentence repeats a retired pivot.",
+                 "The wording here is too certain."):
+        fixes, unapplied = RP._magistrate_fixes(
+            {"required_changes": [f'"{PIVOT}" -> "{note}"']}, DRAFT_0927)
+        assert fixes == [], note
+        assert [u["quote"] for u in unapplied] == [PIVOT], note
+    fixes, _ = RP._magistrate_fixes(
+        {"required_changes": [f'"{PIVOT}" -> "Today stays dry."']}, DRAFT_0927)
+    assert [f["fix"] for f in fixes] == ["Today stays dry."]
+
+
 def test_a_fix_may_not_smuggle_a_dash_back_in():
     ruling = {"required_changes": [
         f'"{PIVOT}" -> "Today stays dry -- for now."',

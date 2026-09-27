@@ -557,7 +557,15 @@ _INSTRUCTION_START = re.compile(
     r"rephrase|replace|remove|reword|rewrite|say|shorten|soften|split|"
     r"state|strike|swap|trim|use|instead|something like)\b"
     r"|^\s*(?:e\.g\.|i\.e\.|\(|\[)", re.IGNORECASE)
-_QUOTE_CHARS = "\"'\u201c\u201d\u2018\u2019"
+# A third layer, for notes ABOUT the writing that pass both of the above:
+# "Needs a hedge." opens in capitals and ends in a period, and neither the fact
+# re-check nor the gate would object to it standing in the post. A refused fix
+# is held as outstanding, so a false alarm here costs a hold, never a post.
+_META_WORDS = re.compile(
+    r"\b(?:sentence|clause|closer|opener|draft|wording|phrasing|phrase|"
+    r"hedge|hedged|hedging|rewrite|reword|rephrase|replacement|persona|"
+    r"rulebook|this line|the line)\b", re.IGNORECASE)
+_QUOTE_CHARS ="\"'\u201c\u201d\u2018\u2019"
 _TERMINAL = ".!?"
 
 
@@ -617,6 +625,8 @@ def _magistrate_fixes(ruling, text):
             why = "the replacement carries a dash the persona forbids"
         elif _INSTRUCTION_START.match(fix):
             why = "the replacement reads as an instruction, not a sentence"
+        elif _META_WORDS.search(fix):
+            why = "the replacement talks about the writing, not the weather"
         elif not _looks_like_prose(quote, fix):
             why = "the replacement is not shaped like the sentence it replaces"
         if why:

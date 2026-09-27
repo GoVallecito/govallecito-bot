@@ -28,20 +28,9 @@ name: Daily Vallecito Conditions Post
 # after 60 days of no repo activity. If posts silently stop for no reason
 # after a couple of quiet months, check the Actions tab for a banner about
 # the workflow being disabled and click re-enable.
-#
-# SCHEDULE PAUSED (2026-09-27). The schedule below is commented out, not
-# deleted; the workflow, its state files and workflow_dispatch all stay. Two
-# reasons:
-#   1. It shares vars.DRY_RUN with the forecaster, emergency alerts, the storm
-#      watch and the verification post. While this schedule is live, any future
-#      flip of DRY_RUN to false would silently restart its two posts a day.
-#   2. Running hourly with no live token, it files a miss report into
-#      state/daily_post_state.json every morning and every afternoon, noise
-#      that trains everyone to ignore the miss alarm.
-# To bring it back, uncomment the two schedule lines and read (1) first.
 on:
-  # schedule:
-  #   - cron: "0 * * * *"
+  schedule:
+    - cron: "0 * * * *"
   workflow_dispatch:
     inputs:
       force_slot:
