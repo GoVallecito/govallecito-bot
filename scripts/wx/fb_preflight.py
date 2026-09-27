@@ -13,7 +13,7 @@ reported by name before anything tries to use it. It checks:
      an opaque permissions error at 5:45am.
   3. GET /{page_id} for the Page's name and follower count, so the log shows
      which Page is about to be posted to.
-  4. GET /{page_id}/feed?limit=1, because pages_read_engagement is a
+  4. GET /{page_id}/published_posts?limit=1, because pages_read_engagement is a
      dependency of pages_manage_posts; a token that cannot read the feed will
      not be able to write to it.
   5. GET /debug_token for scopes and expiry. Best effort: it can be refused
@@ -113,15 +113,15 @@ def run(token=None, page_id=None, get=None, out=print):
     out(f"ok    page {page.get('name')!r}, "
         f"{page.get('followers_count', 'unknown')} followers")
 
-    kind, feed = get(f"{page_id}/feed", {**auth, "limit": 1})
+    kind, feed = get(f"{page_id}/published_posts", {**auth, "limit": 1})
     if kind == NETWORK:
-        return network(f"GET /{page_id}/feed", feed)
+        return network(f"GET /{page_id}/published_posts", feed)
     if kind == REJECTED:
-        out(f"FAIL  GET /{page_id}/feed rejected: {_why(feed)}")
+        out(f"FAIL  GET /{page_id}/published_posts rejected: {_why(feed)}")
         out("      The token lacks pages_read_engagement, which "
             "pages_manage_posts depends on. Re-mint it with both permissions.")
         return 1
-    out("ok    can read the page feed (pages_read_engagement)")
+    out("ok    can read the page published posts (pages_read_engagement)")
 
     # Informational only, from here on nothing can fail the check.
     kind, dbg = get("debug_token", {**auth, "input_token": token})
