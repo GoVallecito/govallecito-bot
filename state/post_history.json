@@ -1081,6 +1081,20 @@
       "alert_id": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122133410433360003",
+      "posted_at": "2026-09-27T16:01:30.498786+00:00",
+      "slot": "morning",
+      "hook_line": "Cast lines are already out this morning.",
+      "had_image": true,
+      "image_topic": "fishing",
+      "fire_stage": 0,
+      "post_type": "daily",
+      "alert_category": null,
+      "alert_id": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
