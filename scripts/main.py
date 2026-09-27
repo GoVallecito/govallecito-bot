@@ -11,8 +11,21 @@ year. A fixed UTC cron would silently post an hour off from what David
 actually wants every November and March until someone noticed and manually
 re-edited the YAML. Instead, this script itself checks the current time in
 America/Denver (which Python's zoneinfo handles DST for automatically) and
-only actually posts during the two target hours -- the other ~22 runs/day
+only actually posts inside the two target WINDOWS -- the other runs/day
 are a few seconds of no-op. Cheap, and correct forever without maintenance.
+
+WINDOWS, NOT EXACT HOURS (2026-09-27). The original gate was "only post if the
+run happens to execute during the 7 o'clock (or 14 o'clock) hour". That is
+correct only if the hourly cron is really hourly, and it is not: GitHub drops
+and defers scheduled runs, and since late August this workflow has fired 5-7
+times a day at arbitrary minutes. Between Aug 26 and Sep 26 only 17 of 64
+slots posted, because most days no run happened to land in either hour. (The
+forecaster hit the same wall and solved it the same way: scripts/wx/ledger.py.)
+Now each slot owns a window of local hours, and the first surviving run inside
+the window posts -- unless post_history.json says that slot already went out
+today, which is what makes a wide window safe (four runs in a four hour window
+must not be four posts). A run that dies before posting records nothing, so the
+next run in the window retries.
 """
 
 import os
@@ -29,13 +42,47 @@ import post_to_facebook
 import post_history
 
 TIMEZONE = ZoneInfo("America/Denver")
-SLOT_HOURS = {7: "morning", 14: "afternoon"}
+SLOT_HOURS = {7: "morning", 14: "afternoon"}   # the nominal hours, kept for docs and tests
+# [start, end) in local hours. Morning is 7:00-10:59, afternoon 14:00-17:59: late enough
+# to survive a bad day for the scheduler, early enough that "this morning" is still true.
+SLOT_WINDOWS = {"morning": (7, 11), "afternoon": (14, 18)}
 
 
-def determine_slot(now=None):
-    """Returns "morning", "afternoon", or None (not a posting hour).
-    FORCE_SLOT env var (or a CLI arg) bypasses the clock check entirely --
-    used for manual workflow_dispatch test runs."""
+def slot_for_hour(hour):
+    """The slot whose window contains this local hour, or None."""
+    for slot, (lo, hi) in SLOT_WINDOWS.items():
+        if lo <= hour < hi:
+            return slot
+    return None
+
+
+def slot_already_posted(slot, now, history=None):
+    """True if a routine ("daily") post for this slot has already gone out on this
+    Denver calendar date. post_history stores posted_at in whatever zone the runner
+    used (UTC on Actions), so every entry is converted to Denver before comparing.
+    Emergency alerts never count: they are not the daily card."""
+    history = history if history is not None else post_history.load_history()
+    today = now.astimezone(TIMEZONE).date()
+    for p in history.get("posts", []):
+        if not isinstance(p, dict):
+            continue
+        if p.get("slot") != slot or p.get("post_type", "daily") != "daily":
+            continue
+        try:
+            when = datetime.fromisoformat(p["posted_at"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=TIMEZONE)
+        if when.astimezone(TIMEZONE).date() == today:
+            return True
+    return False
+
+
+def determine_slot(now=None, history=None):
+    """Returns "morning", "afternoon", or None (outside both windows, or that slot
+    already posted today). FORCE_SLOT env var (or a CLI arg) bypasses the clock check
+    and the already-posted check entirely -- used for manual workflow_dispatch test runs."""
     forced = os.environ.get("FORCE_SLOT")
     if len(sys.argv) > 1 and sys.argv[1] in ("morning", "afternoon"):
         forced = sys.argv[1]
@@ -44,10 +91,16 @@ def determine_slot(now=None):
         return forced
 
     now = now or datetime.now(TIMEZONE)
-    slot = SLOT_HOURS.get(now.hour)
+    slot = slot_for_hour(now.hour)
     if slot is None:
+        windows = ", ".join(f"{k} {lo}:00-{hi}:00" for k, (lo, hi) in SLOT_WINDOWS.items())
         print(f"Current time in America/Denver is {now.strftime('%Y-%m-%d %H:%M %Z')} "
-              f"-- not a posting hour ({sorted(SLOT_HOURS)} local). Exiting without posting.")
+              f"-- outside both posting windows ({windows} local). Exiting without posting.")
+        return None
+    if slot_already_posted(slot, now, history):
+        print(f"{now.strftime('%Y-%m-%d %H:%M %Z')}: the {slot} post already went out today. "
+              "Exiting without posting.")
+        return None
     return slot
 
 

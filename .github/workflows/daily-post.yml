@@ -18,9 +18,11 @@ name: Daily Vallecito Conditions Post
 # comment at the top of scripts/main.py for why an hourly run beats a
 # hardcoded "13:30 and 20:00 UTC" cron (short version: Mountain Time's DST
 # switch would silently desync a fixed-UTC schedule twice a year). The
-# script itself checks the real local time and only posts during the 7am and
-# 2pm America/Denver hours -- the other ~22 runs/day exit in a couple
-# seconds without doing anything.
+# script itself checks the real local time and only posts inside the morning
+# (7:00-10:59) and afternoon (14:00-17:59) America/Denver windows, once per
+# slot per day -- the other runs exit in a couple of seconds without doing
+# anything. (GitHub fires only ~5-7 of the 24 runs a day, so an exact-hour
+# gate missed most posts from late August; see scripts/main.py.)
 #
 # GOTCHA WORTH KNOWING: GitHub automatically disables scheduled workflows
 # after 60 days of no repo activity. If posts silently stop for no reason
