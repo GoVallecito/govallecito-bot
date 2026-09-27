@@ -1,0 +1,38 @@
+{
+  "forecasts": [
+    {
+      "id": "2026-09-27-0",
+      "issued_at": "2026-09-27T06:21:52.763978-06:00",
+      "valid_date": "2026-09-27",
+      "post_id": null,
+      "predicted": {
+        "durango": {
+          "snow_low_in": 0.0,
+          "snow_high_in": 0.5,
+          "model_total_in": 0.0
+        },
+        "bayfield": {
+          "snow_low_in": 0.0,
+          "snow_high_in": 0.5,
+          "model_total_in": 0.0
+        },
+        "vallecito": {
+          "snow_low_in": 0.0,
+          "snow_high_in": 0.5,
+          "model_total_in": 0.0
+        },
+        "weminuche": {
+          "snow_low_in": 0.0,
+          "snow_high_in": 0.5,
+          "model_total_in": 0.0
+        }
+      },
+      "snow_line_predicted_ft": 12600,
+      "model_disagreement": "wide",
+      "note": null,
+      "verified": false,
+      "observed": null,
+      "score": null
+    }
+  ]
+}

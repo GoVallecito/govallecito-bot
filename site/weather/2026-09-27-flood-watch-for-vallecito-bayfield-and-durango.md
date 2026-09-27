@@ -1,27 +1,18 @@
-# Forecast run: published to website (approved by review panel)
+---
+title: "Flood Watch for Vallecito, Bayfield and Durango"
+date: "2026-09-27T06:21:52.763978-06:00"
+forDate: "2026-09-27"
+postType: "school_call"
+snowLineFt: null
+snowLineTrend: "rising"
+bands: {"durango": {"elevationFt": 6500, "precipType": "rain", "label": "Durango and the Animas Valley"}, "bayfield": {"elevationFt": 6900, "precipType": "rain", "label": "Bayfield and up the Pine"}, "vallecito": {"elevationFt": 7650, "precipType": "rain", "label": "Vallecito and the Florida"}, "weminuche": {"elevationFt": 10500, "precipType": "rain", "label": "The high Weminuche"}}
+basinPercentOfMedian: null
+alerts: ["Flood Watch"]
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-09-27-flood-watch-for-vallecito-bayfield-and-durango"
+---
 
-When: 2026-09-27T06:24:19-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 0
-
-## Detail
-
-```
-approved in round 3 after applying 4 reviewer replacement(s) to the writer's text
-```
-
-**What to do:** Facebook and email stay off until WX_FIRST_30_DAYS is set to false. The panel transcript is in state/panel/.
-
-## What the data looked like
-
-- Snow line: 12600
-- Alerts: ['Flood Watch']
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/27/26 5:45am: Morning, its Sunday. Truck windows were dry when I went out and the sky's still clear, but that changes overnight.
 
 Today's dry everywhere. Durango and the Animas Valley (6,500') should see sunny skies and mid-70s this afternoon. Bayfield and up the Pine (6,900') same deal. Vallecito and the Florida (7,650') maybe low 70s. Its all rain tomorrow, every elevation band from town through the Weminuche, so what matters is timing and how much.
@@ -35,4 +26,3 @@ The NWS discussion calls out training showers Monday and rain-soaked soils by Tu
 Check the official Flood Watch from Grand Junction here: https://www.weather.gov/
 
 Did you pull the boat already or is it still down at the ramp?
-```

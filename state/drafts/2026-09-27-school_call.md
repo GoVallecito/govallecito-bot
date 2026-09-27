@@ -1,27 +1,9 @@
-# Forecast run: published to website (approved by review panel)
+# Sunday, 2026-09-27, school_call
 
-When: 2026-09-27T06:24:19-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 0
+Verdict: `pass` | Snow line: 12600 | Alerts: ['Flood Watch']
 
-## Detail
+---
 
-```
-approved in round 3 after applying 4 reviewer replacement(s) to the writer's text
-```
-
-**What to do:** Facebook and email stay off until WX_FIRST_30_DAYS is set to false. The panel transcript is in state/panel/.
-
-## What the data looked like
-
-- Snow line: 12600
-- Alerts: ['Flood Watch']
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/27/26 5:45am: Morning, its Sunday. Truck windows were dry when I went out and the sky's still clear, but that changes overnight.
 
 Today's dry everywhere. Durango and the Animas Valley (6,500') should see sunny skies and mid-70s this afternoon. Bayfield and up the Pine (6,900') same deal. Vallecito and the Florida (7,650') maybe low 70s. Its all rain tomorrow, every elevation band from town through the Weminuche, so what matters is timing and how much.
@@ -35,4 +17,3 @@ The NWS discussion calls out training showers Monday and rain-soaked soils by Tu
 Check the official Flood Watch from Grand Junction here: https://www.weather.gov/
 
 Did you pull the boat already or is it still down at the ramp?
-```

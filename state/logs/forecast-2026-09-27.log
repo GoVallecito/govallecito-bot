@@ -3,3 +3,23 @@
 2026-09-27 00:28 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
 exit=0
 
+=== 2026-09-27T06:24:19-06:00 run 36318724561 ===
+NOTE: running at 06:21, inside the 5:00-9:00 window but later than the 5:00 target. Posting anyway, flagged late.
+=== Vallecito forecast: school_call @ 2026-09-27 06:21 MDT ===
+snow-line calibration: offset=0.0ft active=False
+guardrails: REVIEW
+  - first-30-days policy: review everything
+review panel: fact checker + editor -> magistrate
+panel round 1/3: facts=issues editor=issues (critical/major=5) gate=pass -> magistrate REVISE
+panel round 2/3: facts=clean editor=issues (critical/major=3) gate=pass -> magistrate REVISE
+panel round 3/3: facts=clean editor=issues (critical/major=4) gate=pass -> magistrate REVISE
+panel round 3: final-round auto-patch applied 4 replacement(s), skipped 0; gate=pass, unresolved fact issues=0
+panel transcript -> state/panel/2026-09-27-school_call.md
+MAGISTRATE APPROVED (approved in round 3 after applying 4 reviewer replacement(s) to the writer's text); publishing to the website
+Archived draft -> state/drafts/2026-09-27-school_call.md
+site post -> site/weather/2026-09-27-flood-watch-for-vallecito-bayfield-and-durango.md
+site feed -> site/weather/feed.json
+Wrote state/forecast-status.md
+logged forecast 2026-09-27-0 for tomorrow's verification
+exit=0
+
