@@ -1,9 +1,7 @@
-=== storm watch @ 2026-09-28 03:42 MDT ===
-decision: fire=True -- new system peaking 2026-09-30 clears the threshold
-  window 2026-09-30T00:00 -> 2026-10-02T23:00, 0.38in liquid / 0.0in snow, peak 2026-09-30T04:00
-guardrails: BLOCK
-  - draft states a present-tense road surface condition ("Wet pavement for the afternoon commute on the 550 and the 160, and I'd expect standing water in the usual spots on the 501 and the 240 by evening.") with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
-  - appears to state snow amounts beyond day 3
+=== storm watch @ 2026-09-28 16:30 MDT ===
+decision: fire=True -- the 2026-09-30 system escalated materially since the last post
+  window 2026-09-30T00:00 -> 2026-10-02T23:00, 0.8in liquid / 0.0in snow, peak 2026-09-30T02:00
+guardrails: REVIEW
   - first-30-days policy: review everything
-BLOCKED -- nothing published.
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/68
 exit=0
