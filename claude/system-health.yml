@@ -1,0 +1,129 @@
+name: System Health (emergency alerts)
+
+# Hourly end-to-end check of the emergency-alert chain. Design, failure-mode matrix and
+# the runbook live in the SITE repo: worker-lpcalerts/HEALTH.md.
+#
+# What it proves every hour (scripts/system_health.py):
+#   - an email to alerts@govallecito.com reaches the alerts Worker (canary)
+#   - the Facebook Page token is valid (fb_preflight, GETs only)
+#   - the Worker's GitHub dispatch token is accepted and not near expiry
+#   - the emergency-alert workflow's last completed run succeeded, recently
+#   - SITE_ALERTS=on and DRY_RUN=false
+#   - https://govallecito.com/data/health.json (what UptimeRobot watches) is reachable
+# Then it exercises the Facebook path with a DRY-RUN emergency-alert dispatch, so a
+# broken bot surfaces within the hour instead of during a flood.
+#
+# How David hears about a problem (three independent routes, see HEALTH.md):
+#   1. a GitHub issue labelled "health-alert" is opened (GitHub emails him), updated
+#      while it stays broken, and closed on recovery
+#   2. healthchecks.io gets /fail, and alarms on its own if this workflow STOPS running
+#   3. UptimeRobot, outside GitHub and Cloudflare, sees /data/health.json turn FAIL
+#
+# SECRETS (names only): CANARY_TOKEN (same value as the Worker's CANARY_TOKEN),
+#   LPC_TRIGGER_KEY (the Worker's TRIGGER_KEY), HEALTHCHECK_URL_SYSTEM_HEALTH (optional
+#   until set; a warning is printed every run while it is missing), plus the existing
+#   SMTP_USER, SMTP_PASSWORD, FB_PAGE_ACCESS_TOKEN.  VARIABLES: SITE_ALERTS, DRY_RUN, FB_PAGE_ID.
+#
+# Hourly on an odd minute: GitHub reliably delivers low-frequency schedules in this
+# repo (it is the */10 ones it throttles), and :07 avoids the top-of-hour pile-up.
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: system-health
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+  actions: write
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL_SYSTEM_HEALTH }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check every link in the alert chain
+        id: check
+        continue-on-error: true
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          CANARY_TOKEN: ${{ secrets.CANARY_TOKEN }}
+          LPC_TRIGGER_KEY: ${{ secrets.LPC_TRIGGER_KEY }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
+          SITE_ALERTS: ${{ vars.SITE_ALERTS }}
+          DRY_RUN_VAR: ${{ vars.DRY_RUN }}
+        run: python scripts/system_health.py
+
+      # Exercise the Facebook path every hour: a DRY-RUN emergency check (renders, posts
+      # nothing, and since 2026-09-27 never commits state). Its result is what next
+      # hour's "Facebook bot emergency workflow" check reads.
+      - name: Exercise the emergency workflow (dry run)
+        if: always()
+        run: gh workflow run emergency-alert.yml -R "$GITHUB_REPOSITORY" -f dry_run=true || echo "::warning::could not dispatch the dry-run emergency check"
+
+      - name: Open, update or close the health-alert issue
+        if: always()
+        env:
+          OUTCOME: ${{ steps.check.outcome }}
+        run: |
+          R="$GITHUB_REPOSITORY"
+          export RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          gh label create health-alert -R "$R" --color B60205 --description "Emergency alert system degraded" >/dev/null 2>&1 || true
+          OPEN=$(gh issue list -R "$R" --label health-alert --state open --json number --jq '.[0].number' || true)
+          if [ "$OUTCOME" = "success" ]; then
+            if [ -n "$OPEN" ]; then
+              gh issue comment "$OPEN" -R "$R" --body "✅ Recovered. All alert paths healthy as of this run: $RUN_URL"
+              gh issue close "$OPEN" -R "$R"
+            fi
+            exit 0
+          fi
+          python - <<'PY' > body.md
+          import json, os
+          try:
+              r = json.load(open("health_result.json"))
+          except Exception:
+              r = {"problems": ["The health script crashed before writing a result. Open the run log."], "notes": []}
+          print("**The emergency alert system is DEGRADED.** County alerts, creek flood warnings or Facebook posts may not go out.\n")
+          for p in r.get("problems", []): print(f"- ❌ {p}")
+          for n in r.get("notes", []): print(f"- {n}")
+          print(f"\nRun: {os.environ.get('RUN_URL')}\n\nWhat to do: see **worker-lpcalerts/HEALTH.md -> Runbook** in the site repo. "
+                "Until this is fixed, post urgent alerts to Facebook by hand.")
+          PY
+          if [ -n "$OPEN" ]; then
+            gh issue comment "$OPEN" -R "$R" --body-file body.md
+          else
+            gh issue create -R "$R" --label health-alert --title "🚨 Emergency alert system DEGRADED" --body-file body.md
+          fi
+        shell: bash
+
+      - name: Heartbeat NOT configured
+        if: always() && env.HEALTHCHECK_URL == ''
+        run: echo "::warning title=No system-health heartbeat::HEALTHCHECK_URL_SYSTEM_HEALTH is not set. Nothing alerts you if THIS workflow stops running. See HEALTH.md."
+
+      # MUST stay last. Success -> ping; failure -> /fail (healthchecks alarms at once);
+      # no run at all -> healthchecks alarms when the ping is overdue.
+      - name: Heartbeat (healthchecks.io)
+        if: always() && env.HEALTHCHECK_URL != ''
+        env:
+          OUTCOME: ${{ steps.check.outcome }}
+        run: |
+          if [ "$OUTCOME" = "success" ]; then curl -fsS -m 10 --retry 3 "$HEALTHCHECK_URL" >/dev/null
+          else curl -fsS -m 10 --retry 3 --data-binary @health_result.json "$HEALTHCHECK_URL/fail" >/dev/null || curl -fsS -m 10 --retry 3 "$HEALTHCHECK_URL/fail" >/dev/null; fi
+
+      - name: Fail the job when degraded (keeps the Actions tab honest)
+        if: steps.check.outcome != 'success'
+        run: exit 1
