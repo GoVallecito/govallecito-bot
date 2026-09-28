@@ -8,3 +8,10 @@ exit=0
 2026-09-28 02:57 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
 exit=0
 
+=== 2026-09-28T11:49:03-06:00 run 36460783756 ===
+2026-09-28 11:49 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
+MISS: no school_call went out for 2026-09-28. Recent misses: ['2026-09-28']
+[notify] opened miss issue #67
+2026-09-28 11:49 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
+exit=0
+
