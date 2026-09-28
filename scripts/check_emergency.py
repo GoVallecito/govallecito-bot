@@ -66,6 +66,7 @@ import generate_post_text
 import render_card
 import post_to_facebook
 import post_history
+import site_alerts
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OVERRIDE_PATH = os.path.join(REPO_ROOT, "config", "emergency_override.json")
@@ -98,6 +99,8 @@ def _load_state():
             merged["worker_override"].update(loaded["worker_override"])
         if isinstance(loaded.get("fire_escalation"), dict):
             merged["fire_escalation"].update(loaded["fire_escalation"])
+        if isinstance(loaded.get("site_alerts"), dict):
+            merged["site_alerts"] = loaded["site_alerts"]  # source (5), see site_alerts.py
         return merged
     except Exception as exc:
         # Same posture as post_history.load_history(): a corrupt (not
@@ -339,6 +342,20 @@ def main():
     if fire_alert:
         new_events.append(fire_alert)
 
+    # Source (5): govallecito.com's own alert feed -- LPC Alerts county messages
+    # (received by email, sender-verified) and stream-gauge flood levels. Off
+    # unless the repo variable SITE_ALERTS is "on". See scripts/site_alerts.py.
+    if site_alerts.enabled():
+        feed = site_alerts.fetch_feed(fetch_conditions._get_json)
+        if feed is not None:
+            county = site_alerts.county_events(state, feed)
+            stream = site_alerts.stream_events(state, feed)
+            print(f"Site alerts: {len(county)} new county message(s), {len(stream)} stream escalation(s).")
+            new_events.extend(county)
+            new_events.extend(stream)
+    else:
+        print("Site alerts (LPC Alerts + stream gauges): off -- repo variable SITE_ALERTS is not 'on'.")
+
     if not new_events:
         print("Nothing new to alert on. Exiting.")
         _save_state(state)  # persists _find_new_nws_alerts' pruning even when nothing posts
@@ -387,6 +404,8 @@ def main():
             elif alert.get("kind") == "fire_escalation":
                 state["fire_escalation"]["last_posted_stage"] = alert["stage"]
                 state["fire_escalation"]["last_posted_nearby_count"] = alert["nearby_count"]
+            elif alert.get("kind") in ("site_county", "site_stream"):
+                site_alerts.mark(state, alert)
             else:  # nws_alert
                 state["posted_alert_ids"] = list(set(state["posted_alert_ids"]) | {alert["id"]})
             _save_state(state)

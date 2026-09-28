@@ -956,7 +956,14 @@ def build_alert_post(conditions, alert, dt=None):
     category = alert.get("category")
     if category not in ALERT_CATEGORY_DISPLAY:
         category = "disaster"
-    display = ALERT_CATEGORY_DISPLAY[category]
+    display = dict(ALERT_CATEGORY_DISPLAY[category])
+    # Optional per-alert wording (site_alerts.py): a countywide LPC message must
+    # not be framed "... — Vallecito." when it may be about Durango, and an
+    # all-clear must not wear the red EMERGENCY badge.
+    if alert.get("hook"):
+        display["hook"] = alert["hook"]
+    if alert.get("row_label"):
+        display["row_label"] = alert["row_label"]
 
     weather = conditions.get("weather")
     lake = conditions.get("lake_level")
@@ -974,12 +981,16 @@ def build_alert_post(conditions, alert, dt=None):
 
     caption_lines = [f"{weekday_date} — {display['hook']}", ""]
     caption_lines.append(f"{display['emoji']} {alert_value}")
+    # The card row is condensed to fit; the caption can carry the whole official
+    # message (which roads, which areas), which is the part people act on.
+    if alert.get("full_text"):
+        caption_lines.extend(["", alert["full_text"], ""])
 
     rows = [{
         "icon": "alert",
         "label": display["row_label"],
         "value": alert_value,
-        "badge": DANGER,
+        "badge": INFO if alert.get("calm") else DANGER,
         "icon_color": WHITE,
     }]
 
@@ -1029,6 +1040,8 @@ def build_alert_post(conditions, alert, dt=None):
     caption_lines.append("")
     if alert.get("source_name"):
         caption_lines.append(f"Source: {alert['source_name']}")
+    if alert.get("full_text") and alert.get("source_url"):
+        caption_lines.append(f"Full details: {alert['source_url']}")
     caption_lines.append(f"{display['cta']} → govallecito.com")
     caption_lines.append(f"#VallecitoLake #KnowBeforeYouGo {display['hashtag']}")
 
