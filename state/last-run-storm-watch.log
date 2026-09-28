@@ -1,4 +1,9 @@
-=== storm watch @ 2026-09-27 18:35 MDT ===
-decision: fire=False -- already posted about the 2026-09-29 system and it has not materially escalated
-  window 2026-09-29T00:00 -> 2026-10-01T23:00, 0.7in liquid / 0.0in snow, peak 2026-09-29T04:00
+=== storm watch @ 2026-09-28 03:42 MDT ===
+decision: fire=True -- new system peaking 2026-09-30 clears the threshold
+  window 2026-09-30T00:00 -> 2026-10-02T23:00, 0.38in liquid / 0.0in snow, peak 2026-09-30T04:00
+guardrails: BLOCK
+  - draft states a present-tense road surface condition ("Wet pavement for the afternoon commute on the 550 and the 160, and I'd expect standing water in the usual spots on the 501 and the 240 by evening.") with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+  - appears to state snow amounts beyond day 3
+  - first-30-days policy: review everything
+BLOCKED -- nothing published.
 exit=0
