@@ -9,5 +9,9 @@
   "fire_escalation": {
     "last_posted_stage": 1,
     "last_posted_nearby_count": 4
+  },
+  "site_alerts": {
+    "county_posted_ids": [],
+    "stream": {}
   }
 }
