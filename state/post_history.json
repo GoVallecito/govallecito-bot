@@ -1123,6 +1123,20 @@
       "alert_id": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122133723435360003",
+      "posted_at": "2026-09-28T22:17:31.640407+00:00",
+      "slot": "emergency",
+      "hook_line": "Rising water at Vallecito.",
+      "had_image": false,
+      "image_topic": null,
+      "fire_stage": 0,
+      "post_type": "emergency_alert",
+      "alert_category": "flood",
+      "alert_id": "site-stream-creek-1",
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
