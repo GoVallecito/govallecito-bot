@@ -53,3 +53,8 @@ exit=0
 2026-09-27 17:24 MDT is outside every posting window (evening 19:00-22:00, school_call 5:00-9:00 local). Exiting.
 exit=0
 
+=== 2026-09-27T19:59:45-06:00 run 36368071166 ===
+evening is not in WX_SLOTS (['school_call']); skipping.
+evening is not in WX_SLOTS (['school_call']); skipping.
+exit=0
+
