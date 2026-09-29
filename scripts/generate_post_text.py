@@ -658,7 +658,10 @@ def build_post(conditions, slot, dt=None, image_dest_path=None, force_grounded_d
 
     hook = _pick_hook(slot, dt)
     topic = HOOK_TOPICS.get(hook, "lake")
-    weekday_date = dt.strftime("%A, %B %-d")
+    # Not strftime("%A, %B %-d"): %-d is a glibc extension and raises
+    # ValueError on Windows, which made the suite unrunnable there. This
+    # form is byte-identical on every platform.
+    weekday_date = f"{dt:%A, %B} {dt.day}"
 
     caption_lines = [f"{weekday_date} — {_lowercase_first(hook)}", ""]
     rows = []
@@ -969,7 +972,7 @@ def build_alert_post(conditions, alert, dt=None):
     lake = conditions.get("lake_level")
     fire = conditions.get("fire")
 
-    weekday_date = dt.strftime("%A, %B %-d")
+    weekday_date = f"{dt:%A, %B} {dt.day}"
 
     # Condensed ONCE, same pattern as every other free-text field in this
     # file -- the exact same string then appears in both the caption line
