@@ -74,8 +74,18 @@ def test_the_whole_morning_window_posts_not_just_five_oclock():
 
 def test_outside_the_window_still_exits():
     with _TempState():
-        for hour in (0, 4, 9, 10, 12, 17, 23):
+        for hour in (0, 3, 9, 10, 12, 17, 23):
             assert RF.determine_slot(now=_at(hour)) is None, f"hour {hour}"
+
+
+def test_the_window_opens_at_four():
+    """2026-09-28: zero of six delivered runs landed in 05:00-09:00. The
+    window opened an hour earlier so an early delivery is not wasted."""
+    with _TempState():
+        for hour, minute in [(4, 0), (4, 55)]:
+            assert RF.determine_slot(now=_at(hour, minute)) == "school_call", \
+                f"{hour:02d}:{minute:02d} should post and did not"
+        assert RF.determine_slot(now=_at(3, 0)) is None
 
 
 def test_window_covers_school_decision_deadline():
@@ -915,6 +925,55 @@ def test_an_early_run_is_not_drifted():
     brief = CO.render_bundle(_today_bundle("05:05"), post_type="school_call")
     assert "when the post GOES OUT, about 5:45am" in brief
     assert "Do NOT stamp" not in brief
+
+
+def test_a_0410_run_stamps_410_and_is_not_told_the_time_passed():
+    """The window opens at 04:00 now. Stamping 5:45am at 04:10 would claim a
+    time an hour and a half out, beside Facebook's own timestamp."""
+    from wx import compose as CO
+    brief = CO.render_bundle(_today_bundle("04:10"), post_type="school_call")
+    head = brief.split("COMPOSED AT:", 1)[0]
+    assert "the stamp's clock time is 4:10am" in head
+    assert "Do NOT stamp 5:45am" in head
+    assert "already passed" not in head, "5:45am has not happened yet"
+    assert "ahead of it" in head
+
+
+def test_a_0621_run_still_gets_the_late_wording():
+    from wx import compose as CO
+    head = CO.render_bundle(_today_bundle("06:21"),
+                            post_type="school_call").split("COMPOSED AT:", 1)[0]
+    assert "that time has already passed" in head
+    assert "ahead of it" not in head
+
+
+def test_the_run_up_to_545_keeps_the_promise():
+    from wx import compose as CO
+    for hhmm in ("05:00", "05:05", "05:36", "05:52"):
+        brief = CO.render_bundle(_today_bundle(hhmm), post_type="school_call")
+        assert "when the post GOES OUT, about 5:45am" in brief, hhmm
+        assert "Do NOT stamp" not in brief, hhmm
+
+
+def test_the_early_allowance_edge_is_0500():
+    from wx import compose as CO
+    head = CO.render_bundle(_today_bundle("04:59"),
+                            post_type="school_call").split("COMPOSED AT:", 1)[0]
+    assert "the stamp's clock time is 4:59am" in head
+    assert "Do NOT stamp 5:45am" in head
+    brief = CO.render_bundle(_today_bundle("05:00"), post_type="school_call")
+    assert "Do NOT stamp" not in brief
+
+
+def test_minutes_before_mirrors_minutes_past():
+    from wx import compose as CO
+    assert CO._minutes_before("2026-09-27T04:10:00-06:00", "5:45am") == 95
+    assert CO._minutes_before("2026-09-27T05:00:00-06:00", "5:45am") == 45
+    assert CO._minutes_before("2026-09-27T06:21:00-06:00", "5:45am") == 0
+    for iso, pub in ((None, "5:45am"), ("garbage", "5:45am"),
+                     ("2026-09-27T04:10:00", "25:00am"),
+                     ("2026-09-27T04:10:00", "5:45"), ("2026-09-27T04:10:00", None)):
+        assert CO._minutes_before(iso, pub) == 0, (iso, pub)
 
 
 def test_the_2156_evening_run_is_never_drift_stamped():

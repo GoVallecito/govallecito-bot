@@ -18,7 +18,7 @@ REPO="${GITHUB_REPOSITORY:-GoVallecito/govallecito-bot}"
 ASSIGNEE="${AUDIT_ASSIGNEE:-GoVallecito}"
 DRY="${AUDIT_DRY_RUN:-}"
 SLOT=school_call
-WINDOW_CLOSE=9            # scripts/wx/constants.py: SCHOOL_CALL_WINDOW = (5, 9)
+WINDOW_CLOSE=9            # scripts/wx/constants.py: SCHOOL_CALL_WINDOW = (4, 9)
 PENDING=site/weather/_pending
 SITE=site/weather
 HIST=state/drafts

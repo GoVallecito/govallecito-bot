@@ -53,6 +53,16 @@ def _clock(iso):
 # beyond it the stamp states the real clock time instead.
 STAMP_DRIFT_MINUTES = 10
 
+# How far AHEAD of a slot's published time a run may compose and still stamp
+# that time. Deliberately not STAMP_DRIFT_MINUTES: the two directions are not
+# the same kind of wrong. A late run stamping the promise denies a commitment it
+# already missed, so it gets ten minutes of slack. An early run stamping the
+# promise is simply making the promise, which is what the run-up to 5:45am is
+# for, so it gets the whole run-up -- 45 minutes, exactly the 05:00 that
+# SCHOOL_CALL_WINDOW opened at before 2026-09-28. Past that it is no longer a
+# run-up: a 04:10 run would be claiming a time an hour and a half out.
+EARLY_STAMP_ALLOWANCE_MINUTES = 45
+
 
 def _minutes_past(iso, published):
     """Minutes the ISO time `iso` is past the clock time `published` ('5:45am')
@@ -68,6 +78,23 @@ def _minutes_past(iso, published):
         return 0
     pub = (h % 12 + (12 if half == "pm" else 0)) * 60 + m
     return max(0, t.hour * 60 + t.minute - pub)
+
+
+def _minutes_before(iso, published):
+    """Minutes the ISO time `iso` is BEFORE the clock time `published`
+    ('5:45am') on the same day. The mirror of _minutes_past: 0 when it is not
+    before, or when either will not parse."""
+    try:
+        t = _dt.datetime.fromisoformat(iso)
+        p = str(published).strip().lower()
+        hm, half = p[:-2], p[-2:]
+        h, m = (int(x) for x in hm.split(":"))
+        if half not in ("am", "pm") or not (1 <= h <= 12 and 0 <= m < 60):
+            return 0
+    except (TypeError, ValueError):
+        return 0
+    pub = (h % 12 + (12 if half == "pm" else 0)) * 60 + m
+    return max(0, pub - (t.hour * 60 + t.minute))
 
 
 def _writing_for_today(bundle):
@@ -107,12 +134,20 @@ def _stamp_time_lines(bundle, post_type):
     # forgives, so it used to stamp 5:45am, 36 minutes that did not happen.
     # Survivable on a dated web page; not beside Facebook's own timestamp.
     # Says nothing about lateness: is_late owns that word and its apology.
-    if (when and _writing_for_today(bundle)
-            and _minutes_past(bundle.get("generated_at"), when) > STAMP_DRIFT_MINUTES):
+    # Looks both ways since the window opened at 04:00 on 2026-09-28: a 04:10
+    # run stamping 5:45am would claim a time that has not happened yet.
+    late = _minutes_past(bundle.get("generated_at"), when) if when else 0
+    early = _minutes_before(bundle.get("generated_at"), when) if when else 0
+    drifted = (late > STAMP_DRIFT_MINUTES
+               or early > EARLY_STAMP_ALLOWANCE_MINUTES)
+    if when and _writing_for_today(bundle) and drifted:
         now = _clock(bundle.get("generated_at"))
+        why = ("this run is ahead of it"
+               if early > EARLY_STAMP_ALLOWANCE_MINUTES
+               else "that time has already passed")
         return [f"  -> This post goes out as it finishes, so the stamp's clock "
                 f"time is {now}.",
-                f"     Do NOT stamp {when}; that time has already passed."]
+                f"     Do NOT stamp {when}; {why}."]
     hint = f", about {when}" if when else ""
     return [f"  -> The stamp's clock time is when the post GOES OUT{hint},",
             "     not when you are writing. It is never the COMPOSED AT time below."]

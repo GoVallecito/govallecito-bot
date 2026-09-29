@@ -234,7 +234,17 @@ EVENING_HOUR = 19
 # The upper bounds are editorial, not technical. A school call is worth reading
 # up to about 9am, after which the districts have already decided and the
 # school framing is dishonest. The evening look-ahead holds until 22:00.
-SCHOOL_CALL_WINDOW = (5, 9)     # inclusive of 5, exclusive of 9
+#
+# The lower bound moved from 5 to 4 on 2026-09-28, after a morning with no
+# school call: six runs were delivered that day and none landed in 05:00-09:00.
+# Across eleven days of retained logs GitHub delivered 6 to 14 of the ~56 daily
+# scheduled runs (median 10) at arbitrary minutes, the morning window caught a
+# median of 2, and about one day in eight it caught none. More cron entries do
+# not help, delivery is capped regardless; the window is the lever. The hourly
+# heartbeat cron already reaches 04:00 local, so a delivery that used to be
+# wasted for being early now produces the post. The 5:45am stamp is guarded
+# against early runs by compose.EARLY_STAMP_ALLOWANCE_MINUTES.
+SCHOOL_CALL_WINDOW = (4, 9)     # inclusive of 4, exclusive of 9
 EVENING_WINDOW = (19, 22)
 
 SLOT_WINDOWS = {

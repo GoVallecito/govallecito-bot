@@ -32,11 +32,18 @@ name: Vallecito Forecast
 #      any single surviving attempt produces the day's post and the rest are
 #      no-ops. See wx/ledger.py.
 #
-# 11:00-15:00 UTC covers 05:00-09:00 local in BOTH MDT (UTC-6) and MST (UTC-7),
-# which is why the range is wider than four hours.
+# 10:00-16:00 UTC covers 04:00-09:00 local in BOTH MDT (UTC-6) and MST (UTC-7),
+# which is why the range is wider than five hours.
+#
+# 2026-09-28: the window opened an hour earlier, SCHOOL_CALL_WINDOW (5, 9) ->
+# (4, 9), after a morning when zero of six delivered runs landed in it. This
+# range moved from 11-15 to 10-16 in the same commit, and the two must move
+# together: the window decides whether a run posts, this range decides whether
+# a run happens at all. Do not add cron entries instead; delivery is capped
+# around 10 a day however many are scheduled (the 2026-09-07 lesson).
 on:
   schedule:
-    - cron: "5,20,35,50 11-15 * * *"   # morning window, both DST offsets
+    - cron: "5,20,35,50 10-16 * * *"   # morning window, both DST offsets
     - cron: "5,35 1-6 * * *"           # evening window, both DST offsets
     - cron: "45 * * * *"               # hourly heartbeat: miss alarm, storm work
   workflow_dispatch:
