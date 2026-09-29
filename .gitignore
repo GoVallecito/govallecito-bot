@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 output/
 .pytest_cache/
+
+# Cloudflare Worker local secrets (trigger/). Never commit a token or a ping URL:
+# a healthchecks ping URL is a credential too, and anyone holding it can fake a
+# heartbeat and suppress the alarm.
+trigger/.dev.vars

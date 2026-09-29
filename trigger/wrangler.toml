@@ -1,0 +1,15 @@
+name = "wx-morning-trigger"
+main = "morning-trigger.js"
+compatibility_date = "2026-09-01"
+
+# UTC. 11-16Z is the widest span that contains Denver local 05:00-09:00 under
+# BOTH offsets, so this expression never needs a DST edit -- the worker decides
+# what to do from the real Denver clock. Six firings a day.
+#   MDT (UTC-6): 11Z=05 12Z=06 13Z=07 14Z=08 attempts, 15Z=09 watchdog, 16Z=10 skip
+#   MST (UTC-7): 11Z=04 skip, 12Z=05 13Z=06 14Z=07 15Z=08 attempts, 16Z=09 watchdog
+[triggers]
+crons = ["0 11-16 * * *"]
+
+# Secrets are NOT set here. Set them once, encrypted, with:
+#   wrangler secret put GITHUB_TOKEN
+#   wrangler secret put HEALTHCHECK_URL
