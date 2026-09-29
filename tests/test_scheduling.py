@@ -997,3 +997,94 @@ def test_minutes_past_reads_both_halves_of_the_clock():
                      ("2026-09-27T06:21:00", "25:00am"),
                      ("2026-09-27T06:21:00", "5:45"), ("2026-09-27T06:21:00", None)):
         assert CO._minutes_past(iso, pub) == 0, (iso, pub)
+
+# ---------------------------------------------------------------- cron <-> window mapping ----
+def _coverage(hours, offset_hours):
+    """-> (live, dead, missing) local hours for a UTC hour range.
+
+    `hours` is a Python range of UTC hours; cron "10-15" is range(10, 16).
+    Returns the UTC hours that land inside SCHOOL_CALL_WINDOW at this offset,
+    the UTC hours that can never post at this offset, and any window hours the
+    range fails to reach at all. The window is read from the module that owns
+    it, so moving SCHOOL_CALL_WINDOW moves these tests with it.
+    """
+    lo, hi = C.SCHOOL_CALL_WINDOW
+    live, dead = [], []
+    for h in hours:
+        local = (h + offset_hours) % 24
+        (live if lo <= local < hi else dead).append(h)
+    covered = {(h + offset_hours) % 24 for h in live}
+    missing = sorted(set(range(lo, hi)) - covered)
+    return live, dead, missing
+
+
+def test_morning_cron_range_covers_the_window_at_both_offsets():
+    """The arithmetic, with no file IO and no dependence on today's date.
+
+    WHY THIS EXISTS. On 2026-09-29 the morning range was 10-16, whose top two
+    hours could not post under EITHER offset: 15Z and 16Z are 09 and 10 local
+    in MDT, both past the window close, and 16Z is 09 local in MST. Nothing
+    was broken, so nothing complained; the range was simply paying for four
+    runs a day that could never produce a post.
+
+    The opposite mistake is the dangerous one. 10-14 is optimal at UTC-6 and
+    silently drops 08 local the day MST begins, which is a real lost school
+    call on a date nobody will connect to a cron edit months earlier. Both
+    rejected candidates are asserted below so that "optimising" the range
+    later fails here instead of in November.
+
+    Deliberately offset-explicit rather than asking zoneinfo what today is: a
+    date-dependent test in a repo with no CI goes red on a morning nobody is
+    watching, and 2026-03-08 falls inside the range anyway.
+    """
+    live, dead, missing = _coverage(range(10, 16), -6)      # MDT
+    assert live == [10, 11, 12, 13, 14]
+    assert dead == [15]                                      # 09 local, past the close
+    assert missing == []
+
+    live, dead, missing = _coverage(range(10, 16), -7)      # MST
+    assert live == [11, 12, 13, 14, 15]
+    assert dead == [10]                                      # 03 local, before the open
+    assert missing == []
+
+    # The two tempting wrong answers, each losing one end of the window.
+    assert _coverage(range(10, 15), -7)[2] == [8], "10-14 must lose 08 local at UTC-7"
+    assert _coverage(range(11, 16), -6)[2] == [4], "11-15 must lose 04 local at UTC-6"
+
+
+def test_workflow_morning_cron_agrees_with_the_arithmetic():
+    """The shipped cron, read from the YAML, must satisfy the test above.
+
+    The arithmetic test can pass while the workflow says something else, which
+    is exactly how the 10-16 range survived: the reasoning lived in a comment
+    and nothing compared it to the file. This reads the hour field back out of
+    forecast.yml rather than restating it, so editing the cron without editing
+    the window (or vice versa) fails here.
+    """
+    yaml = pytest.importorskip("yaml")
+    path = os.path.join(os.path.dirname(__file__), "..", ".github", "workflows", "forecast.yml")
+    if not os.path.exists(path):
+        pytest.skip("forecast.yml not reachable from this working directory")
+    with open(path, encoding="utf-8") as fh:
+        doc = yaml.safe_load(fh)
+    # PyYAML resolves the bare `on:` key to the boolean True. That is correct, not a typo.
+    schedule = (doc.get(True) if doc.get(True) is not None else doc.get("on"))["schedule"]
+
+    ranges = []
+    for entry in schedule:
+        fields = entry["cron"].split()
+        minute, hour = fields[0], fields[1]
+        # The morning cron is the clustered one: several minutes per hour over an
+        # hour RANGE. The evening cron is also a range, but only two minutes.
+        if len(minute.split(",")) >= 3 and "-" in hour:
+            lo, hi = (int(x) for x in hour.split("-"))
+            ranges.append(range(lo, hi + 1))
+    assert len(ranges) == 1, "expected exactly one clustered morning cron, got %r" % (ranges,)
+
+    for offset in (-6, -7):
+        live, dead, missing = _coverage(ranges[0], offset)
+        assert missing == [], "UTC%+d: window hour(s) %r never reached" % (offset, missing)
+        assert live, "UTC%+d: no slot in the morning cron can post" % offset
+        # One dead hour each way is unavoidable for a single expression serving
+        # both offsets; more than one means the range drifted wider again.
+        assert len(dead) == 1, "UTC%+d: expected exactly 1 dead hour, got %r" % (offset, dead)

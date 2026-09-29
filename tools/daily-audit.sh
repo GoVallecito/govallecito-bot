@@ -196,7 +196,7 @@ elif [ -n "$other" ] || [ "$crashed" -gt 0 ] || [ "$composed" -gt 0 ]; then
   [ "$crashed" -eq 0 ] || detail="$detail $crashed run(s) crashed with a Python traceback."
 elif [ "$outside" -gt 0 ]; then
   cause="outside every posting window"
-  detail="No scheduled run landed inside the 5:00-${WINDOW_CLOSE}:00 local window. GitHub dropped or deferred them; not a code fault."
+  detail="No scheduled run landed inside the 4:00-${WINDOW_CLOSE}:00 local window. The runs did not arrive in the window; the cause is not established."
 else
   cause="unknown"; detail="No forecast run committed a log on $DATE at all. Check that the Vallecito Forecast workflow is still enabled."
 fi

@@ -32,18 +32,30 @@ name: Vallecito Forecast
 #      any single surviving attempt produces the day's post and the rest are
 #      no-ops. See wx/ledger.py.
 #
-# 10:00-16:00 UTC covers 04:00-09:00 local in BOTH MDT (UTC-6) and MST (UTC-7),
-# which is why the range is wider than five hours.
+# 10:00-15:00 UTC covers 04:00-09:00 local in BOTH MDT (UTC-6) and MST (UTC-7).
+# Exactly one hour each way is dead, and no single range can avoid it: at UTC-6
+# the 15Z slot is 09 local, past the window close, and at UTC-7 the 10Z slot is
+# 03 local, before it opens. That is the price of one cron expression serving
+# both offsets. Narrowing to 10-14 looks tidier today and is wrong: it drops 08
+# local the day MST starts, and takes with it the only morning slot at UTC-6
+# that can reach _report_miss_if_needed, which fires only at or past hour 9.
+# Pinned in both directions by tests/test_scheduling.py.
 #
 # 2026-09-28: the window opened an hour earlier, SCHOOL_CALL_WINDOW (5, 9) ->
 # (4, 9), after a morning when zero of six delivered runs landed in it. This
 # range moved from 11-15 to 10-16 in the same commit, and the two must move
 # together: the window decides whether a run posts, this range decides whether
-# a run happens at all. Do not add cron entries instead; delivery is capped
-# around 10 a day however many are scheduled (the 2026-09-07 lesson).
+# a run happens at all. Do not add cron entries instead. About 17% of this
+# workflow's requested slots execute at all; the ones that do are punctual,
+# median 4.1 minutes from their slot across the 20 days that posted. So the
+# loss is in delivery, not in timing, and more entries buy proportionally more
+# of the same loss. WHY so few are delivered is NOT established. Eviction by a
+# shared concurrency group is the leading hypothesis and it is unconfirmed.
+# There is no evidence of a per-repo cap: verify.yml schedules one cron a day
+# and has delivered 30 of 30.
 on:
   schedule:
-    - cron: "5,20,35,50 10-16 * * *"   # morning window, both DST offsets
+    - cron: "5,20,35,50 10-15 * * *"   # morning window, both DST offsets
     - cron: "5,35 1-6 * * *"           # evening window, both DST offsets
     - cron: "45 * * * *"               # hourly heartbeat: miss alarm, storm work
   workflow_dispatch:

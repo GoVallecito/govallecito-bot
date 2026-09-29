@@ -72,7 +72,8 @@ site/weather/            published forecasts + feed.json (the site reads this)
 site/weather/_pending/   HELD drafts, awaiting promotion. The feed ignores them.
 site-astro/              copies of the Astro pages that belong in the SITE repo
 config/                  hand-edited inputs (emergency_override.json, almanac)
-tests/                   397 offline pytest tests, no network, no API key
+tests/                   421 offline pytest tests (python -m pytest tests/ -q),
+                         no network, no API key; 426 with scripts/ collected too
 ```
 
 ## Workflows (all in `.github/workflows/`)
@@ -86,7 +87,7 @@ DST without YAML edits.
 | `daily-post.yml` | `0 * * * *` hourly | Conditions card; `scripts/main.py` acts in the 7:00-10:59 and 14:00-17:59 Denver windows, once per slot per day (first surviving run wins; `post_history.json` is the ledger). A slot that closes with no post opens one `[miss] no <slot> conditions post for <date>` issue (`scripts/post_miss.py`; remembered in `state/daily_post_state.json` so it is never filed twice; silent under DRY_RUN) | **Yes**, FB Page (unless `DRY_RUN`); commits state |
 | `emergency-alert.yml` | `*/10 * * * *`; also **push to `main` touching `config/emergency_override.json`** | Flood/fire/evac/disaster check, posts at once | **Yes**, FB Page (unless `DRY_RUN`); commits state |
 | `engagement-check.yml` | `0 10` → 04:00 MDT / 03:00 MST | Engagement on 48h+ posts, recomputes preferences | No; commits state |
-| `forecast.yml` | `5,20,35,50 11-15` → 05:05–09:50 MDT / 04:05–08:50 MST; `5,35 1-6` → 19:05–00:35 MDT / 18:05–23:35 MST; `45 * * * *` heartbeat | The forecaster. Windows + ledger, because GitHub drops scheduled runs | **Yes**, `site/weather/` + FB Page on PASS; commits `state/` and `site/`; pings `SITE_DEPLOY_HOOK` |
+| `forecast.yml` | `5,20,35,50 10-15` → 04:05–09:50 MDT / 03:05–08:50 MST; `5,35 1-6` → 19:05–00:35 MDT / 18:05–23:35 MST; `45 * * * *` heartbeat | The forecaster. Windows + ledger, because GitHub drops scheduled runs | **Yes**, `site/weather/` + FB Page on PASS; commits `state/` and `site/`; pings `SITE_DEPLOY_HOOK` |
 | `verify.yml` | `30 15` → 09:30 MDT / 08:30 MST | Scores yesterday, adds a calibration point, drafts the totals post | Same gate as forecast; commits state |
 | `storm-watch.yml` | `10 17`, `10 22`, `10 03` → ~11:10/16:10/21:10 MDT (~10:10/15:10/20:10 MST) | Storm setup post when a system shows 2–5 days out | Same gate as forecast; commits state |
 | `daily-audit.yml` | `15 15` and `15 16` → 09:15/10:15 MDT, 08:15/09:15 MST (script skips runs before 09:00 local) | Runs `npm test`, lints the day's draft onto its review issue, or opens a `[miss]` issue | No public output; issues only |
@@ -183,7 +184,8 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
 
 ```bash
 pip install -r requirements.txt && pip install pytest   # pytest is not pinned
-python -m pytest tests/ -q      # 397 passed, offline, no keys, no network
+python -m pytest tests/ -q      # 421 collected, offline, no keys, no network
+                                # (426 when scripts/ is collected too)
                                 # (one shells out to node, two to git;
                                 #  they skip if those are missing)
 npm test                        # 69 subtests: node --test tools/draft-lint.test.mjs

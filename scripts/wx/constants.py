@@ -240,7 +240,9 @@ EVENING_HOUR = 19
 # Across eleven days of retained logs GitHub delivered 6 to 14 of the ~56 daily
 # scheduled runs (median 10) at arbitrary minutes, the morning window caught a
 # median of 2, and about one day in eight it caught none. More cron entries do
-# not help, delivery is capped regardless; the window is the lever. The hourly
+# not help; the window is the lever. The delivery rate and its unconfirmed cause
+# are recorded once, in the header of .github/workflows/forecast.yml, so this
+# note and that cron cannot drift apart again. The hourly
 # heartbeat cron already reaches 04:00 local, so a delivery that used to be
 # wasted for being early now produces the post. The 5:45am stamp is guarded
 # against early runs by compose.EARLY_STAMP_ALLOWANCE_MINUTES.
