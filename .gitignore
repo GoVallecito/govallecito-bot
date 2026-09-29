@@ -7,3 +7,4 @@ output/
 # a healthchecks ping URL is a credential too, and anyone holding it can fake a
 # heartbeat and suppress the alarm.
 trigger/.dev.vars
+trigger/.wrangler/

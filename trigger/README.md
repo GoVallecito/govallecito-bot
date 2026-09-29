@@ -118,10 +118,10 @@ The check above watches for the **POST**, which is the thing that matters.
 would do, and dispatches nothing.
 
 ```
-curl https://<worker>.workers.dev/
+curl https://wx-morning-trigger.dkontje.workers.dev
 ```
 
-Fill in the real hostname after the first deploy. It returns the UTC time, the Denver
+It returns the UTC time, the Denver
 date and hour, the decided action (`attempt` / `watchdog` / `skip`), whether today's
 post is already published, and whether each secret is configured.
 
