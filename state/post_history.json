@@ -1215,6 +1215,20 @@
       "alert_id": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122134219557360003",
+      "posted_at": "2026-09-30T22:43:42.698803+00:00",
+      "slot": "afternoon",
+      "hook_line": "Here's where things stand.",
+      "had_image": true,
+      "image_topic": "weather_forecast",
+      "fire_stage": 0,
+      "post_type": "daily",
+      "alert_category": null,
+      "alert_id": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
