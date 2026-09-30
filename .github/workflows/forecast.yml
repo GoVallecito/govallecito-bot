@@ -17,14 +17,17 @@ name: Vallecito Forecast
 # ARCHITECTURE, 2026-09-29: the morning post is driven by an EXTERNAL
 # trigger. Cron is the backup path, not the primary one.
 #
-# Primary: a Cloudflare Worker calls this workflow's workflow_dispatch REST
-# endpoint at 05:30 and 07:00 America/Denver, with
+# Primary: the Cloudflare Worker in trigger/ (wx-morning-trigger, deployed
+# 2026-09-29, first live dispatch 2026-09-30 05:01). It fires on the hour
+# across 11-16Z, resolves the Denver clock in code, and at local 05, 06, 07
+# and 08 dispatches this workflow with
 #   {"ref":"main","inputs":{"slot":"","dry_run":"false"}}
-# workflow_dispatch does not go through GitHub's scheduler and starts within
-# seconds. `slot` is deliberately empty: a forced slot skips the clock check
-# in determine_slot(), while an empty one takes the normal window check and
-# the ledger. The 07:00 call is a free retry -- if 05:30 posted, the ledger
-# makes it exit with "already went out".
+# unless site/weather/feed.json already has today's post. At local 09 it pings
+# its healthcheck's /fail if there is still no post. workflow_dispatch does not
+# go through GitHub's scheduler and starts within seconds. `slot` is
+# deliberately empty: a forced slot skips the clock check in determine_slot(),
+# while an empty one takes the normal window check and the ledger, so later
+# attempts on a day that already posted (or was held) are no-ops.
 #
 # Backup: the three cron lines below. They are safe to keep because
 # state/post_ledger.json makes a second run for the same slot a no-op.

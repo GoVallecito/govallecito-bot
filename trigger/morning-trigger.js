@@ -4,9 +4,11 @@
  * WHY THIS EXISTS. GitHub's cron is the only scheduler GitHub offers and it is the
  * thing that fails: across 2026-09-18..29 only about 17% of forecast.yml's requested
  * slots executed, and 2026-09-28 and 09-29 produced no morning post at all. The runs
- * that do execute are punctual (median 4.1 min from their slot), so the problem is
- * delivery, not timing. workflow_dispatch goes through a different path and starts in
- * seconds, so this worker dispatches the workflow on Cloudflare's clock instead.
+ * that do execute arrive hours LATE (verify.yml, one cron a day: median 199 min) and
+ * the forecaster's own window check discards them. (An earlier note here called them
+ * punctual, "median 4.1 min from their slot"; with a slot every 15 minutes, distance
+ * to the nearest slot cannot see lateness.) workflow_dispatch goes through a
+ * different path and starts in seconds, so this worker dispatches on Cloudflare's clock.
  *
  * DESIGN NOTES, so the next person does not undo them by accident:
  *
@@ -19,8 +21,9 @@
  *   (outside the window) sets WX_DRY_LEDGER, so the run would publish without
  *   claiming the ledger and a later run could post the day twice.
  * - `dry_run` is sent explicitly as "false". The REST dispatch endpoint applies the
- *   workflow's DECLARED defaults when inputs are omitted, and that default is "true",
- *   which makes run_forecast._site_publish_allowed() return False: the run would
+ *   workflow's DECLARED defaults when inputs are omitted. That default was "true"
+ *   until 2026-10 (now "false"; keep sending it anyway), and "true" makes
+ *   run_forecast._site_publish_allowed() return False: the run would
  *   compose, pass the review panel, log MAGISTRATE APPROVED and publish nothing,
  *   looking green the whole way.
  * - Attempts are restricted to local hours 5,6,7,8. Not 4: _PUBLISH_TIME promises
