@@ -604,7 +604,10 @@ def _mirror_to_facebook(post_path, bundle, slot):
 def _site_publish_allowed():
     if os.environ.get("WX_SITE_PUBLISH", "true").strip().lower() == "false":
         return False
-    # A manual "Run workflow" defaults to dry_run=true. Scheduled runs read
+    # A dispatched run (the external trigger or a manual "Run workflow")
+    # publishes unless dry_run=true was passed; the input default is "false"
+    # since 2026-09-29. The `or "true"` below only fires if DRY_RUN is empty,
+    # which forecast.yml cannot produce for a dispatch. Scheduled runs read
     # vars.DRY_RUN, which only governs Facebook and must not stop the site.
     if (os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
             and (os.environ.get("DRY_RUN") or "true").strip().lower() == "true"):
