@@ -1,27 +1,9 @@
-# Forecast run: blocked
+# Wednesday, 2026-09-30, school_call
 
-When: 2026-09-30T05:04:38-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 1
+Verdict: `block` | Snow line: 11750 | Alerts: ['Flood Watch', 'Flood Watch']
 
-## Detail
+---
 
-```
-review panel: not approved after 3 round(s): Five required changes: three numbers outside their brief ranges (Durango 1.11in not 'an inch or so', Bayfield 0.99in not 'an inch', Wolf Creek gusts to 50 not 40-60), one gauge question forbidden by NO READING TODAY, and one opener that reuses the 2026-09-18 construction. All have concrete replacements from the reviewers that satisfy the brief.
-draft states a present-tense road surface condition ('Coal Bank, Molas and Red Mountain all get wet pavement through the day.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
-a rewrite was attempted and was blocked too
-```
-
-## What the data looked like
-
-- Snow line: 11750
-- Alerts: ['Flood Watch', 'Flood Watch']
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 09/30/26 5:47am: Morning, its Wednesday. Sky's still overcast here and the air's got that heavy feel to it this morning.
 
 We're under a Flood Watch from the Grand Junction office, and its split by zone. Vallecito and up the Florida (COZ019) stay in it through 5pm today. Durango and Bayfield (COZ022) drop out at 6am today. The ground's already saturated from the last couple weeks and more rain's coming, so flash flooding and rises on local rivers are the concern. The full product's at weather.gov/gjt.
@@ -41,4 +23,3 @@ The passes should stay rain at pass level. Coal Bank, Molas and Red Mountain sho
 Districts decide by 6:30. Thursday's dry and warmer, clearing out behind this system.
 
 What's your gauge showing this morning compared to yesterday?
-```
