@@ -33,3 +33,8 @@ Wrote state/forecast-status.md
 logged forecast 2026-10-01-1 for tomorrow's verification
 exit=0
 
+=== 2026-10-01T10:42:05-06:00 run 36893937498 ===
+2026-10-01 10:42 MDT is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
+2026-10-01 10:42 MDT is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
+exit=0
+
