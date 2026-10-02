@@ -1261,6 +1261,20 @@
       "alert_id": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122134589553360003",
+      "posted_at": "2026-10-02T13:21:23.937542+00:00",
+      "slot": "morning",
+      "hook_line": "Coffee's on \u2014 here's today's conditions.",
+      "had_image": true,
+      "image_topic": "weather_forecast",
+      "fire_stage": 0,
+      "post_type": "daily",
+      "alert_category": null,
+      "alert_id": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
