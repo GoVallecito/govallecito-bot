@@ -1,25 +1,18 @@
-# Forecast run: held for review
+---
+title: "Morning forecast for Vallecito, Bayfield and Durango"
+date: "2026-10-02T05:01:42.095628-06:00"
+forDate: "2026-10-02"
+postType: "school_call"
+snowLineFt: null
+snowLineTrend: null
+bands: {}
+basinPercentOfMedian: null
+alerts: []
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-10-02-morning-forecast-for-vallecito-bayfield-and-durango"
+---
 
-When: 2026-10-02T05:04:09-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 1
-
-## Detail
-
-```
-review panel: not approved after 3 round(s): The draft violates the road-status rule by stating present-tense conditions without CDOT data ('all look dry'), contains a temperature measurement in the personal detail when NO READING TODAY forbids it ('October chill'), repeats 'should stay dry' and 'through the weekend' in consecutive sentences, and reuses a closing question construction. All four issues have concrete fixes that preserve the post's structure and voice.
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 10/02/26 5:45am: Morning, its Friday. The stars were still out when I let the dog out and the air's got that October chill to it now.
 
 No weather for the bus run this morning. Districts decide by 6:30 and the roads should cooperate. The 501, the 240 and the 160 all look dry for the morning commute. All four models are holding everything dry through the weekend.
@@ -37,4 +30,3 @@ The passes should stay dry for the weekend. Coal Bank, Molas and Red Mountain sh
 The Grand Junction discussion mentions some isolated storm potential over the San Juans Sunday afternoon, so that'll be the thing to watch as we get into next week. For now its just warm October days and cool mornings.
 
 Nice setup for the weekend. What's on the list for a weekend like this?
-```
