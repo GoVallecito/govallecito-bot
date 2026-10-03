@@ -1,8 +1,4 @@
-=== verify run @ 2026-10-02 14:04 MDT ===
-observations: {'date': '2026-10-02', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
-  2026-10-01-1: hit_rate=1.0 line_error=Noneft
-calibration: active=False offset=0.0ft (0/20 events)
-track record: {'verified_events': 2, 'mean_hit_rate': 1.0, 'snow_line_mean_abs_error_ft': None, 'worst_miss': ('durango', 0.0)}
-guardrails: BLOCK
-BLOCKED -- nothing published.
+=== verify run @ 2026-10-03 12:45 MDT ===
+observations: {'date': '2026-10-03', 'sources_used': ['CoCoRaHS'], 'missing': ['SNOTEL: HTTP Error 500: Internal Server Error']}
+Nothing to verify -- no unverified forecast in window. Exiting.
 exit=0
