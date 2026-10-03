@@ -1,27 +1,9 @@
-# Forecast run: published to website (approved by review panel)
+# Saturday, 2026-10-03, school_call
 
-When: 2026-10-03T05:03:09-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 0
+Verdict: `pass` | Snow line: n/a | Alerts: none
 
-## Detail
+---
 
-```
-approved in round 3 after applying 4 reviewer replacement(s) to the writer's text
-```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 10/03/26 5:45am: Morning, its Saturday. Saturday, and the air's got that October bite when you step outside.
 
 Durango and the Animas Valley (6,500') dry all day, warming from the upper 40s this morning into the upper 70s this afternoon. Light winds early, picking up to 10-15mph gusts by evening. Bayfield and up the Pine (6,900') the same deal, mid-40s now climbing into the mid-70s by afternoon. Vallecito and the Florida (7,650'+) starting in the mid-40s, warming to low 70s with gusts 10-15mph by late afternoon.
@@ -33,4 +15,3 @@ The 160 and the 550 should stay dry all day. Coal Bank, Molas and Red Mountain s
 Sunday's the same setup, just a tick warmer with that slight chance of a shower over the high country by afternoon., with just a slight chance of an isolated afternoon shower over the high terrain. The Euro is showing a trace of moisture Sunday afternoon but the GFS, ICON and GEM are all bone dry, so I wouldnt plan around it. That trace is pretty uncertain, with three of the four models showing nothing at all.
 
 Anybody heading up into the Weminuche or are the trails getting too chewed up?
-```
