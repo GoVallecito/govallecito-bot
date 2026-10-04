@@ -93,6 +93,14 @@ jobs:
       issues: write          # review-notification path
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The branch tip, not the commit this run was queued on. GitHub
+          # releases delayed scheduled runs in batches; they run one at a time
+          # (the concurrency group) but each used to check out the SHA from
+          # when it was queued, so the second started without the first one's
+          # state commit and its push was always rejected. On 2026-10-03 the
+          # rebase that followed conflicted in state/logs/ and the run failed.
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -208,7 +216,9 @@ jobs:
               exit 0
             fi
             echo "push rejected, rebasing and retrying ($attempt/5)"
-            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+            # A rebase that conflicts leaves the checkout detached mid-rebase,
+            # and every later attempt then fails on that instead of retrying.
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || git rebase --abort || true
             sleep $((attempt * 3))
           done
           echo "::error::could not push state after 5 attempts"
