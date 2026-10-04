@@ -1,27 +1,9 @@
-# Forecast run: published to website (approved by review panel)
+# Sunday, 2026-10-04, school_call
 
-When: 2026-10-04T05:02:17-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 0
+Verdict: `pass` | Snow line: n/a | Alerts: none
 
-## Detail
+---
 
-```
-approved by the magistrate in round 1
-```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 10/04/26 5:47am: Morning, its Sunday. The dog's been pacing since before dawn wanting a walk and the sky's clear.
 
 Dry weather holds today and tomorrow. High pressure's parked over the Four Corners and it's not budging, which means we get two more days of October sun and light winds before things start to shift midweek.
@@ -35,4 +17,3 @@ Coal Bank, Molas and Red Mountain should stay dry through the day. Wolf Creek lo
 Monday's a repeat. Same setup, same temps, same dry skies. The GFS discussion out of Grand Junction says the high strengthens tomorrow and Monday which keeps any afternoon storm chances suppressed even over the southern mountains. Tuesday's when we might see a weak disturbance slide through southeast with isolated light showers possible, mostly over the San Juans, but confidence on that is still low and we're three days out so take it with a big grain of salt (the moisture's limited and the models haven't locked in on timing yet).
 
 Nice stretch for yard work or getting on the water. Is the lake still warm enough to swim or has it turned already?
-```
