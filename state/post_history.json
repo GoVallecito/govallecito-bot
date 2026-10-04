@@ -1337,6 +1337,20 @@
       "alert_id": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122135161239360003",
+      "posted_at": "2026-10-04T22:06:05.416380+00:00",
+      "slot": "afternoon",
+      "hook_line": "Clear skies tonight over the lake.",
+      "had_image": true,
+      "image_topic": "stargazing",
+      "fire_stage": 0,
+      "post_type": "daily",
+      "alert_category": null,
+      "alert_id": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
