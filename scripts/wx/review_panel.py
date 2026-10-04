@@ -16,6 +16,11 @@ THE LOOP (one "round")
      lists every claim the data does not support.
   2. EDITOR reads the persona rules and the recent posts, and lists every
      break in voice, format, repetition or local accuracy.
+  2a. THE RULE GATE SCREENS BOTH REPORTS. Every replacement sentence a
+     reviewer proposed is substituted into the draft on its own and put through
+     the deterministic gate. One the gate forbids is withheld: the objection
+     goes to the magistrate, the remedy does not. A reviewer may not prescribe
+     what the gate blocks.
   3. MAGISTRATE reads both reports, the draft, the brief, and anything the
      deterministic gate flagged, and rules: APPROVE, REVISE, or REJECT. It may
      overrule a reviewer, and must say why when it does.
@@ -596,7 +601,7 @@ def _looks_like_prose(quote, fix):
     return bool(q0 and f0) and q0.isupper() == f0.isupper()
 
 
-def _magistrate_fixes(ruling, text):
+def _magistrate_fixes(ruling, text, gate=None):
     """(issues, unapplied) out of the ruling's required_changes.
 
     THE BUG THIS FIXES: _apply_fixes was fed only the reviewers' reports. On
@@ -611,6 +616,13 @@ def _magistrate_fixes(ruling, text):
     unapplied: {"quote", "fix", "why"} for each change that names a sentence
     in the text but whose right-hand side is not safe to splice in. The
     caller decides which of those still stand once the patch is done.
+
+    `gate` is an optional callable(quote, fix) -> reason or None: the
+    deterministic rule gate, asked whether this exact substitution would break
+    it. The reviewers are screened before the magistrate ever reads them
+    (`screen_fixes`), but the magistrate can still write a forbidden sentence
+    of its own, and a required change is spliced in literally. So the same
+    rule is applied here, as one more reason a replacement is refused.
     """
     issues, unapplied = [], []
     for raw in (ruling or {}).get("required_changes") or []:
@@ -629,6 +641,10 @@ def _magistrate_fixes(ruling, text):
             why = "the replacement talks about the writing, not the weather"
         elif not _looks_like_prose(quote, fix):
             why = "the replacement is not shaped like the sentence it replaces"
+        elif gate is not None:
+            broke = gate(quote, fix)
+            if broke:
+                why = f"the rule gate refuses the replacement: {broke}"
         if why:
             unapplied.append({"quote": quote, "fix": fix, "why": why})
         else:
@@ -663,6 +679,84 @@ def _gate_flags(bundle, text, calibrated):
     verdict, reasons = G.evaluate(bundle, text, first_30_days=False,
                                   calibrated=calibrated)
     return verdict, reasons
+
+
+_GATE_RANK = {G.PASS: 0, G.REVIEW: 1, G.BLOCK: 2}
+
+
+def _fix_breaks_gate(bundle, text, quote, fix, calibrated=False):
+    """The reason the deterministic gate refuses this replacement, or None.
+
+    THE BUG THIS FIXES. On 2026-09-30 the brief said Wolf Creek "gusts to 50".
+    The writer wrote "gusts 40-60", a range that contains it, which the gate
+    passes. The fact checker called that critical and its remedy was, literally,
+    "gusts to 50" -- the point-value gust `guardrails` has blocked since the
+    hand-edit era. The magistrate required it, the final-round auto-patch
+    spliced it in, and the gate blocked the patched text. Round 2 died the same
+    way and the day went dark.
+
+    A reviewer may not prescribe what the gate forbids. The gate is the older,
+    deterministic authority and it is cheap to ask, so ask it about the
+    replacement before anyone acts on it, not after.
+
+    The question is asked as a DELTA, not as "does the patched text pass":
+    a draft may already carry a flag this replacement has nothing to do with,
+    and refusing every fix on a flagged draft would hold exactly the drafts
+    that most need fixing. So the replacement is refused when substituting it
+    makes the verdict worse, or adds a reason the text did not already have
+    while the result is a BLOCK.
+
+    Each replacement is screened on its own against the text as it stands, not
+    against the other replacements. The gate's rules are shallow sentence-level
+    regexes, so that is the right granularity; the post-patch re-run of the
+    whole gate in run_panel stays as the backstop for anything that only shows
+    up in combination.
+    """
+    quote, fix = (quote or "").strip(), (fix or "").strip()
+    if not quote or not fix or fix == quote or quote not in text:
+        return None                            # nothing that will be substituted
+    before_v, before_r = _gate_flags(bundle, text, calibrated)
+    after_v, after_r = _gate_flags(bundle, text.replace(quote, fix, 1), calibrated)
+    new = [r for r in after_r if r not in set(before_r)]
+    worse = _GATE_RANK.get(after_v, 2) > _GATE_RANK.get(before_v, 0)
+    if worse or (after_v == G.BLOCK and new):
+        return new[0] if new else f"the gate returns {after_v.upper()} on the result"
+    return None
+
+
+def screen_fixes(bundle, text, report, who, calibrated=False):
+    """Strip every replacement in `report` that the rule gate would refuse.
+
+    Run on both reviewers BEFORE the magistrate sees their reports, so a
+    forbidden sentence is never offered to it, never ends up in
+    required_changes, and never reaches _apply_fixes.
+
+    The ISSUE survives; only its `fix` is withheld. "gusts 40-60" really was
+    outside the brief on 2026-09-30, and dropping the objection with the bad
+    remedy would trade one failure for a worse one. The problem text gains a
+    note, because SHARED_RULES rule 5 already tells a reviewer to leave the fix
+    empty and describe the problem when it cannot write a safe one, and this is
+    that case decided mechanically. The magistrate then writes its own
+    replacement or leaves the issue standing, and a standing issue holds the
+    post -- which is the recoverable outcome.
+
+    Mutates the report in place and returns the refused records, for the log
+    and the transcript.
+    """
+    refused = []
+    for i in report.get("issues") or []:
+        why = _fix_breaks_gate(bundle, text, i.get("quote"), i.get("fix"), calibrated)
+        if not why:
+            continue
+        refused.append({"who": who, "severity": i.get("severity", "minor"),
+                        "quote": (i.get("quote") or "").strip(),
+                        "fix": (i.get("fix") or "").strip(), "why": why})
+        i["refused_fix"], i["refused_why"] = i["fix"], why
+        i["fix"] = ""
+        i["problem"] = (i.get("problem") or "") + (
+            f" (a proposed replacement was withheld because the rule gate "
+            f"refuses it: {why})")
+    return refused
 
 
 # --- the three roles ------------------------------------------------------------
@@ -794,6 +888,18 @@ def run_panel(bundle, text, *, slot, writer_llm, review_llm=None, calibrated=Fal
         facts = fact_check(review_llm, brief, text)
         editor = edit_review(review_llm, text, bundle, recent_bodies, brief=brief,
                              gate_verdict=gate_verdict, gate_reasons=gate_reasons)
+
+        # Before the magistrate reads a word of either report: every proposed
+        # replacement goes through the deterministic gate, and the ones it
+        # forbids are withheld. A reviewer may not prescribe what the gate
+        # blocks -- 2026-09-30, "gusts to 50". The objection stands, the
+        # remedy does not.
+        screened = (screen_fixes(bundle, text, facts, "fact checker", calibrated)
+                    + screen_fixes(bundle, text, editor, "editor", calibrated))
+        for sc in screened:
+            log(f"panel round {n}: withheld the {sc['who']}'s replacement for "
+                f"{sc['quote'][:60]!r} -- {sc['why']}")
+
         ruling = rule(review_llm, brief, text, facts, editor,
                       gate_verdict, gate_reasons, n, rounds)
 
@@ -817,7 +923,8 @@ def run_panel(bundle, text, *, slot, writer_llm, review_llm=None, calibrated=Fal
                                     f"{' or '.join(missing)} report this round.]")
 
         record = {"round": n, "text": text, "gate": [gate_verdict, gate_reasons],
-                  "fact_check": facts, "editor": editor, "ruling": ruling}
+                  "fact_check": facts, "editor": editor, "ruling": ruling,
+                  "screened": screened}
         history.append(record)
         crit = sum(1 for r in (facts, editor) for i in r["issues"]
                    if i["severity"] in ("critical", "major"))
@@ -841,7 +948,9 @@ def run_panel(bundle, text, *, slot, writer_llm, review_llm=None, calibrated=Fal
         # patch. Reject stays reachable: a draft whose remaining issues carry no
         # replacement, or that still fails the gate, is held exactly as before.
         if n == rounds and ruling["ruling"] != APPROVE:
-            mag_fixes, unapplied = _magistrate_fixes(ruling, text)
+            mag_fixes, unapplied = _magistrate_fixes(
+                ruling, text,
+                gate=lambda q, f: _fix_breaks_gate(bundle, text, q, f, calibrated))
             patched, applied, skipped = _apply_fixes(
                 text, (("fact checker", facts), ("editor", editor),
                        ("magistrate", {"issues": mag_fixes, "overrides": True})))
@@ -943,8 +1052,17 @@ def transcript(result, bundle, slot):
               f"### Rule gate: {r['gate'][0]}", ""]
         L += [f"- {x}" for x in r["gate"][1]] or ["- nothing flagged"]
         L += ["", "### Fact checker", "", _fmt_report(r["fact_check"]), "",
-              "### Editor", "", _fmt_report(r["editor"]), "",
-              f"### Magistrate: {ru['ruling'].upper()}", "", ru.get("rationale", ""), ""]
+              "### Editor", "", _fmt_report(r["editor"]), ""]
+        if r.get("screened"):
+            L += ["### Replacements withheld before the magistrate saw them", "",
+                  "The rule gate was asked about each proposed replacement "
+                  "first. These were refused, so the magistrate was shown the "
+                  "objection with no remedy attached:", ""]
+            L += [f"- [{sc['severity']}, {sc['who']}] \"{sc['quote']}\" -> "
+                  f"\"{sc['fix']}\" ({sc['why']})" for sc in r["screened"]]
+            L += [""]
+        L += [f"### Magistrate: {ru['ruling'].upper()}", "",
+              ru.get("rationale", ""), ""]
         if ru.get("required_changes"):
             L += ["Required changes:"] + [f"- {c}" for c in ru["required_changes"]] + [""]
         if ru.get("dismissed"):
