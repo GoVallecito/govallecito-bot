@@ -71,7 +71,7 @@ def test_the_magistrate_only_change_is_extracted_and_applied():
     assert unapplied == []
     assert {"severity": "major", "quote": PIVOT, "fix": "Today stays dry."} in fixes
 
-    patched, applied, skipped = RP._apply_fixes(
+    patched, applied, skipped, _ = RP._apply_fixes(
         DRAFT_0927, (("fact checker", CLEAN), ("editor", EDITOR_0927),
                      ("magistrate", {"issues": fixes, "overrides": True})))
     assert "Today stays dry." in patched
@@ -131,7 +131,7 @@ def test_the_ruling_wins_over_a_different_reviewer_fix():
     list is accepted as a report."""
     editor = [{"quote": PIVOT, "fix": "Today's dry all over.", "severity": "major"}]
     mag = {"issues": [{"quote": PIVOT, "fix": "Today stays dry."}], "overrides": True}
-    patched, applied, skipped = RP._apply_fixes(
+    patched, applied, skipped, _ = RP._apply_fixes(
         DRAFT_0927, (("editor", editor), ("magistrate", mag)))
     assert "Today stays dry." in patched
     assert "Today's dry all over." not in patched

@@ -494,6 +494,58 @@ def _recent_context(bundle, recent_bodies):
     return "\n".join(parts) or "(no recent posts on file)"
 
 
+_SENTENCE_END = re.compile(r"""[.!?]["')\]]?\s*$""")
+
+
+def _splice_is_safe(text, quote, fix):
+    """Would substituting `fix` for `quote` leave well-formed English?
+
+    THE BUG THIS FIXES: 2026-10-03. The editor quoted a FRAGMENT of a sentence,
+
+        "Tomorrow looks like a repeat, warm, mostly dry"
+
+    out of
+
+        "Tomorrow looks like a repeat, warm, mostly dry, with just a slight
+         chance of an isolated afternoon shower over the high terrain."
+
+    and its replacement ended in a full stop. The substitution was literal, so
+    the tail of the original sentence survived the period and the website
+    published "...over the high country by afternoon., with just a slight
+    chance of an isolated afternoon shower over the high terrain."
+
+    The magistrate's own fix quoted the WHOLE sentence, so by the time it was
+    reached the quote no longer matched and it was logged as "skipped, the
+    quoted sentence was no longer present" -- which read, in the transcript,
+    as though nothing had been left behind.
+
+    Dropping the fragment fix lets the magistrate's whole-sentence fix match
+    and apply cleanly, so this is not merely a veto: on the 10-03 text it is
+    the difference between broken English and the edit the panel intended.
+    """
+    i = text.find(quote)
+    if i < 0:
+        return True                            # the caller owns the miss
+    after = text[i + len(quote):]
+    before = text[:i]
+    quote_closes = bool(_SENTENCE_END.search(quote))
+    fix_closes = bool(_SENTENCE_END.search(fix))
+
+    # The fix ends a sentence where the quote did not, and the original
+    # sentence continues past the quote. Whatever follows is orphaned.
+    if fix_closes and not quote_closes and after[:1] not in ("", "\n"):
+        return False
+
+    # The quote starts mid-sentence and the fix opens as though it began one.
+    starts_sentence = (i == 0) or bool(
+        re.search(r"""(?:[.!?]["')\]]?\s+|\n\s*)$""", before))
+    if (not starts_sentence and re.match(r"[A-Z]", fix or " ")
+            and not re.match(r"[A-Z]", quote or " ")):
+        return False
+
+    return True
+
+
 def _apply_fixes(text, reports):
     """Spend the fixes the panel is already holding, on the last round.
 
@@ -516,10 +568,12 @@ def _apply_fixes(text, reports):
     that replacement is itself replaced. A replacement a reviewer already
     applied, word for word, is neither applied twice nor counted as skipped.
 
-    Returns (patched_text, applied, skipped) where applied/skipped are lists
-    of {"who", "severity", "quote", "fix"} for the transcript.
+    Returns (patched_text, applied, skipped, unsafe) where applied/skipped/
+    unsafe are lists of {"who", "severity", "quote", "fix"} for the
+    transcript. A replacement whose seam would not be well-formed English
+    (see _splice_is_safe) is not applied: it is dropped into `unsafe`.
     """
-    applied, skipped = [], []
+    applied, skipped, unsafe = [], [], []
     standing = {}                              # quote -> the fix now in the text
     for who, rep in reports:
         issues = rep if isinstance(rep, list) else (rep or {}).get("issues", [])
@@ -541,10 +595,13 @@ def _apply_fixes(text, reports):
                     continue
                 skipped.append(rec)            # superseded by an earlier substitution
                 continue
+            if not _splice_is_safe(text, quote, fix):
+                unsafe.append(rec)
+                continue
             text = text.replace(quote, fix, 1)
             standing[quote] = fix
             applied.append(rec)
-    return text, applied, skipped
+    return text, applied, skipped, unsafe
 
 
 # The magistrate's required_changes are "<quote> -> <replacement or
@@ -842,15 +899,19 @@ def run_panel(bundle, text, *, slot, writer_llm, review_llm=None, calibrated=Fal
         # replacement, or that still fails the gate, is held exactly as before.
         if n == rounds and ruling["ruling"] != APPROVE:
             mag_fixes, unapplied = _magistrate_fixes(ruling, text)
-            patched, applied, skipped = _apply_fixes(
+            patched, applied, skipped, unsafe = _apply_fixes(
                 text, (("fact checker", facts), ("editor", editor),
                        ("magistrate", {"issues": mag_fixes, "overrides": True})))
+            if unsafe:
+                log(f"panel round {n}: dropped {len(unsafe)} replacement(s) "
+                    "whose seam would not be well-formed English: "
+                    + "; ".join(repr(u["quote"][:60]) for u in unsafe))
             # A required change that could not be substituted, and whose
             # sentence is still in the text, stands unmet. Four of five
             # applied is not the ruling the magistrate made.
             outstanding = [u for u in unapplied if u["quote"] in patched]
             auto = {"applied": applied, "skipped": skipped, "patched": patched != text,
-                    "outstanding": outstanding}
+                    "outstanding": outstanding, "unsafe": unsafe}
             if outstanding:
                 log(f"panel round {n}: {len(outstanding)} required change(s) "
                     "could not be applied and still stand: "
@@ -950,13 +1011,20 @@ def transcript(result, bundle, slot):
         if ru.get("dismissed"):
             L += ["Dismissed:"] + [f"- {d}" for d in ru["dismissed"]] + [""]
         ap = r.get("autopatch")
-        if ap and (ap.get("applied") or ap.get("skipped") or ap.get("outstanding")):
+        if ap and (ap.get("applied") or ap.get("skipped") or ap.get("outstanding")
+                   or ap.get("unsafe")):
             L += ["### Final-round edits applied to the writer's text", "",
                   "The published text below is NOT byte-identical to what the "
                   "writer composed. These reviewer replacements were substituted "
                   "literally, with no further model call:", ""]
             L += [f"- [{a['severity']}, {a['who']}] \"{a['quote']}\" -> \"{a['fix']}\""
                   for a in ap.get("applied", [])] or ["- (none applied)"]
+            if ap.get("unsafe"):
+                L += ["", "DROPPED, the substitution would have left broken "
+                          "English at the seam (the quote is part of a "
+                          "sentence, the replacement ends one):"]
+                L += [f"- [{u['who']}] \"{u['quote']}\" -> \"{u['fix']}\""
+                      for u in ap["unsafe"]]
             if ap.get("skipped"):
                 L += ["", "Skipped, the quoted sentence was no longer present:"]
                 L += [f"- [{s['who']}] \"{s['quote']}\"" for s in ap["skipped"]]

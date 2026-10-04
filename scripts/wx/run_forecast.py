@@ -313,6 +313,15 @@ def run(slot=None, llm=None, first_30_days=None, site_dir=None, dry_bundle=None,
     print(f"snow-line calibration: offset={cal_offset}ft active={calibrated}")
 
     bundle = dry_bundle or B.build(calibration_offset_ft=cal_offset)
+    # The morning post could not see its own track record until now: the score
+    # lived in forecast_log.json and only run_verify.py ever read it across.
+    if bundle.get("verified_yesterday") is None:
+        try:
+            bundle["verified_yesterday"] = V.last_scored()
+        except Exception as exc:  # noqa: BLE001
+            # Never let the track record take down a morning.
+            print(f"[forecast] track record unavailable ({type(exc).__name__}: {exc})")
+            bundle["verified_yesterday"] = None
 
     problems = G.require_or_abort(bundle)
     if problems:

@@ -73,7 +73,7 @@ CLEAN = {"verdict": "clean", "issues": []}
 
 def test_the_0926_rejection_now_approves_with_the_editors_own_replacements():
     """Acceptance check 2: replay 2026-09-26 through the patched final round."""
-    patched, applied, skipped = RP._apply_fixes(
+    patched, applied, skipped, _ = RP._apply_fixes(
         DRAFT_0926, (("fact checker", FACTS_0926), ("editor", EDITOR_0926)))
 
     assert len(applied) == 4, [a["quote"] for a in applied]
@@ -103,7 +103,7 @@ def test_a_fact_objection_with_no_replacement_still_holds_the_post():
     facts = {"verdict": "issues", "issues": [
         {"severity": "critical", "quote": "We picked up 4 inches overnight.",
          "problem": "NOT IN BRIEF", "evidence": "NOT IN BRIEF", "fix": ""}]}
-    patched, applied, _ = RP._apply_fixes(text, (("fact checker", facts),))
+    patched, applied, _, _ = RP._apply_fixes(text, (("fact checker", facts),))
     assert applied == []
     assert RP._blocking_fact_issues(facts, patched), "an unsupported number must hold the post"
 
@@ -120,7 +120,7 @@ def test_a_superseded_quote_is_skipped_not_guessed_at():
         {"severity": "major", "quote": "The passes are dry.",
          "problem": "also present tense", "evidence": "PERSONA",
          "fix": "I'd expect the passes to stay dry."}]}
-    patched, applied, skipped = RP._apply_fixes(text, (("editor", ed), ("fact checker", fc)))
+    patched, applied, skipped, _ = RP._apply_fixes(text, (("editor", ed), ("fact checker", fc)))
     assert [a["fix"] for a in applied] == ["The passes should stay dry."]
     assert [s["who"] for s in skipped] == ["fact checker"]
     assert "I'd expect" not in patched
@@ -179,7 +179,7 @@ def test_0926_after_fix3_keeps_the_road_sentences_and_still_approves():
         and "Wolf Creek" not in i["quote"]]}
     assert len(editor_after_fix3["issues"]) == 2
 
-    patched, applied, skipped = RP._apply_fixes(
+    patched, applied, skipped, _ = RP._apply_fixes(
         DRAFT_0926, (("fact checker", FACTS_0926), ("editor", editor_after_fix3)))
 
     assert len(applied) == 2 and not skipped

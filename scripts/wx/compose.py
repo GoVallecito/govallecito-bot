@@ -451,6 +451,34 @@ def render_bundle(bundle, post_type="school_call"):
               f"mean hit rate {tr.get('mean_hit_rate')}")
         A("")
 
+    vy = bundle.get("verified_yesterday")
+    if vy:
+        A(f"YOUR LAST FORECAST, SCORED (valid {vy['valid_date']}, {vy['age_days']} "
+          "day(s) ago). The ONLY track-record numbers you")
+        A("have. Do not round them into a different claim:")
+        for b in vy.get("bands", []):
+            lo, hi = b["called_in"]
+            A(f"  {b['band']}: you called {lo}-{hi}in, it came in "
+              f"{b['observed_in']}in, {b['direction']}")
+        A(f"  {vy.get('bands_in_range')} of {vy.get('bands_scored')} bands in range")
+        if vy.get("missed"):
+            A("  -> You MISSED a band. Spend ONE sentence owning it, early in the post:")
+            A("     the range you called, what actually fell, and the physical mechanism")
+            A("     (a band that set up east, a snow line that hung higher than you had")
+            A("     it, a downslope hole). No apology, no hedging, and no blaming")
+            A("     \"the models\" without a mechanism.")
+        else:
+            A("  -> Every band was in range, so say NOTHING about it. A post that")
+            A("     congratulates itself for calling a dry day dry is worse than silence.")
+        A("")
+    else:
+        A("YOUR LAST FORECAST, SCORED: NOTHING SCORED YET. No track record is")
+        A("available to you this morning. Do not claim one, and do not say how your")
+        A("recent calls have gone. Do not say the models have been running wet, dry,")
+        A("warm or inconsistent run to run either: the pipeline keeps no prior model")
+        A("run, so any such statement would be invented.")
+        A("")
+
     if bundle.get("afd_excerpt"):
         A("GRAND JUNCTION FORECAST DISCUSSION (the NWS forecaster's own reasoning --")
         A("read it for which model they trust today and why. DO NOT QUOTE IT.):")

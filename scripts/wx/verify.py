@@ -239,3 +239,53 @@ def track_record(limit=None):
             ((b, d["miss_in"]) for f in verified for b, d in f["score"]["per_band"].items()),
             key=lambda t: t[1], default=None),
     }
+
+
+
+def last_scored(limit_days=4):
+    """The most recent forecast that has actually been verified, or None.
+
+    THE GAP THIS FILLS: the persona has a whole section on owning a bust
+    ("state your old number, state the real number, give the physical
+    mechanism"), and `forecast_log.json` holds exactly that -- per band, what
+    was called and what fell. But bundle["observed"] was only ever set by
+    run_verify.py, so the MORNING post never saw any of it. The instruction had
+    no data behind it, which is the same shape as the gauge problem: the
+    persona asked for something the brief did not carry, and the model was left
+    to supply it.
+
+    limit_days keeps a stale score out of a fresh morning. A week-old bust is
+    not news and reads as dredging.
+    """
+    log = _load(_forecast_log(), {"forecasts": []})
+    verified = [f for f in log.get("forecasts", []) if f.get("verified")]
+    if not verified:
+        return None
+    fc = verified[-1]
+    try:
+        valid = _dt.date.fromisoformat(fc["valid_date"])
+    except (KeyError, ValueError):
+        return None
+    age = (C.local_date() - valid).days
+    if age > limit_days or age < 0:
+        return None
+    score = fc.get("score") or {}
+    bands = []
+    for band, d in (score.get("per_band") or {}).items():
+        lo, hi = (d.get("predicted_range_in") or [None, None])[:2]
+        bands.append({
+            "band": band,
+            "called_in": [lo, hi],
+            "observed_in": d.get("observed_in"),
+            "in_range": d.get("in_range"),
+            "direction": d.get("direction"),
+        })
+    return {
+        "valid_date": fc["valid_date"],
+        "age_days": age,
+        "bands": bands,
+        "bands_in_range": score.get("bands_in_range"),
+        "bands_scored": score.get("bands_scored"),
+        "missed": [b for b in bands if b["in_range"] is False],
+        "snow_line_error_ft": score.get("snow_line_error_ft"),
+    }

@@ -579,6 +579,9 @@ def evaluate(bundle, draft_text, *, first_30_days=False, calibrated=False):
     if FLORIDA_MISPRONUNCIATION.search(draft_text):
         escalate(BLOCK, "draft mispronounces Florida (it is fluh-REE-duh)")
 
+    for symptom, evidence in prose_damage(draft_text):
+        escalate(BLOCK, f"draft is malformed: {symptom} ({evidence!r})")
+
     stray = unsupported_home_reading(bundle, draft_text)
     if stray:
         escalate(BLOCK,
@@ -803,3 +806,105 @@ def correction_note(reasons):
         "your data are the Euro, GFS, ICON and GEM. Name one of those.\n\n"
         "Return only the post."
     )
+
+
+
+# --- prose integrity -------------------------------------------------------
+#
+# THE BUG THIS CATCHES: 2026-10-03 published this, from the website, in public:
+#
+#   "Morning, its Saturday. Saturday, and the air's got that October bite..."
+#   "...over the high country by afternoon., with just a slight chance of an
+#    isolated afternoon shower over the high terrain."
+#
+# Both came out of the final-round auto-patch. Neither broke a single rule in
+# this file: the figures were right, the roads were hedged, the models were
+# real, the stamp matched the weekday. The gate passed it, the magistrate
+# approved it, and the page got broken English.
+#
+# Every other check here asks whether a CLAIM is supportable. This one asks
+# whether the text is well-formed English, which no amount of rebalancing the
+# reviewers will establish, because a reviewer who writes a replacement
+# sentence does not see the seam it will be spliced into.
+#
+# Deliberately narrow. It looks only for damage no human writer produces on
+# purpose, so a false positive should be close to unheard of; the published
+# corpus is checked against it in tests/test_prose_integrity.py.
+
+# "Saturday. Saturday," and "the the". Three letters or more, so "in in" and
+# ranges like "15 15" stay out of it. "had had" and "that that" are real
+# English, rare in this voice, and not worth a false block.
+_LEGITIMATE_DOUBLES = {"had", "that"}
+_DOUBLED_WORD = re.compile(r"\b([A-Za-z]{3,})\b([.,;:!?]*\s+)\1\b", re.IGNORECASE)
+
+# A sentence that ended and then kept going: "by afternoon., with just a..."
+# Also ",." and " ," and ",,". Two dots exactly, so an ASCII "..." is left
+# alone. Doubled ! and ? are caught at two.
+_ORPHAN_PUNCT = [
+    (re.compile(r"[.!?][ \t]*[,;:]"), "a sentence ends and then continues with a comma"),
+    (re.compile(r",[ \t]*\."), "a comma immediately followed by a full stop"),
+    (re.compile(r"[ \t]+,"), "a space before a comma"),
+    (re.compile(r",,"), "a doubled comma"),
+    (re.compile(r"(?<!\.)\.\.(?!\.)"), "a doubled full stop"),
+    (re.compile(r"[!?]{2,}"), "doubled terminal punctuation"),
+]
+
+_SHINGLE = 5
+
+
+def _shingles(paragraph, n=_SHINGLE):
+    words = re.findall(r"[a-z0-9']+", paragraph.lower())
+    for i in range(len(words) - n + 1):
+        yield " ".join(words[i:i + n])
+
+
+def duplicated_phrase(text, n=_SHINGLE):
+    """A run of n words repeated inside one paragraph.
+
+    This is what a half-overwritten sentence looks like after the fact: the
+    replacement and the orphaned tail of the original say the same thing twice.
+    Five words rather than three or four, so ordinary repetition across a
+    paragraph is not an offence; the duplication this is after is verbatim.
+    """
+    for para in re.split(r"\n\s*\n", text):
+        seen = set()
+        for sh in _shingles(para, n):
+            if sh in seen:
+                return sh
+            seen.add(sh)
+    return None
+
+
+def prose_damage(text):
+    """Returns a list of (symptom, quoted evidence). Empty when the text is clean.
+
+    Only broken English, never weak writing. duplicated_phrase() is on purpose
+    NOT in here: replayed over the saved corpus it fires on 2026-09-25's "a
+    couple inches at most ... by tonight" twice in one paragraph, which is
+    repetitive but not malformed. Blocking on it would disqualify a round the
+    publish floor currently ships, and the floor is worth more than the
+    repetition. It is reported to the review issue instead.
+
+    Frontmatter is skipped: a YAML block legitimately holds "---" and repeated
+    keys, and it is not prose.
+    """
+    body = text
+    if body.lstrip().startswith("---"):
+        parts = body.lstrip().split("---", 2)
+        if len(parts) == 3:
+            body = parts[2]
+
+    found = []
+
+    m = _DOUBLED_WORD.search(body)
+    if m and m.group(1).lower() not in _LEGITIMATE_DOUBLES:
+        found.append(("a word repeated back to back", m.group(0).strip()))
+
+    for pattern, why in _ORPHAN_PUNCT:
+        m = pattern.search(body)
+        if m:
+            start = max(0, m.start() - 40)
+            found.append((why, body[start:m.end() + 40].strip()))
+            break
+
+    return found
