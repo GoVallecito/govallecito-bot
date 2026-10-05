@@ -17,12 +17,12 @@ slug: "2026-10-04-clear-and-mild-through-monday"
 
 Dry weather holds today and tomorrow. High pressure's parked over the Four Corners and it's not budging, which means we get two more days of October sun and light winds before things start to shift midweek.
 
-Durango and the Animas Valley should see mid-70s this afternoon with gusts 15-16mph. Bayfield and up the Pine run about the same, maybe a tick cooler. Vallecito and the Florida climb into the low 70s with a few more clouds building this afternoon. The Euro's showing a trace of moisture working in up there between noon and 5pm but the GFS, ICON and GEM are all bone dry, so I'd expect any clouds that do show up to stay high and thin.
+Durango and the Animas Valley should see mid-70s this afternoon with gusts 15-16mph. Bayfield and up the Pine run about the same, maybe a tick cooler. Vallecito and the Florida climb into the low 70s with a few more clouds building this afternoon. There's a little disagreement up high this afternoon. The Euro puts a trace of moisture over the Florida between noon and 5pm while the GFS, ICON and GEM keep it dry, and either way it reads as high thin cloud rather than weather.
 
 The high Weminuche stays clear through the day with temps in the upper 50s and light winds. If you're heading up into the backcountry this weekend the weather's about as straightforward as it gets for early October.
 
 Coal Bank, Molas and Red Mountain should stay dry through the day. Wolf Creek looks the same. Current closures and chain law: https://www.cotrip.org/
 
-Monday's a repeat. Same setup, same temps, same dry skies. The GFS discussion out of Grand Junction says the high strengthens tomorrow and Monday which keeps any afternoon storm chances suppressed even over the southern mountains. Tuesday's when we might see a weak disturbance slide through southeast with isolated light showers possible, mostly over the San Juans, but confidence on that is still low and we're three days out so take it with a big grain of salt (the moisture's limited and the models haven't locked in on timing yet).
+Monday's a repeat. Same setup, same temps, same dry skies. The forecast discussion out of Grand Junction says the high strengthens tomorrow and Monday, which keeps afternoon storm chances suppressed even over the southern mountains. Tuesday's when we might see a weak disturbance slide through southeast with isolated light showers possible, mostly over the San Juans, but confidence is low this far out and the moisture looks limited, so take it with a big grain of salt.
 
-Nice stretch for yard work or getting on the water. Is the lake still warm enough to swim or has it turned already?
+Two easy days to get outside before midweek shifts things. Is the lake still warm enough to swim or has it turned already?
