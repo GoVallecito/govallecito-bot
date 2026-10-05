@@ -6,8 +6,11 @@ when the morning post does not happen.
 **Why this exists.** GitHub's cron is the only scheduler GitHub offers and it is the
 thing that fails: across 2026-09-18..29 about **17%** of `forecast.yml`'s requested
 slots executed, and 2026-09-28 and 09-29 produced no morning post at all. The runs
-that *do* execute are punctual (median 4.1 minutes from their slot), so this is a
-delivery problem, not a timing one, and its cause is still unestablished.
+that *do* execute arrive hours **late** (`verify.yml`, one cron a day, same
+concurrency group: 29 of 29 days delivered, median 199 minutes late), and the
+forecaster's own 04:00-09:00 window check throws them away. An earlier version of
+this page called them punctual ("median 4.1 minutes from their slot"); with a slot
+every 15 minutes, distance to the nearest slot cannot see a delay of hours.
 `workflow_dispatch` goes through a different path and starts within seconds.
 
 GitHub's own crons stay exactly as they are. They are the backup, and they are free:
@@ -157,8 +160,9 @@ Each is a bug that has already happened, or was one step away.
    2026-09-25's morning.
 
 2. **`dry_run` is sent explicitly as `"false"`.** The REST dispatch endpoint applies
-   the workflow's *declared* defaults when `inputs` is omitted, and that default is
-   `"true"` — which makes `_site_publish_allowed()` return False
+   the workflow's *declared* defaults when `inputs` is omitted. That default was
+   `"true"` until 2026-10 and is now `"false"`, but keep sending it: `"true"` makes
+   `_site_publish_allowed()` return False
    (`scripts/wx/run_forecast.py:604-612`). The run would compose, clear the panel, log
    `MAGISTRATE APPROVED` and publish nothing, looking green the whole way.
 

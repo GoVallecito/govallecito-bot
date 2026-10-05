@@ -59,6 +59,14 @@ open_issue() {   # title, body file, label -> prints number
 gh issue list -R "$REPO" --state all --limit 200 --json number,title,body > "$tmp/issues.json"
 
 # --- the parts every report shares -----------------------------------------
+# How LATE each run started against what triggered it, not how many ran.
+# Counting arrivals and never measuring lateness is the blind spot that hid the
+# scheduler's 2-6 hour delays for a month. tools/run-delays.mjs has the detail,
+# including why schedule-triggered delays can only ever be lower bounds.
+delay_md() {
+  node tools/run-delays.mjs --date="$DATE" 2>/dev/null \
+    || echo "_Run-delay report unavailable: tools/run-delays.mjs failed. Run it by hand._"
+}
 if [ -f "$FEED" ]; then
   feed_n=$(jq '(.posts // []) | length' "$FEED")
   feed_line="\`$FEED\` exists with **$feed_n** entries."
@@ -135,6 +143,8 @@ if [ -n "$draft" ]; then
       echo
       echo "Actions tab → \"Publish approved forecast\" → Run workflow → enter $DATE"
     fi
+    echo
+    delay_md
   } > "$tmp/report.md"
   cat "$tmp/report.md"
 
@@ -217,6 +227,8 @@ fi
   [ -z "$ready" ] || { echo; echo "$ready"; }
   echo
   echo "Where to look: \`state/last-run-forecast.log\`, \`state/forecast-status.md\`, \`state/selftest-latest.md\`."
+  echo
+  delay_md
 } > "$tmp/report.md"
 cat "$tmp/report.md"
 

@@ -6,6 +6,6 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test tools/draft-lint.test.mjs"
+    "test": "node --test tools/draft-lint.test.mjs tools/run-delays.test.mjs"
   }
 }

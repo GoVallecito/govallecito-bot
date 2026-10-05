@@ -14,23 +14,50 @@ name: Vallecito Forecast
 # stays green with nothing configured.
 # ---------------------------------------------------------------------------
 
+# ARCHITECTURE, 2026-09-29: the morning post is driven by an EXTERNAL
+# trigger. Cron is the backup path, not the primary one.
+#
+# Primary: the Cloudflare Worker in trigger/ (wx-morning-trigger, deployed
+# 2026-09-29, first live dispatch 2026-09-30 05:01). It fires on the hour
+# across 11-16Z, resolves the Denver clock in code, and at local 05, 06, 07
+# and 08 dispatches this workflow with
+#   {"ref":"main","inputs":{"slot":"","dry_run":"false"}}
+# unless site/weather/feed.json already has today's post. At local 09 it pings
+# its healthcheck's /fail if there is still no post. workflow_dispatch does not
+# go through GitHub's scheduler and starts within seconds. `slot` is
+# deliberately empty: a forced slot skips the clock check in determine_slot(),
+# while an empty one takes the normal window check and the ledger, so later
+# attempts on a day that already posted (or was held) are no-ops.
+#
+# Backup: the three cron lines below. They are safe to keep because
+# state/post_ledger.json makes a second run for the same slot a no-op.
+#
+# WHY: the problem is delivery LATENCY. Measured 2026-09-29: verify.yml (one
+# cron a day, same concurrency group) delivered 29 of 29 days with a median
+# start 199 minutes late (range 117-348). engagement-check.yml fires at 10:00Z
+# and starts 13:18Z-17:55Z. wx-selftest runs about 5 hours late every Monday.
+# For this workflow, 105 of 609 scheduled slots executed over 11 days, and
+# only 11 of those 105 started within 2 minutes of their scheduled minute.
+# Late runs are discarded by run_forecast.py's own 04:00-09:00 Mountain window
+# check; a 10:07 arrival (2026-09-29) misses any sane window. GitHub places the
+# drift in a load-balancing layer upstream of the runner queue, so a
+# self-hosted runner would not help either.
+#
+# CORRECTIONS to earlier versions of this comment:
+#   - "Delivery is capped around 10 a day": wrong. Runs arrive, late.
+#   - "The ones that do are punctual, median 4.1 minutes from their slot":
+#     an aliasing artifact. With slots every 15 minutes, a run hours late is
+#     still always within 7.5 minutes of SOME slot, so distance-to-nearest-slot
+#     cannot see lateness. Only a workflow with one cron a day (verify.yml)
+#     measures it unambiguously, and that one is 2-6 hours late.
+#   - Concurrency-group eviction: investigated and cleared. verify.yml shares
+#     govallecito-bot-state and delivers every day.
+#
+# Do not: add or retune cron entries, widen the window further, stand up a
+# self-hosted runner, or change the concurrency group.
+#
 # The clock is still checked in America/Denver inside run_forecast.py, so the
-# schedule survives both DST transitions with no YAML edits. What changed is
-# how many chances the morning post gets.
-#
-# MEASURED, 2026-08-31 to 2026-09-07: a plain `45 * * * *` did not run hourly.
-# It ran 4 to 7 times a day at arbitrary minutes (00:19, 04:55, 08:00, 10:56,
-# 13:31, 15:42, 17:21 on one representative day). GitHub defers and drops
-# scheduled runs under platform load, and a pending run in a shared concurrency
-# group gets evicted by the next one queued. The 5 o'clock hour was sampled on
-# four days of eight, and the school call went out on three.
-#
-# Two changes fix it together, and neither is sufficient alone:
-#   1. Many attempts clustered over the morning window below, avoiding :00
-#      where scheduler load is worst.
-#   2. A four hour posting WINDOW plus an idempotency ledger in the script, so
-#      any single surviving attempt produces the day's post and the rest are
-#      no-ops. See wx/ledger.py.
+# schedule survives both DST transitions with no YAML edits.
 #
 # 10:00-15:00 UTC covers 04:00-09:00 local in BOTH MDT (UTC-6) and MST (UTC-7).
 # Exactly one hour each way is dead, and no single range can avoid it: at UTC-6
@@ -39,20 +66,8 @@ name: Vallecito Forecast
 # both offsets. Narrowing to 10-14 looks tidier today and is wrong: it drops 08
 # local the day MST starts, and takes with it the only morning slot at UTC-6
 # that can reach _report_miss_if_needed, which fires only at or past hour 9.
-# Pinned in both directions by tests/test_scheduling.py.
-#
-# 2026-09-28: the window opened an hour earlier, SCHOOL_CALL_WINDOW (5, 9) ->
-# (4, 9), after a morning when zero of six delivered runs landed in it. This
-# range moved from 11-15 to 10-16 in the same commit, and the two must move
-# together: the window decides whether a run posts, this range decides whether
-# a run happens at all. Do not add cron entries instead. About 17% of this
-# workflow's requested slots execute at all; the ones that do are punctual,
-# median 4.1 minutes from their slot across the 20 days that posted. So the
-# loss is in delivery, not in timing, and more entries buy proportionally more
-# of the same loss. WHY so few are delivered is NOT established. Eviction by a
-# shared concurrency group is the leading hypothesis and it is unconfirmed.
-# There is no evidence of a per-repo cap: verify.yml schedules one cron a day
-# and has delivered 30 of 30.
+# This range and SCHOOL_CALL_WINDOW in scripts/wx/constants.py must move
+# together. Pinned in both directions by tests/test_scheduling.py.
 on:
   schedule:
     - cron: "5,20,35,50 10-15 * * *"   # morning window, both DST offsets
@@ -66,9 +81,14 @@ on:
         type: choice
         options: ["", school_call, evening, storm_setup, totals, life_safety]
       dry_run:
-        description: "Dry run (nothing posts)"
+        description: "Dry run (compose and review, publish nothing)"
         required: false
-        default: "true"
+        # "false", not "true": the REST dispatch endpoint applies DECLARED
+        # defaults to any input it is not sent. With "true" here, an external
+        # trigger that omitted dry_run would compose, pass the review panel,
+        # log MAGISTRATE APPROVED, publish nothing, and show green. The Worker
+        # also sends dry_run explicitly; this is the second brace.
+        default: "false"
 
 # Shares a lock with the existing bot's workflows -- they all write state files
 # and letting two run at once is worse than a delay.
