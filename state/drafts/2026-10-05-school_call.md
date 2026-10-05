@@ -1,27 +1,9 @@
-# Forecast run: blocked
+# Monday, 2026-10-05, school_call
 
-When: 2026-10-05T05:04:27-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 1
+Verdict: `block` | Snow line: n/a | Alerts: none
 
-## Detail
+---
 
-```
-review panel: not approved after 3 round(s): The draft has four required changes: the opener reuses the truck-windows construction from 2026-09-27, the model disagreement appears twice when the brief shows it only for Vallecito, and the closer reuses the 'has X happened yet or is it still Y' structure from 2026-10-04. All four reviewer fixes are supported by the brief and the persona rules, and all replacements contain only material from the brief or the draft.
-draft states a present-tense road surface condition ('The 501 and the 240 should be dry for the 6:30 call, and the 160 into town looks fine as well.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
-a rewrite was attempted and was blocked too
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 10/05/26 5:45am: Morning, its Monday. The truck windows were fogged over when I went out.
 
 Straightforward bus run this morning. The 501 and the 240 should be dry for the 6:30 call, and the 160 into town should be fine as well. Districts decide by 6:30 but this one's not in question.
@@ -37,4 +19,3 @@ The passes should stay dry through the day. Coal Bank, Molas and Red Mountain sh
 Tuesday looks like a repeat of today, maybe a degree or two warmer. The discussion out of Grand Junction mentions a shortwave sliding through the Great Basin that could boost storm coverage slightly Tuesday and Wednesday, but they're calling it modest at best and keeping it focused on the high terrain. Beyond that they're watching a stronger system for early next week but the details are still all over the place.
 
 Nice October stretch to get outside. Did the first freeze hit down at your place yet or is it still holding off?
-```
