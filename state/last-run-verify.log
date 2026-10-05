@@ -1,8 +1,8 @@
-=== verify run @ 2026-10-04 12:42 MDT ===
-observations: {'date': '2026-10-04', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
-  2026-10-03-2: hit_rate=1.0 line_error=Noneft
+=== verify run @ 2026-10-05 16:06 MDT ===
+observations: {'date': '2026-10-05', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
+  2026-10-04-3: hit_rate=1.0 line_error=Noneft
 calibration: active=False offset=0.0ft (0/20 events)
-track record: {'verified_events': 3, 'mean_hit_rate': 1.0, 'snow_line_mean_abs_error_ft': None, 'worst_miss': ('durango', 0.0)}
+track record: {'verified_events': 4, 'mean_hit_rate': 1.0, 'snow_line_mean_abs_error_ft': None, 'worst_miss': ('durango', 0.0)}
 guardrails: BLOCK
 BLOCKED -- nothing published.
 exit=0
