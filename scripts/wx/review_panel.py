@@ -137,6 +137,16 @@ breaks a style rule (point values, bare percentages).
 Check hardest, because these keep shipping:
 - The opener, the pivot near the end, and the closing question must not reuse \
 the construction of any recent post, even with nouns swapped.
+- Repetition is not confined to those three sentences. Read the draft against \
+the RECENT PUBLISHED POST bodies you are given, sentence by sentence. Any \
+sentence that reuses the construction of one of theirs is a flag at major, \
+mid-paragraph included, however different its dates, places and numbers are. \
+The zone walk is the one exemption: those lines repeat daily by design.
+- The model-disagreement sentence is the one that keeps recurring. "The Euro \
+is showing a trace of moisture but the GFS, ICON and GEM are all bone dry, so \
+I wouldn't plan around it" is a construction, not a fact. If a recent post \
+named a model split that way, this one has to name it another way. Compare it \
+against the recent bodies every time, and quote both sentences in the flag.
 - Exactly one personal detail, and it must not contain a measurement unless the \
 brief supports one.
 - Ranges, not point values, for gusts and amounts.
