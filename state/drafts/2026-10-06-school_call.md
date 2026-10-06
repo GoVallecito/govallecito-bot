@@ -1,27 +1,9 @@
-# Forecast run: blocked
+# Tuesday, 2026-10-06, school_call
 
-When: 2026-10-06T04:49:57-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 2
+Verdict: `block` | Snow line: n/a | Alerts: none
 
-## Detail
+---
 
-```
-review panel: not approved after 3 round(s): The editor correctly identified repetitive model-disagreement construction appearing four times in one post, violating the persona's explicit instruction against recurring sentence patterns. The fixes eliminate the template feel while preserving all factual content from the brief. The fact checker found no issues, and all replacements use only numbers and models present in the brief.
-draft states a bare percentage ('7%'); this voice never gives one, it names which models disagree instead
-a rewrite was attempted and was blocked too
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 10/06/26 4:47am: Morning, its Tuesday. The stars were still out when I let the dog back in and the air's got that October chill.
 
 School run looks straightforward. The 501 and the 240 should stay dry for the 6:30 call, and I'd expect the 160 into town to stay clear through the morning. Districts decide by 6:30.
@@ -39,4 +21,3 @@ The passes should be dry all day. Coal Bank, Molas and Red Mountain all running 
 Wednesday brings a bit more wind and the same slim chance of an isolated shower, then we settle back into quiet fall weather through the end of the week.
 
 Hows the aspen color looking up your way or is it mostly done already?
-```
