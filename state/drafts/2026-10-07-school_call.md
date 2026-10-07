@@ -1,29 +1,9 @@
-# Forecast run: blocked
+# Wednesday, 2026-10-07, school_call
 
-When: 2026-10-07T05:04:19-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 3
+Verdict: `block` | Snow line: n/a | Alerts: none
 
-> **STANDING FAILURE: 3 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
+---
 
-## Detail
-
-```
-review panel: not approved after 3 round(s): Four required fixes. The gust issue combines both reviewers' evidence: the fact checker caught the 27mph Durango figure, the editor caught the point-value format violation, and the gate blocked on the same point-value. The combined fix satisfies all three by using ranges that contain the brief's figures (8-10 for the valley floor where Bayfield shows 8mph, 19-27 for the afternoon where Durango peaks at 27 and Bayfield at 21). The coffee detail is a second personal observation where only one is allowed. The pass repetition is mechanical. The Thursday hedge lacks model evidence or a physical reason; the replacement names model disagreement as the persona requires.
-draft states a present-tense road surface condition ('Coal Bank, Molas and Red Mountain all look clear for travel, same with Wolf Creek.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
-a rewrite was attempted and was blocked too
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 10/07/26 5:45am: Morning, its Wednesday. Sky's clear out the kitchen window and the coffee's still hot in the thermos.
 
 Should be a dry morning for the bus run. The 501 and the 240 should be fine for the 6:30 call, and the districts decide by then. No weather to slow things down this morning.
@@ -37,4 +17,3 @@ Thursday's a repeat. Clear morning, warming into the mid-70s, maybe an isolated 
 Things shift over the weekend. A trough slides in from the northwest Saturday and moisture ramps up Sunday into Monday. The Euro and GFS both show a big jump in precipitable water Sunday morning and it looks like it sticks around through Monday. Too early for amounts but prepare for multiple days of rain region-wide starting Sunday. I'll have more on that tomorrow once the models tighten up the timing.
 
 Anybody getting their last boat days in before the weekend weather hits?
-```

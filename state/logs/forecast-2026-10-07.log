@@ -8,3 +8,30 @@ exit=0
 2026-10-07 03:18 MDT is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
 exit=0
 
+=== 2026-10-07T05:04:19-06:00 run 37611249432 ===
+NOTE: running at 05:01, inside the 4:00-9:00 window but later than the 4:00 target. Posting anyway, flagged late.
+=== Vallecito forecast: school_call @ 2026-10-07 05:01 MDT ===
+snow-line calibration: offset=0.0ft active=False
+guardrails: BLOCK
+  - draft states a present-tense road surface condition ('Passes are dry this morning.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+  - first-30-days policy: review everything
+BLOCK is about the wording, not the data. Rewriting once.
+guardrails after rewrite: BLOCK
+  - draft states a present-tense road surface condition ('Coal Bank, Molas and Red Mountain all look clear for travel, same with Wolf Creek.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+  - first-30-days policy: review everything
+review panel: fact checker + editor -> magistrate
+panel round 1/3: facts=issues editor=issues (critical/major=4) gate=block -> magistrate REVISE
+panel round 2/3: facts=issues editor=issues (critical/major=5) gate=block -> magistrate REVISE
+panel round 3/3: facts=issues editor=issues (critical/major=7) gate=block -> magistrate REVISE
+panel round 3: final-round auto-patch applied 6 replacement(s), skipped 3, outstanding 0; gate=pass, unresolved fact issues=1
+panel transcript -> state/panel/2026-10-07-school_call.md
+Archived draft -> state/drafts/2026-10-07-school_call.md
+BLOCKED -- nothing published -- draft saved to output/draft.txt
+staged for review -> site/weather/_pending/2026-10-07-morning-forecast-for-vallecito-bayfield-and-durango.md
+  promote with: python scripts/wx/promote_draft.py 2026-10-07
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/87
+HELD STREAK: 3 consecutive days drafted and published nothing.
+[notify] opened held-streak issue #88
+Wrote state/forecast-status.md
+exit=0
+
