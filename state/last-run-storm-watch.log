@@ -1,4 +1,9 @@
-=== storm watch @ 2026-10-06 19:27 MDT ===
-decision: fire=False -- below threshold (0.01in liquid / 0.0in snow in the window)
-  window 2026-10-08T00:00 -> 2026-10-10T23:00, 0.01in liquid / 0.0in snow, peak 2026-10-08T19:00
+=== storm watch @ 2026-10-07 04:12 MDT ===
+decision: fire=True -- new system peaking 2026-10-11 clears the threshold
+  window 2026-10-09T00:00 -> 2026-10-11T23:00, 0.52in liquid / 0.0in snow, peak 2026-10-11T12:00
+guardrails: BLOCK
+  - draft states a present-tense road surface condition ('The passes are dry today and should stay that way through Friday.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+  - draft states a bare percentage ('5%'); this voice never gives one, it names which models disagree instead
+  - first-30-days policy: review everything
+BLOCKED -- nothing published.
 exit=0
