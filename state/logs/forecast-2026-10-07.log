@@ -50,3 +50,8 @@ school_call for 2026-10-07 already went out at 2026-10-07T05:04:19-06:00; nothin
 school_call for 2026-10-07 already went out at 2026-10-07T05:04:19-06:00; nothing to do.
 exit=0
 
+=== 2026-10-07T11:20:39-06:00 run 37658288642 ===
+2026-10-07 11:20 MDT is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
+2026-10-07 11:20 MDT is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
+exit=0
+
