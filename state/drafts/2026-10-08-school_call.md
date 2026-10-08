@@ -1,27 +1,9 @@
-# Forecast run: held for review
+# Thursday, 2026-10-08, school_call
 
-When: 2026-10-08T05:04:47-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 4
+Verdict: `review` | Snow line: n/a | Alerts: none
 
-> **STANDING FAILURE: 4 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
+---
 
-## Detail
-
-```
-review panel: not approved after 3 round(s): The fact checker correctly identified a critical road-status violation ('should be fine' states present condition without CDOT data) and repetitive 'clear' phrasing. The editor caught three valid issues: model-agreement construction recycling from 10/03, closing question construction matching 10/04's reader-report format, and two personal details in the opener. All five fixes are required and supported by the brief and rules.
-```
-
-## What the data looked like
-
-- Snow line: no precipitation forecast
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 10/08/26 5:45am: Morning, its Thursday. Stepped outside and the stars are still out, no frost on the truck yet but it'll come soon.
 
 The 501 and the 240 should be fine for the morning run, and town's looking at mid-50s warming into the low 70s this afternoon. Districts decide by 6:30 but there's nothing weather-wise putting routes in question today.
@@ -37,4 +19,3 @@ The high country's sitting in the low 40s overnight and warming into the mid-50s
 Friday's a repeat of today, then the discussion out of Grand Junction has the pattern shifting this weekend with tropical moisture from Hurricane Rachel getting steered into the Desert Southwest. They're talking PWATs at 250% of normal and widespread precipitation chances Sunday into Monday, possibly a second wave behind that from Tropical Storm Simon. Treat that as a rough sketch (we're still 4-5 days out and there's a lot of moving pieces with two tropical systems in play), but it looks like the October dry stretch breaks early next week.
 
 What're you seeing for overnight lows at your place, has the inversion set in yet or is it still mixing out?
-```
