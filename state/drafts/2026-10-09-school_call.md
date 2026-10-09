@@ -1,27 +1,9 @@
-# Forecast run: published to website (approved by review panel)
+# Friday, 2026-10-09, school_call
 
-When: 2026-10-09T05:03:58-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 0
+Verdict: `pass` | Snow line: 11850 | Alerts: none
 
-## Detail
+---
 
-```
-approved in round 3 after applying 3 reviewer replacement(s) to the writer's text
-```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
-
-## What the data looked like
-
-- Snow line: 11850
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 10/09/26 5:45am: Morning, its Friday. Stars are still out and the truck windows are fogged over.
 
 Dry this morning for the bus run. I'd expect the 501 and the 240 to be fine, and the same for the 160 into town and the 550 north. Districts decide by 6:30 as always but nothing's putting the morning commute in question.
@@ -41,4 +23,3 @@ Saturday evening is when things change. The models split on how much. Euro's lig
 Current road and pass status: https://www.cotrip.org/
 
 Did the lake drop much this week or is it holding steady?
-```
