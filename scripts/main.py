@@ -43,10 +43,22 @@ import post_history
 import post_miss
 
 TIMEZONE = ZoneInfo("America/Denver")
-SLOT_HOURS = {7: "morning", 14: "afternoon"}   # the nominal hours, kept for docs and tests
-# [start, end) in local hours. Morning is 7:00-10:59, afternoon 14:00-17:59: late enough
-# to survive a bad day for the scheduler, early enough that "this morning" is still true.
-SLOT_WINDOWS = {"morning": (7, 11), "afternoon": (14, 18)}
+SLOT_HOURS = {14: "afternoon"}   # the nominal hours, kept for docs and tests
+# [start, end) in local hours. Afternoon is 14:00-17:59: late enough to survive a bad day
+# for the scheduler. The morning slot (7:00-10:59) was removed because its window overlapped
+# the weather forecaster's 04:00-09:00 window on the same Facebook page: two bots, one page,
+# two stories. To bring a slot back, add it here (and to SLOT_HOURS); nothing else hardcodes it.
+SLOT_WINDOWS = {"afternoon": (14, 18)}
+
+
+def enabled():
+    """Is the conditions bot switched on? Controlled by the CONDITIONS_BOT_ENABLED repo variable.
+
+    ABSENT MEANS ENABLED, on purpose. A bot that goes silent because a variable was never
+    set is the failure mode this repo has already paid for twice. Only the literal string
+    "false" (any casing, any padding) turns it off; anything else, including empty, is on."""
+    raw = (os.environ.get("CONDITIONS_BOT_ENABLED") or "").strip().lower()
+    return raw != "false"
 
 
 def slot_for_hour(hour):
@@ -81,13 +93,13 @@ def slot_already_posted(slot, now, history=None):
 
 
 def determine_slot(now=None, history=None):
-    """Returns "morning", "afternoon", or None (outside both windows, or that slot
+    """Returns a slot name from SLOT_WINDOWS, or None (outside every window, or that slot
     already posted today). FORCE_SLOT env var (or a CLI arg) bypasses the clock check
     and the already-posted check entirely -- used for manual workflow_dispatch test runs."""
     forced = os.environ.get("FORCE_SLOT")
-    if len(sys.argv) > 1 and sys.argv[1] in ("morning", "afternoon"):
+    if len(sys.argv) > 1 and sys.argv[1] in SLOT_WINDOWS:
         forced = sys.argv[1]
-    if forced in ("morning", "afternoon"):
+    if forced in SLOT_WINDOWS:
         print(f"FORCE_SLOT={forced} -- skipping the clock check.")
         return forced
 
@@ -96,7 +108,7 @@ def determine_slot(now=None, history=None):
     if slot is None:
         windows = ", ".join(f"{k} {lo}:00-{hi}:00" for k, (lo, hi) in SLOT_WINDOWS.items())
         print(f"Current time in America/Denver is {now.strftime('%Y-%m-%d %H:%M %Z')} "
-              f"-- outside both posting windows ({windows} local). Exiting without posting.")
+              f"-- outside the posting window ({windows} local). Exiting without posting.")
         return None
     if slot_already_posted(slot, now, history):
         print(f"{now.strftime('%Y-%m-%d %H:%M %Z')}: the {slot} post already went out today. "
@@ -106,6 +118,14 @@ def determine_slot(now=None, history=None):
 
 
 def main():
+    # BEFORE determine_slot, and before post_miss.report_if_needed below: that call files
+    # the missed-slot reports the oversight audit reads, and a deliberately disabled bot
+    # filing them would make the audit report a failure every day.
+    if not enabled():
+        print("CONDITIONS_BOT_ENABLED=false -- the conditions bot is switched off. "
+              "Exiting without posting.")
+        return 0
+
     now = datetime.now(TIMEZONE)
     slot = determine_slot(now)
     if slot is None:
@@ -163,7 +183,8 @@ def main():
     if result.get("dry_run"):
         pass  # nothing to log for a dry run -- no real post_id, nothing to check engagement on later
     elif post_id:
-        post_history.record_post(post_id, now.astimezone().isoformat(), slot, post["meta"])
+        post_history.record_post(post_id, now.astimezone().isoformat(), slot, post["meta"],
+                                 caption=post["caption"])
         print(f"Logged to state/post_history.json (post_id={post_id})")
     else:
         # A live post that "succeeded" but returned neither post_id nor id

@@ -18,9 +18,9 @@ name: Daily Vallecito Conditions Post
 # comment at the top of scripts/main.py for why an hourly run beats a
 # hardcoded "13:30 and 20:00 UTC" cron (short version: Mountain Time's DST
 # switch would silently desync a fixed-UTC schedule twice a year). The
-# script itself checks the real local time and only posts inside the morning
-# (7:00-10:59) and afternoon (14:00-17:59) America/Denver windows, once per
-# slot per day -- the other runs exit in a couple of seconds without doing
+# script itself checks the real local time and only posts inside the afternoon
+# (14:00-17:59) America/Denver window, once per day (the morning slot was
+# removed: it overlapped the weather forecaster's window on the same page) -- the other runs exit in a couple of seconds without doing
 # anything. (GitHub fires only ~5-7 of the 24 runs a day, so an exact-hour
 # gate missed most posts from late August; see scripts/main.py.)
 #
@@ -38,7 +38,6 @@ on:
         type: choice
         options:
           - ""
-          - morning
           - afternoon
         default: ""
       force_grounded_day:
@@ -65,8 +64,15 @@ on:
 # in-progress runs (cancel-in-progress: false) is deliberate: a run that has
 # already posted live to Facebook but hasn't yet committed its history record
 # must be allowed to finish, not get killed mid-way and lose that record.
+#
+# THE GROUP IS govallecito-bot-state, the weather forecaster's group, on
+# purpose. Both bot families commit and push state/, and while they could run
+# concurrently, the race ends (per the error text in this workflow's own push
+# step) in a live Facebook post with NO record in post_history.json. Lose that
+# record and the next run in the window believes the slot has not posted, and
+# posts again. One group across both families rules that out.
 concurrency:
-  group: govallecito-post-and-history
+  group: govallecito-bot-state
   cancel-in-progress: false
 
 # Needed so the built-in GITHUB_TOKEN can push state/post_history.json back
@@ -111,6 +117,7 @@ jobs:
           FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
           FB_PAGE_ID: ${{ vars.FB_PAGE_ID }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || vars.DRY_RUN }}
+          CONDITIONS_BOT_ENABLED: ${{ vars.CONDITIONS_BOT_ENABLED }}   # absent = enabled; only "false" switches the bot off
           FORCE_SLOT: ${{ github.event.inputs.force_slot }}
           FORCE_GROUNDED_DAY: ${{ github.event.inputs.force_grounded_day }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     # for the missed-post alarm only

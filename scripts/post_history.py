@@ -60,7 +60,7 @@ def save_history(history):
     os.replace(tmp_path, HISTORY_PATH)
 
 
-def record_post(post_id, posted_at_iso, slot, meta):
+def record_post(post_id, posted_at_iso, slot, meta, caption=None):
     """Appends one entry. meta is generate_post_text.build_post()'s (or
     build_alert_post()'s) "meta" dict: hook_line, slot, had_image,
     image_topic, fire_stage -- plus, for an emergency alert post,
@@ -73,7 +73,14 @@ def record_post(post_id, posted_at_iso, slot, meta):
     check_engagement.py's compute_preferences() relies on this default to
     exclude emergency-alert posts from the routine engagement-learning
     stats (an alert's engagement isn't comparable to a routine post's, and
-    mixing them in would skew what that loop is trying to measure)."""
+    mixing them in would skew what that loop is trying to measure).
+
+    caption is the text that was actually published. It is stored because
+    nothing in the repo contained the words this bot published, so nothing could
+    review them; the forecaster is auditable only because it writes its post to
+    site/weather/<date>-*.md. It is written as None (never omitted) when none is
+    given, so an entry from before the field existed (no key) and an entry whose
+    caption failed to record (key present, null) are not confused."""
     history = load_history()
     history["posts"].append({
         "post_id": post_id,
@@ -86,6 +93,7 @@ def record_post(post_id, posted_at_iso, slot, meta):
         "post_type": meta.get("post_type", "daily"),
         "alert_category": meta.get("alert_category"),
         "alert_id": meta.get("alert_id"),
+        "caption": caption,
         "engagement_checked": False,
         "engagement": None,
     })

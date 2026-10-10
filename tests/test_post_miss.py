@@ -41,39 +41,43 @@ def titles(filed):
     return [t for t, _ in filed]
 
 
-def test_a_run_before_a_window_closes_reports_only_yesterday(env):
+def test_a_run_before_the_window_closes_reports_only_yesterday(env):
     PM.report_if_needed(at(25, 9, 39), M, {"posts": []})
-    assert titles(env) == ["[miss] no morning conditions post for 2026-09-24", "[miss] no afternoon conditions post for 2026-09-24"]
+    assert titles(env) == ["[miss] no afternoon conditions post for 2026-09-24"]
 
 
-def test_a_run_after_the_morning_window_reports_the_morning(env):
-    hist = {"posts": [posted("morning", at(24, 8)), posted("afternoon", at(24, 15))]}
-    PM.report_if_needed(at(25, 13, 41), M, hist)
-    assert titles(env) == ["[miss] no morning conditions post for 2026-09-25"]
+def test_a_run_after_the_afternoon_window_reports_the_afternoon(env):
+    hist = {"posts": [posted("afternoon", at(24, 15))]}
+    PM.report_if_needed(at(25, 19, 8), M, hist)
+    assert titles(env) == ["[miss] no afternoon conditions post for 2026-09-25"]
 
 
-def test_nothing_is_reported_when_both_slots_posted(env):
-    hist = {"posts": [posted("morning", at(24, 8)), posted("afternoon", at(24, 15)), posted("morning", at(25, 8))]}
-    PM.report_if_needed(at(25, 12), M, hist)
+def test_nothing_is_reported_when_the_slot_posted(env):
+    hist = {"posts": [posted("afternoon", at(24, 15)), posted("afternoon", at(25, 15))]}
+    PM.report_if_needed(at(25, 19), M, hist)
     assert env == []
+
+
+def test_a_retired_morning_slot_is_never_reported(env):
+    PM.report_if_needed(at(25, 19), M, {"posts": []})
+    assert all("morning" not in t for t in titles(env))
 
 
 def test_the_same_miss_is_never_filed_twice(env):
     hist = {"posts": []}
     PM.report_if_needed(at(25, 19, 8), M, hist)
     first = len(env)
-    assert first == 4      # yesterday x2 and today x2
+    assert first == 2      # yesterday and today
     PM.report_if_needed(at(25, 22, 30), M, hist)
     PM.report_if_needed(at(26, 4, 0), M, hist)     # next day: yesterday is 25 now, 24 is no longer looked at
     assert titles(env)[first:] == []
 
 
 def test_a_day_with_no_run_after_the_window_is_still_reported_by_the_next_day(env):
-    # Sep 21: runs at 05:26 11:25 15:23 18:23 23:36 -- the 23:36 run reports the afternoon
-    hist = {"posts": [posted("afternoon", at(21, 15, 23))]}
+    # Sep 21: runs at 05:26 11:25 15:23 18:23 23:36 -- if the afternoon never posted, the 23:36 run reports it
+    hist = {"posts": [posted("afternoon", at(20, 15))]}
     PM.report_if_needed(at(21, 23, 36), M, hist)
-    assert "[miss] no morning conditions post for 2026-09-21" in titles(env)
-    assert "[miss] no afternoon conditions post for 2026-09-21" not in titles(env)
+    assert titles(env) == ["[miss] no afternoon conditions post for 2026-09-21"]
 
 
 def test_a_dry_run_is_silent(env, monkeypatch):
@@ -83,10 +87,10 @@ def test_a_dry_run_is_silent(env, monkeypatch):
 
 
 def test_an_emergency_alert_does_not_hide_a_missed_daily_post(env):
-    alert = posted("morning", at(25, 8))
+    alert = posted("afternoon", at(25, 15))
     alert["post_type"] = "emergency_alert"
-    PM.report_if_needed(at(25, 13), M, {"posts": [alert, posted("morning", at(24, 8)), posted("afternoon", at(24, 15))]})
-    assert titles(env) == ["[miss] no morning conditions post for 2026-09-25"]
+    PM.report_if_needed(at(25, 19), M, {"posts": [alert, posted("afternoon", at(24, 15))]})
+    assert titles(env) == ["[miss] no afternoon conditions post for 2026-09-25"]
 
 
 def test_a_failed_notification_is_retried_by_the_next_run(env, monkeypatch):
