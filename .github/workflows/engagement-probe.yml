@@ -1,0 +1,36 @@
+name: Engagement probe (one-off, read-only)
+
+# ONE-OFF DIAGNOSTIC for the engagement-check #10 failures. Runs
+# scripts/probe_engagement.py: GET requests to the Graph API only. It never
+# posts, never commits, never touches state/. Delete this file and the script
+# once the engagement fix has landed.
+#
+# Triggered by a push to the probe branch (so it can run without first being
+# merged to main) or by hand. It is deliberately NOT in the
+# govallecito-post-and-history concurrency group: it writes nothing, so it
+# cannot race the posting or engagement workflows.
+on:
+  push:
+    branches: [probe/graph-engagement]
+    paths:
+      - scripts/probe_engagement.py
+      - .github/workflows/engagement-probe.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "requests>=2.31"
+      - name: Probe Graph API engagement reads
+        env:
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+        run: python scripts/probe_engagement.py
