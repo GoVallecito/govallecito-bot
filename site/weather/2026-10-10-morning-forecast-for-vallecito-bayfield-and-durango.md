@@ -1,27 +1,18 @@
-# Forecast run: published to website (approved by review panel)
+---
+title: "Morning forecast for Vallecito, Bayfield and Durango"
+date: "2026-10-10T05:01:17.448668-06:00"
+forDate: "2026-10-10"
+postType: "school_call"
+snowLineFt: null
+snowLineTrend: "rising"
+bands: {"durango": {"elevationFt": 6500, "precipType": "rain", "label": "Durango and the Animas Valley"}, "bayfield": {"elevationFt": 6900, "precipType": "rain", "label": "Bayfield and up the Pine"}, "vallecito": {"elevationFt": 7650, "precipType": "rain", "label": "Vallecito and the Florida"}, "weminuche": {"elevationFt": 10500, "precipType": "rain", "label": "The high Weminuche"}}
+basinPercentOfMedian: null
+alerts: []
+sources: ["CAIC map-layer", "CDOT", "Colorado DWR (CDSS)", "NRCS SNOTEL", "NWS GJT AFD", "NWS alerts", "Open-Meteo bayfield", "Open-Meteo durango", "Open-Meteo vallecito", "Open-Meteo weminuche", "Pass forecast (Open-Meteo)", "USGS NWIS"]
+generatedBy: "govallecito-wx"
+slug: "2026-10-10-morning-forecast-for-vallecito-bayfield-and-durango"
+---
 
-When: 2026-10-10T05:03:58-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 0
-
-## Detail
-
-```
-approved in round 3 after applying 3 reviewer replacement(s) to the writer's text
-```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
-
-## What the data looked like
-
-- Snow line: 12450
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 10/10/26 5:45am: Morning, its Saturday. Sky's clouding over already.
 
 Durango and the Animas Valley should stay mostly dry through the day with temps climbing into the mid-60s. Clouds build this afternoon and a few showers are possible by evening, with steadier rain moving in overnight. Wind picks up this evening, gusts 15-20mph.
@@ -37,4 +28,3 @@ The 501 and the 240 should stay dry through this evening. Tomorrow afternoon I'd
 The SNOTEL at Vallecito's sitting at 2" with 0.1" SWE, which is right where early October usually is.
 
 Nice day to get outside before tomorrow's mess arrives. Anybody getting out on the water one more time before the rain sets in?
-```

@@ -1,27 +1,9 @@
-# Forecast run: published to website (approved by review panel)
+# Saturday, 2026-10-10, school_call
 
-When: 2026-10-10T05:03:58-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 0
+Verdict: `pass` | Snow line: 12450 | Alerts: none
 
-## Detail
+---
 
-```
-approved in round 3 after applying 3 reviewer replacement(s) to the writer's text
-```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
-
-## What the data looked like
-
-- Snow line: 12450
-- Alerts: none
-- Missing sources: none
-- Pass forecast: built
-
-## Draft
-
-```
 10/10/26 5:45am: Morning, its Saturday. Sky's clouding over already.
 
 Durango and the Animas Valley should stay mostly dry through the day with temps climbing into the mid-60s. Clouds build this afternoon and a few showers are possible by evening, with steadier rain moving in overnight. Wind picks up this evening, gusts 15-20mph.
@@ -37,4 +19,3 @@ The 501 and the 240 should stay dry through this evening. Tomorrow afternoon I'd
 The SNOTEL at Vallecito's sitting at 2" with 0.1" SWE, which is right where early October usually is.
 
 Nice day to get outside before tomorrow's mess arrives. Anybody getting out on the water one more time before the rain sets in?
-```

@@ -1,3 +1,25 @@
-2026-10-10 01:44 MDT is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
-2026-10-10 01:44 MDT is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
+NOTE: running at 05:01, inside the 4:00-9:00 window but later than the 4:00 target. Posting anyway, flagged late.
+=== Vallecito forecast: school_call @ 2026-10-10 05:01 MDT ===
+snow-line calibration: offset=0.0ft active=False
+guardrails: BLOCK
+  - draft states a present-tense road surface condition ('Is the Florida Road still passable up past Lemon or has it gotten too chewed up this fall?') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+  - draft gives a point-value gust ('gusts to 30mph'); gusts are always a range, e.g. 'gusts 15-25'
+  - first-30-days policy: review everything
+BLOCK is about the wording, not the data. Rewriting once.
+guardrails after rewrite: BLOCK
+  - draft states a present-tense road surface condition ("Tomorrow afternoon's a different story, wet pavement likely, and wind gusts could make it interesting on the exposed stretches.") with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+  - first-30-days policy: review everything
+review panel: fact checker + editor -> magistrate
+panel round 1/3: facts=issues editor=issues (critical/major=7) gate=block -> magistrate REVISE
+panel round 2/3: facts=clean editor=issues (critical/major=3) gate=block -> magistrate REVISE
+panel round 3/3: facts=clean editor=issues (critical/major=2) gate=pass -> magistrate REVISE
+panel round 3: final-round auto-patch applied 3 replacement(s), skipped 0, outstanding 0; gate=pass, unresolved fact issues=0
+panel transcript -> state/panel/2026-10-10-school_call.md
+MAGISTRATE APPROVED (approved in round 3 after applying 3 reviewer replacement(s) to the writer's text); publishing to the website
+Archived draft -> state/drafts/2026-10-10-school_call.md
+site post -> site/weather/2026-10-10-morning-forecast-for-vallecito-bayfield-and-durango.md
+site feed -> site/weather/feed.json
+facebook: school_call is not in WX_FB_AUTO_SLOTS (empty); not posting. Use the facebook-post workflow to mirror it by hand.
+Wrote state/forecast-status.md
+logged forecast 2026-10-10-5 for tomorrow's verification
 exit=0

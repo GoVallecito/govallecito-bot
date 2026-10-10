@@ -3557,6 +3557,40 @@
       "verified": false,
       "observed": null,
       "score": null
+    },
+    {
+      "id": "2026-10-10-5",
+      "issued_at": "2026-10-10T05:01:17.448668-06:00",
+      "valid_date": "2026-10-10",
+      "post_id": null,
+      "predicted": {
+        "durango": {
+          "snow_low_in": 0.0,
+          "snow_high_in": 0.5,
+          "model_total_in": 0.0
+        },
+        "bayfield": {
+          "snow_low_in": 0.0,
+          "snow_high_in": 0.5,
+          "model_total_in": 0.0
+        },
+        "vallecito": {
+          "snow_low_in": 0.0,
+          "snow_high_in": 0.5,
+          "model_total_in": 0.0
+        },
+        "weminuche": {
+          "snow_low_in": 0.0,
+          "snow_high_in": 0.5,
+          "model_total_in": 0.0
+        }
+      },
+      "snow_line_predicted_ft": 12450,
+      "model_disagreement": "moderate",
+      "note": null,
+      "verified": false,
+      "observed": null,
+      "score": null
     }
   ]
 }
