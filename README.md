@@ -176,7 +176,7 @@ unenforced limit before this was added -- this wasn't purely precautionary.
 ## How the engagement learning works
 
 A second workflow (`engagement-check.yml`) runs daily, finds posts at least
-48 hours old, and pulls their current like/comment/share totals from the
+48 hours old, and pulls their current reaction/comment/share totals from the
 Graph API. That builds up `state/post_history.json` over time.
 
 Once a specific hook line has been used at least **15 times** and has
@@ -322,8 +322,15 @@ never in a text file, chat message, or email.
 1. Go to the [Graph API Explorer](https://developers.facebook.com/tools/explorer).
 2. Top right: select the app you just created.
 3. Click **Generate Access Token**. When the permissions picker pops up,
-   check `pages_show_list`, `pages_read_engagement`, and `pages_manage_posts`,
-   then approve.
+   check all six of these, then approve:
+   - `pages_show_list`
+   - `pages_manage_posts` (posting)
+   - `pages_read_engagement` (reading the Page's own posts)
+   - **`pages_read_user_content`** (reading reactions and comments on those
+     posts -- without it every engagement check fails with error #10; that
+     is exactly what happened from 2026-07-26 to 2026-10-10)
+   - `read_insights`
+   - `business_management`
 4. **Before going further**, extend that token so it's long-lived: open the
    [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken),
    paste your token in, and use its "Extend Access Token" button. Copy the
