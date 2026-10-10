@@ -1,4 +1,8 @@
-=== storm watch @ 2026-10-09 19:41 MDT ===
-decision: fire=False -- already posted about the 2026-10-11 system and it has not materially escalated
-  window 2026-10-11T00:00 -> 2026-10-13T23:00, 1.41in liquid / 0.0in snow, peak 2026-10-11T02:00
+=== storm watch @ 2026-10-10 03:46 MDT ===
+decision: fire=True -- new system peaking 2026-10-13 clears the threshold
+  window 2026-10-12T00:00 -> 2026-10-14T23:00, 0.83in liquid / 0.0in snow, peak 2026-10-13T20:00
+guardrails: BLOCK
+  - draft gives a point-value gust ('gusts to 50'); gusts are always a range, e.g. 'gusts 15-25'
+  - first-30-days policy: review everything
+BLOCKED -- nothing published.
 exit=0
