@@ -705,14 +705,20 @@ def build_post(conditions, slot, dt=None, image_dest_path=None, force_grounded_d
 
     # -- weather -------------------------------------------------------------
     if weather and weather.get("current_f") is not None:
-        high = f", headed to a high of {weather['high_f']}°" if weather.get("high_f") is not None else ""
+        # OBSERVATION ONLY. This bot reports what is true right now and states
+        # no forward-looking number; highs and tomorrow belong to the weather
+        # forecaster, which posts to the same page. On 2026-10-10 this card said
+        # "63°F now, headed to a high of 59°" (a current temperature above the
+        # day's high) while the forecaster that morning had Durango into the
+        # mid-60s. weather["high_f"] is deliberately NOT read here or in
+        # build_alert_post. Do not add it back as an improvement.
+        # short_forecast stays: it describes the sky, it does not predict a figure.
         forecast_txt = f" {weather['short_forecast']}." if weather.get("short_forecast") else ""
-        caption_lines.append(f"🌡️ {weather['current_f']}°F now{high}.{forecast_txt}".replace("..", "."))
+        caption_lines.append(f"🌡️ {weather['current_f']}°F now.{forecast_txt}".replace("..", "."))
         rows.append({
             "icon": "thermo",
             "label": "WEATHER",
             "value": f"{weather['current_f']}°F now"
-                     + (f" · high {weather['high_f']}°" if weather.get("high_f") is not None else "")
                      + (f", {weather['short_forecast'].lower()}" if weather.get("short_forecast") else ""),
             "badge": INFO,
             "icon_color": WHITE,
@@ -1012,8 +1018,7 @@ def build_alert_post(conditions, alert, dt=None):
         })
 
     if weather and weather.get("current_f") is not None:
-        high = f", high {weather['high_f']}°" if weather.get("high_f") is not None else ""
-        weather_value = f"{weather['current_f']}°F now{high}"
+        weather_value = f"{weather['current_f']}°F now"
         caption_lines.append(f"🌡️ {weather_value}.")
         rows.append({
             "icon": "thermo",

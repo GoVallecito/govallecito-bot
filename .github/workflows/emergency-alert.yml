@@ -81,8 +81,14 @@ on:
 # Judged the better default versus the alternative (two workflows racing to
 # write the same JSON file), but it IS a real, if rare, added delay worth
 # knowing about -- see the README.
+#
+# The group is govallecito-bot-state, shared with the weather forecaster's
+# workflows. Both families commit and push state/, and while they could run
+# concurrently, the race ends in a live Facebook post with NO record in
+# post_history.json; the next run in the window then believes the slot has
+# not posted, and posts again (see daily-post.yml's error text).
 concurrency:
-  group: govallecito-post-and-history
+  group: govallecito-bot-state
   cancel-in-progress: false
 
 permissions:
