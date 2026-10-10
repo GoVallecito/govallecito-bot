@@ -1509,6 +1509,20 @@
       "alert_id": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122136649383360003",
+      "posted_at": "2026-10-10T20:22:24.025077+00:00",
+      "slot": "afternoon",
+      "hook_line": "Afternoon update, Vallecito.",
+      "had_image": true,
+      "image_topic": "lake",
+      "fire_stage": 0,
+      "post_type": "daily",
+      "alert_category": null,
+      "alert_id": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
