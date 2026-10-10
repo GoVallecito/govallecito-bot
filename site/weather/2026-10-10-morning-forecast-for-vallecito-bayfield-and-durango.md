@@ -23,7 +23,7 @@ Vallecito and up the Florida should stay mostly dry through the afternoon, with 
 
 Up in the Weminuche it'll be all rain tomorrow, even above 10,000 feet. The snow line's well above anything anybody's hiking or hunting today or tomorrow. Wind gusts 30-40mph up high tomorrow afternoon.
 
-The 501 and the 240 should stay dry through this evening. Tomorrow afternoon I'd expect wet pavement and wind gusts could make it interesting on the exposed stretches. The passes should see mostly rain at pass level tomorrow with gusts 40-50mph. Coal Bank and Molas might see a couple inches at most above pass level but it should stay mostly rain on the pavement. Check CDOT for current conditions: https://www.cotrip.org/
+The 501 and the 240 should stay dry through this evening. Tomorrow afternoon I'd expect wet pavement and wind gusts could make it interesting on the exposed stretches. The passes should see mostly rain at pass level tomorrow with gusts 40-50mph. Check CDOT for current conditions: https://www.cotrip.org/
 
 The SNOTEL at Vallecito's sitting at 2" with 0.1" SWE, which is right where early October usually is.
 
