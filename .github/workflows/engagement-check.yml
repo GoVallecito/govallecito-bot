@@ -16,7 +16,7 @@ name: Check Post Engagement
 
 # Runs once a day. Looks at every post in state/post_history.json that's at
 # least 48 hours old and hasn't been checked yet, pulls its current
-# like/comment/share counts from the Graph API, and recomputes
+# reaction/comment/share counts from the Graph API, and recomputes
 # state/content_preferences.json -- the (gently, gated on sample size)
 # learned weights generate_post_text.py uses. See scripts/check_engagement.py
 # for the full explanation, including why "learning" won't mean much for the
@@ -56,10 +56,28 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
+      # Exit 2 means "ran fine, but the feedback loop is broken" (the token
+      # can't read reactions/comments, or nothing due could be read). That
+      # must still commit whatever WAS learned, so it is recorded here and
+      # turned into a red run by the step after the commit. Any other
+      # non-zero exit is a crash and fails right here.
+      #
+      # Why this exists: from 2026-07-26 to 2026-10-10 every engagement read
+      # failed with a permission error and this workflow stayed green the
+      # whole time. See the docstring of scripts/check_engagement.py.
       - name: Check engagement and recompute preferences
+        id: check
         env:
           FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
-        run: python scripts/check_engagement.py
+        run: |
+          set +e
+          python scripts/check_engagement.py
+          rc=$?
+          set -e
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          if [ "$rc" -ne 0 ] && [ "$rc" -ne 2 ]; then
+            exit "$rc"
+          fi
 
       # Same reasoning as daily-post.yml's equivalent step: the concurrency
       # block above is the primary defense, but if a push is ever rejected
@@ -87,6 +105,14 @@ jobs:
             sleep $((attempt * 5))
           done
           echo "::error::Could not push updated engagement data after 5 attempts. This run's engagement checks and preference updates were NOT saved -- they should get picked up again on the next scheduled run, since check_engagement.py re-checks anything not marked as checked, so nothing here is permanently lost, just delayed."
+          exit 1
+
+      # Runs after the commit so partial results are kept, and before the
+      # heartbeat so a broken loop also suppresses the healthchecks ping.
+      - name: Fail if the feedback loop is broken
+        if: steps.check.outputs.rc == '2'
+        run: |
+          echo "check_engagement.py reported the feedback loop is broken -- see the ::error annotation from the step above."
           exit 1
 
       # An absent secret makes the heartbeat below skip itself, which makes an
