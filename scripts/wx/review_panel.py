@@ -556,7 +556,111 @@ def _splice_is_safe(text, quote, fix):
     return True
 
 
-def _apply_fixes(text, reports):
+# A replacement a reviewer wrote is spliced in with no further model call, so
+# nothing downstream asks whether it is a construction the forecaster has
+# already used. On 2026-10-10 the editor rotated off the retired "take that
+# with a big grain of salt" straight into "I wouldn't lock onto any one
+# number", which is what the post published on 2026-10-09 ("so dont lock onto
+# any one total") wearing a different coat. The editor checks the WRITER's
+# text against the recent posts; it does not check its own replacement.
+#
+# This is that check, deterministic and run on the replacement itself.
+#
+# WHY IT IS SHAPED THIS WAY. A plain shared-word-run threshold does not work:
+# every post shares long runs with yesterday's because the zones, the roads and
+# the weather vocabulary repeat by design. On the 15 posts published to
+# 2026-10-10, "dry through the day with temps climbing into the" is a 9-word
+# run and entirely innocent, while the echo above is only 4. So a run counts
+# only by the words in it that are RARE across the published corpus: a word in
+# at most a fifth of the posts. "lock" and "onto" are rare; "dry", "pass",
+# "Durango", "gusts" are not.
+#
+# Backtested over every sentence of all 15 published posts against each one's
+# own prior six: two flags, both true (2026-09-16 reusing "grain of salt", and
+# the 2026-10-10 echo above), nothing else in 237 sentences. Loosening either
+# threshold by one puts "wind picks up" and "a third of an inch" in range.
+_ECHO_MIN_RUN = 4            # words of verbatim overlap before it is worth judging
+_ECHO_MIN_RARE = 2           # of those, how many must be rare corpus-wide
+_ECHO_RARE_FRACTION = 0.2    # a word in <= this share of posts counts as rare
+_ECHO_RECENT = 6             # the persona's window: the last six posts
+_corpus_df = None
+
+
+def _words(s):
+    return re.findall(r"[a-z0-9']+", (s or "").lower())
+
+
+def _rare_words(fallback_bodies):
+    """Words appearing in at most a fifth of the published posts.
+
+    Built from the whole published corpus, not from the six being compared
+    against: over six bodies the cap is 1 post, and "picks up" or "chain law"
+    then reads as rare. If the corpus cannot be read, the six are used and the
+    check simply becomes stricter about what it calls rare.
+    """
+    global _corpus_df
+    if _corpus_df is None:
+        bodies = []
+        try:
+            import glob as _glob
+            from . import site as SITE
+            for path in sorted(_glob.glob(os.path.join(SITE.site_dir(), "*.md"))):
+                post = SITE.read_post(path)
+                if post and post.get("body"):
+                    bodies.append(post["body"])
+        except Exception:                      # noqa: BLE001
+            bodies = []
+        if len(bodies) < 3:
+            bodies = list(fallback_bodies or [])
+        df = {}
+        for b in bodies:
+            for w in set(_words(b)):
+                df[w] = df.get(w, 0) + 1
+        _corpus_df = (df, len(bodies))
+    df, n = _corpus_df
+    if n < 3:
+        return None                            # nothing to judge rarity against
+    cap = max(1, int(n * _ECHO_RARE_FRACTION))
+    return {w for w, c in df.items() if c <= cap}
+
+
+def _longest_shared_run(a, b):
+    """The longest run of words `a` and `b` have verbatim in common."""
+    A, B = _words(a), _words(b)
+    best, seq, prev = 0, [], [0] * (len(B) + 1)
+    for i in range(1, len(A) + 1):
+        cur = [0] * (len(B) + 1)
+        for j in range(1, len(B) + 1):
+            if A[i - 1] == B[j - 1]:
+                cur[j] = prev[j - 1] + 1
+                if cur[j] > best:
+                    best, seq = cur[j], A[i - cur[j]:i]
+        prev = cur
+    return seq
+
+
+def _echoes_recent(fix, recent_bodies):
+    """The phrase `fix` reuses from a recent post, or None.
+
+    None whenever the corpus is too thin to call a word rare, so a fresh
+    install never refuses a replacement for want of history.
+    """
+    bodies = list(recent_bodies or [])[:_ECHO_RECENT]
+    if not fix or not bodies:
+        return None
+    rare = _rare_words(bodies)
+    if rare is None:
+        return None
+    for b in bodies:
+        run = _longest_shared_run(fix, b)
+        if len(run) < _ECHO_MIN_RUN:
+            continue
+        if sum(1 for w in run if w in rare and not w.isdigit()) >= _ECHO_MIN_RARE:
+            return " ".join(run)
+    return None
+
+
+def _apply_fixes(text, reports, recent_bodies=None):
     """Spend the fixes the panel is already holding, on the last round.
 
     THE BUG THIS FIXES: the final round used to be told "if it is not
@@ -581,7 +685,9 @@ def _apply_fixes(text, reports):
     Returns (patched_text, applied, skipped, unsafe) where applied/skipped/
     unsafe are lists of {"who", "severity", "quote", "fix"} for the
     transcript. A replacement whose seam would not be well-formed English
-    (see _splice_is_safe) is not applied: it is dropped into `unsafe`.
+    (see _splice_is_safe), or that reuses a construction from `recent_bodies`
+    (see _echoes_recent), is not applied: it is dropped into `unsafe`. Those
+    records carry a "why" saying which.
     """
     applied, skipped, unsafe = [], [], []
     standing = {}                              # quote -> the fix now in the text
@@ -606,6 +712,14 @@ def _apply_fixes(text, reports):
                 skipped.append(rec)            # superseded by an earlier substitution
                 continue
             if not _splice_is_safe(text, quote, fix):
+                rec["why"] = ("the substitution would leave broken English at "
+                              "the seam")
+                unsafe.append(rec)
+                continue
+            echo = _echoes_recent(fix, recent_bodies)
+            if echo:
+                rec["why"] = (f'the replacement reuses "{echo}" from one of the '
+                              "last six published posts")
                 unsafe.append(rec)
                 continue
             text = text.replace(quote, fix, 1)
@@ -663,7 +777,7 @@ def _looks_like_prose(quote, fix):
     return bool(q0 and f0) and q0.isupper() == f0.isupper()
 
 
-def _magistrate_fixes(ruling, text):
+def _magistrate_fixes(ruling, text, recent_bodies=None):
     """(issues, unapplied) out of the ruling's required_changes.
 
     THE BUG THIS FIXES: _apply_fixes was fed only the reviewers' reports. On
@@ -688,7 +802,11 @@ def _magistrate_fixes(ruling, text):
         if not quote or not fix or fix == quote or quote not in text:
             continue
         why = None
-        if "--" in fix or "\u2014" in fix or "\u2013" in fix:
+        echo = _echoes_recent(fix, recent_bodies)
+        if echo:
+            why = (f'the replacement reuses "{echo}" from one of the last six '
+                   "published posts")
+        elif "--" in fix or "\u2014" in fix or "\u2013" in fix:
             why = "the replacement carries a dash the persona forbids"
         elif _INSTRUCTION_START.match(fix):
             why = "the replacement reads as an instruction, not a sentence"
@@ -908,14 +1026,16 @@ def run_panel(bundle, text, *, slot, writer_llm, review_llm=None, calibrated=Fal
         # patch. Reject stays reachable: a draft whose remaining issues carry no
         # replacement, or that still fails the gate, is held exactly as before.
         if n == rounds and ruling["ruling"] != APPROVE:
-            mag_fixes, unapplied = _magistrate_fixes(ruling, text)
+            mag_fixes, unapplied = _magistrate_fixes(ruling, text,
+                                                     recent_bodies)
             patched, applied, skipped, unsafe = _apply_fixes(
                 text, (("fact checker", facts), ("editor", editor),
-                       ("magistrate", {"issues": mag_fixes, "overrides": True})))
+                       ("magistrate", {"issues": mag_fixes, "overrides": True})),
+                recent_bodies=recent_bodies)
             if unsafe:
-                log(f"panel round {n}: dropped {len(unsafe)} replacement(s) "
-                    "whose seam would not be well-formed English: "
-                    + "; ".join(repr(u["quote"][:60]) for u in unsafe))
+                log(f"panel round {n}: dropped {len(unsafe)} replacement(s): "
+                    + "; ".join(f"{u['quote'][:60]!r} ({u.get('why', 'unsafe')})"
+                                for u in unsafe))
             # A required change that could not be substituted, and whose
             # sentence is still in the text, stands unmet. Four of five
             # applied is not the ruling the magistrate made.
@@ -1030,10 +1150,10 @@ def transcript(result, bundle, slot):
             L += [f"- [{a['severity']}, {a['who']}] \"{a['quote']}\" -> \"{a['fix']}\""
                   for a in ap.get("applied", [])] or ["- (none applied)"]
             if ap.get("unsafe"):
-                L += ["", "DROPPED, the substitution would have left broken "
-                          "English at the seam (the quote is part of a "
-                          "sentence, the replacement ends one):"]
-                L += [f"- [{u['who']}] \"{u['quote']}\" -> \"{u['fix']}\""
+                L += ["", "DROPPED, the replacement was refused and the "
+                          "writer's sentence stands:"]
+                L += [f"- [{u['who']}] \"{u['quote']}\" -> \"{u['fix']}\" "
+                      f"({u.get('why', 'unsafe substitution')})"
                       for u in ap["unsafe"]]
             if ap.get("skipped"):
                 L += ["", "Skipped, the quoted sentence was no longer present:"]
