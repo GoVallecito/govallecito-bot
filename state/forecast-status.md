@@ -1,20 +1,21 @@
-# Forecast run: published to website (approved by review panel)
+# Forecast run: blocked
 
-When: 2026-10-10T05:03:58-06:00 (Mountain)
+When: 2026-10-11T05:04:12-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 0
+heldDays: 1
 
 ## Detail
 
 ```
-approved in round 3 after applying 3 reviewer replacement(s) to the writer's text
+review panel: not approved after 3 round(s): Four critical gust range errors must be fixed: all four pass forecasts cite ranges (35-45, 45-55, 35-50) when the brief provides only 'to' figures. The fact checker's replacements are correct and required. Two major voice issues also block: the opener reuses the overnight-change construction from 2026-09-27, and the closer reuses 'chewed up' from 2026-10-03. The editor's replacements satisfy the persona rules and are required.
+draft is malformed: a word repeated back to back ('rain.\n\nRain')
+draft states a present-tense road surface condition ('The passes get wet this afternoon.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+a rewrite was attempted and was blocked too
 ```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
-- Snow line: 12450
+- Snow line: 11200
 - Alerts: none
 - Missing sources: none
 - Pass forecast: built
@@ -22,19 +23,17 @@ approved in round 3 after applying 3 reviewer replacement(s) to the writer's tex
 ## Draft
 
 ```
-10/10/26 5:45am: Morning, its Saturday. Sky's clouding over already.
+10/11/26 5:45am: Morning, its Sunday. The clouds rolled in overnight and the air's got that heavy feel before rain.
 
-Durango and the Animas Valley should stay mostly dry through the day with temps climbing into the mid-60s. Clouds build this afternoon and a few showers are possible by evening, with steadier rain moving in overnight. Wind picks up this evening, gusts 15-20mph.
+This afternoon brings rain and wind together. Snow line sits around 11,200' through the day, so everything below that stays wet. The high Weminuche gets rain too, mostly, maybe a dusting above 11,500' late tonight but not much.
 
-Bayfield and up the Pine should stay mostly dry through the afternoon with a few hundredths possible. Breezy by evening, steadier rain moves in overnight. Should be a good window for yard work or getting into town before things change.
+Durango and the Animas Valley get rain this afternoon through evening, half an inch or so, with gusts 35-45mph between 2pm and 8pm. I'd expect wet pavement on the 160 this afternoon, with the wind being the story.
 
-Vallecito and up the Florida should stay mostly dry through the afternoon, with showers picking up this evening and steadier rain overnight. The models have a bit of a spread on tomorrow's totals, Euro's at 0.9", GFS and GEM both show 0.93", ICON's cranking out 1.14", but they all agree the heavy stuff hits tomorrow afternoon and evening. I wouldn't lock onto any one number, the timing window shifts things and that's the whole ballgame for totals.
+Bayfield and up the Pine see lighter totals, maybe a quarter inch, but the same gusty setup this afternoon. I'd expect dry roads early for anyone heading out, then wet pavement by mid-afternoon.
 
-Up in the Weminuche it'll be all rain tomorrow, even above 10,000 feet. The snow line's well above anything anybody's hiking or hunting today or tomorrow. Wind gusts 30-40mph up high tomorrow afternoon.
+Vallecito and up the Florida see similar amounts, quarter to half inch depending on the drainage, with gusts 25-30mph. The GFS is driest at 0.27" while the Euro's wettest at 0.68", so I wouldn't bet the farm on any one number (the models are all over the map on how much moisture pushes this far in).
 
-The 501 and the 240 should stay dry through this evening. Tomorrow afternoon I'd expect wet pavement and wind gusts could make it interesting on the exposed stretches. The passes should see mostly rain at pass level tomorrow with gusts 40-50mph. Coal Bank and Molas might see a couple inches at most above pass level but it should stay mostly rain on the pavement. Check CDOT for current conditions: https://www.cotrip.org/
+The passes should get wet this afternoon. Coal Bank and Molas should stay rain at pass level with gusts 35-45mph. Red Mountain gets hit harder, gusts 45-55mph up top. Wolf Creek on the 160 could see 3-5" above 10,500' with gusts 35-50mph. Current road status is at cotrip.org, the forecast's mine but the closures and chain law are theirs.
 
-The SNOTEL at Vallecito's sitting at 2" with 0.1" SWE, which is right where early October usually is.
-
-Nice day to get outside before tomorrow's mess arrives. Anybody getting out on the water one more time before the rain sets in?
+Is the hunting access up the Florida still decent or has it gotten too chewed up?
 ```
