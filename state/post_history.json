@@ -1115,8 +1115,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:52.797862+00:00"
     },
     {
       "post_id": "1138532512682553_122133481875360003",
@@ -1129,8 +1136,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:53.417670+00:00"
     },
     {
       "post_id": "1138532512682553_122133663807360003",
@@ -1143,8 +1157,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:54.030107+00:00"
     },
     {
       "post_id": "1138532512682553_122133723435360003",
@@ -1157,8 +1178,15 @@
       "post_type": "emergency_alert",
       "alert_category": "flood",
       "alert_id": "site-stream-creek-1",
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:54.616277+00:00"
     },
     {
       "post_id": "1138532512682553_122133723855360003",
@@ -1171,8 +1199,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:55.222685+00:00"
     },
     {
       "post_id": "1138532512682553_122133750153360003",
@@ -1185,8 +1220,15 @@
       "post_type": "emergency_alert",
       "alert_category": "flood",
       "alert_id": "site-stream-pine-1",
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 1,
+        "total": 1,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:55.913074+00:00"
     },
     {
       "post_id": "1138532512682553_122133910893360003",
@@ -1199,8 +1241,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:56.473790+00:00"
     },
     {
       "post_id": "1138532512682553_122133957579360003",
@@ -1213,8 +1262,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:57.041175+00:00"
     },
     {
       "post_id": "1138532512682553_122134123047360003",
@@ -1227,8 +1283,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:57.827055+00:00"
     },
     {
       "post_id": "1138532512682553_122134219557360003",
@@ -1241,8 +1304,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:58.536744+00:00"
     },
     {
       "post_id": "1138532512682553_122134382775360003",
@@ -1255,8 +1325,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:59.243360+00:00"
     },
     {
       "post_id": "1138532512682553_122134414761360003",
@@ -1269,8 +1346,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:05:59.896556+00:00"
     },
     {
       "post_id": "1138532512682553_122134589553360003",
@@ -1283,8 +1367,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:00.556645+00:00"
     },
     {
       "post_id": "1138532512682553_122134679259360003",
@@ -1297,8 +1388,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:01.176755+00:00"
     },
     {
       "post_id": "1138532512682553_122134856829360003",
@@ -1311,8 +1409,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:01.770991+00:00"
     },
     {
       "post_id": "1138532512682553_122134914063360003",
@@ -1325,8 +1430,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:02.471925+00:00"
     },
     {
       "post_id": "1138532512682553_122135089581360003",
@@ -1339,8 +1451,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:03.266516+00:00"
     },
     {
       "post_id": "1138532512682553_122135161239360003",
@@ -1353,8 +1472,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:04.075014+00:00"
     },
     {
       "post_id": "1138532512682553_122135342739360003",
@@ -1367,8 +1493,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:04.686072+00:00"
     },
     {
       "post_id": "1138532512682553_122135413299360003",
@@ -1381,8 +1514,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:05.295256+00:00"
     },
     {
       "post_id": "1138532512682553_122135598675360003",
@@ -1395,8 +1535,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:05.912894+00:00"
     },
     {
       "post_id": "1138532512682553_122135652129360003",
@@ -1409,8 +1556,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:06.497152+00:00"
     },
     {
       "post_id": "1138532512682553_122135847243360003",
@@ -1423,8 +1577,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:07.404019+00:00"
     },
     {
       "post_id": "1138532512682553_122135898111360003",
@@ -1437,8 +1598,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:07.997547+00:00"
     },
     {
       "post_id": "1138532512682553_122136096291360003",
@@ -1451,8 +1619,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:08.565222+00:00"
     },
     {
       "post_id": "1138532512682553_122136157287360003",
@@ -1465,8 +1640,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:09.290154+00:00"
     },
     {
       "post_id": "1138532512682553_122136343785360003",
@@ -1479,8 +1661,15 @@
       "post_type": "daily",
       "alert_category": null,
       "alert_id": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-11T16:06:09.959258+00:00"
     },
     {
       "post_id": "1138532512682553_122136433767360003",

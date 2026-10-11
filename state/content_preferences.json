@@ -1,20 +1,37 @@
 {
-  "updated_at": "2026-10-10T15:39:48.546466+00:00",
+  "updated_at": "2026-10-11T16:06:09.961214+00:00",
   "hook_weights": {
     "morning": {},
     "afternoon": {}
   },
   "grounded_post_interval_days": 4,
   "sample_counts": {
-    "hooks": {},
+    "hooks": {
+      "Cast lines are already out this morning.": 2,
+      "Afternoon bite report from the lake.": 2,
+      "Trailheads are filling in early.": 2,
+      "Trail conditions holding up this week.": 2,
+      "Good morning, Vallecito.": 2,
+      "Afternoon at the lake.": 2,
+      "Rise and shine, lake people.": 2,
+      "Here's where things stand.": 2,
+      "Here's the morning read.": 2,
+      "Midday conditions check.": 1,
+      "Coffee's on \u2014 here's today's conditions.": 1,
+      "Afternoon update, Vallecito.": 1,
+      "Morning check-in from the lake.": 1,
+      "Golden hour's coming up at the dam.": 1,
+      "Early light on the water.": 1,
+      "Clear skies tonight over the lake.": 1
+    },
     "grounded_vs_plain": {
-      "grounded": 0,
+      "grounded": 25,
       "plain": 0
     }
   },
   "impressions": {
     "available_count": 0,
-    "checked_count": 0,
+    "checked_count": 25,
     "avg_impressions": null,
     "avg_engagement_rate": null
   }
