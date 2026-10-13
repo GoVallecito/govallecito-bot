@@ -1,18 +1,20 @@
 # Forecast run: held for review
 
-When: 2026-10-12T05:04:19-06:00 (Mountain)
+When: 2026-10-13T05:04:13-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 2
+heldDays: 3
+
+> **STANDING FAILURE: 3 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): The editor correctly identified two major construction reuses: the post-timestamp school-run opener matches 2026-10-09's pattern, and the closing question uses the same 'Did [X] or [Y]?' structure as 2026-10-09. The grain-of-salt phrase and the gust range also need rotation per the editor. These are fixable with targeted edits that preserve the draft's voice and all factual content.
+review panel: not approved after 3 round(s): The opener violates the NO READING TODAY rule by describing observed conditions (inversion, dripping windows) when only non-observational personal details are allowed. The fact checker correctly identified number precision issues in the Durango and Bayfield totals and timing of heaviest precipitation. The closing question reuses the lake-level-change construction from 2026-10-09. One filler sentence can be cut. All issues have concrete fixes that preserve the draft's structure and voice.
 ```
 
 ## What the data looked like
 
-- Snow line: 9750
+- Snow line: 10200
 - Alerts: none
 - Missing sources: none
 - Pass forecast: built
@@ -20,19 +22,17 @@ review panel: not approved after 3 round(s): The editor correctly identified two
 ## Draft
 
 ```
-10/12/26 5:45am: Morning, its Monday. The stars were still sharp when I let the dog out.
+10/13/26 5:45am: Morning, its Tuesday. The inversion's got the valley socked in and the truck windows are dripping.
 
-Today stays dry and breezy for the school run. The 501 and the 240 should both be fine for the 6:30 call, districts decide by then. Gusts 15-25mph this afternoon across the county but no precip until tonight.
+Rain's already moving through and the 501 should be wet for the bus run. Districts decide by 6:30. Durango's looking at a quarter to a third of an inch through tomorrow, Bayfield an eighth or so, with the heaviest stuff this morning and again overnight. I'd expect wet pavement for both the morning and afternoon drives.
 
-Durango and the Animas Valley (6,500') get mostly dry conditions through the day, then rain develops overnight into Tuesday. Looking at a few tenths through Wednesday, heaviest Tuesday evening.
+Vallecito and up the Florida are getting hit harder. Models disagree pretty wide on the total: anywhere from the GFS at 1.9" to GEM's 2.7", with Euro and ICON both in the 2.2-2.4" range. The snow line's sitting around 10,200' right now and it'll drop through the day, but it stays rain at lake level (7,650') straight through. The 240 should be wet all day with gusty conditions this afternoon, 25-30mph.
 
-Bayfield and up the Pine (6,900') see the same pattern, dry through this evening then rain overnight. Half an inch or more through Wednesday, heaviest Tuesday evening.
+The high Weminuche is right on the line. Models have it as rain/snow mix today, then switching over tonight as temps drop. Maybe half an inch up there by tomorrow morning, dont lock onto that number (the line's the whole question and it could shift 500' either way).
 
-Vallecito and the Florida (7,650') stay dry today, rain moves in overnight. Snow line sits around 9,750' through the event so this stays all rain at lake level. Take that with a big grain of salt (the GFS has 0.17in for the Florida drainage and the Euro has 1.27in, so the range is huge).
+The passes are getting enough that Wednesday morning's the concern, not this morning. Coal Bank should see 8-15" by tomorrow, Molas 3-7", Red Mountain 6-11", Wolf Creek 4-7". Gusts 45-50mph up high tonight. That's the forecast, for current conditions and closures check https://www.cotrip.org/
 
-The high Weminuche (10,500'+) picks up a couple inches at most above 10k feet Tuesday night into Wednesday. Not a big accumulation event but the first real snow of the season up high.
+The passes get the worst of it overnight into Wednesday morning, with that snow and wind combo making for tough travel.
 
-Coal Bank, Molas and Red Mountain should stay dry through today, then rain at pass level overnight with a transition to snow Tuesday night. A couple inches at most up there, gusts 15-25mph today rising to gusts 45-55+ Tuesday. Wolf Creek sees the same setup. Thats the forecast, current road status is at cotrip.org.
-
-Did you get any rain overnight or was it still dry at your place this morning?
+How much has the reservoir dropped since last week?
 ```
