@@ -8,7 +8,10 @@ compatibility_date = "2026-09-01"
 #   MDT (UTC-6): 11Z=05 12Z=06 13Z=07 14Z=08 attempts, 15Z=09 watchdog, 16Z=10 skip
 #   MST (UTC-7): 11Z=04 skip, 12Z=05 13Z=06 14Z=07 15Z=08 attempts, 16Z=09 watchdog
 [triggers]
-crons = ["0 11-16 * * *"]
+# Second entry (2026-10-14): start system-health.yml every hour at :07 UTC. The worker
+# tells the two apart by event.cron (jobFor in morning-trigger.js), so keep this string
+# identical to HEALTH_CRON there.
+crons = ["0 11-16 * * *", "7 * * * *"]
 
 # Secrets are NOT set here. Set them once, encrypted, with:
 #   wrangler secret put GITHUB_TOKEN

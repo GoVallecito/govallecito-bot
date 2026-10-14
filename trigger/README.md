@@ -18,6 +18,19 @@ the ledger no-ops a second run for a slot that already posted.
 
 ---
 
+## Second job: the hourly emergency-system health check (2026-10-14)
+
+The same worker now also starts `system-health.yml` every hour (cron `7 * * * *`,
+told apart from the morning cron by `event.cron`; see `jobFor()`). GitHub was
+delivering that workflow's own hourly cron every 3-8 hours, while the alert-system
+health limits assume hourly, so `govallecito.com/data/health.json` read FAIL most of
+the day with nothing broken. GitHub's cron stays as the backup.
+
+This job never checks the feed and never pings the morning `HEALTHCHECK_URL`. If it
+stops working, `system-health.yml`'s own healthchecks.io heartbeat goes overdue and
+alarms. Nothing new to configure: it uses the existing `GITHUB_TOKEN`. Deploy with
+`wrangler deploy` from this folder.
+
 ## Owner checklist -- these four need your credentials
 
 Do them in this order. Nothing works until all four are done.
