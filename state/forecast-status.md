@@ -1,38 +1,48 @@
-# Forecast run: held for review
+# Forecast run: blocked
 
-When: 2026-10-13T05:04:13-06:00 (Mountain)
+When: 2026-10-14T05:04:36-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 3
+heldDays: 4
 
-> **STANDING FAILURE: 3 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
+> **STANDING FAILURE: 4 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): The opener violates the NO READING TODAY rule by describing observed conditions (inversion, dripping windows) when only non-observational personal details are allowed. The fact checker correctly identified number precision issues in the Durango and Bayfield totals and timing of heaviest precipitation. The closing question reuses the lake-level-change construction from 2026-10-09. One filler sentence can be cut. All issues have concrete fixes that preserve the draft's structure and voice.
+review panel: not approved after 3 round(s): The draft has two critical timing errors (rain already fell overnight, not arriving now; 0.6 vs 0.57), two automated gate violations (point-value gusts), one present-tense road claim, one recycled model-disagreement construction, one invented chain-law timing not in the brief, and one reused pivot. All have concrete replacements. The chain-law timing must be deleted entirely since the brief provides no timing for it.
+draft states a present-tense road surface condition ("The snow line is around 9,350' right now and dropping, which puts rain on the 501 and the 240 for the bus run, wet pavement through town and up the Pine, and snow starting around 10,000'+ in the high country.") with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+a rewrite was attempted and was blocked too
 ```
 
 ## What the data looked like
 
-- Snow line: 10200
-- Alerts: none
+- Snow line: 9350
+- Alerts: ['Winter Weather Advisory']
 - Missing sources: none
 - Pass forecast: built
 
 ## Draft
 
 ```
-10/13/26 5:45am: Morning, its Tuesday. The inversion's got the valley socked in and the truck windows are dripping.
+10/14/26 5:45am: Morning, its Wednesday. The clouds are sitting low over the ridge and the air's got that October cold to it.
 
-Rain's already moving through and the 501 should be wet for the bus run. Districts decide by 6:30. Durango's looking at a quarter to a third of an inch through tomorrow, Bayfield an eighth or so, with the heaviest stuff this morning and again overnight. I'd expect wet pavement for both the morning and afternoon drives.
+Rain should be moving in around now down here at 7,650' and looks like it'll keep coming through late morning. The snow line is around 9,350' and dropping, which should put rain on the 501 and the 240 for the bus run, wet pavement through town and up the Pine, and snow starting around 10,000'+ in the high country. Vallecito and up the Florida should see all rain this morning.
 
-Vallecito and up the Florida are getting hit harder. Models disagree pretty wide on the total: anywhere from the GFS at 1.9" to GEM's 2.7", with Euro and ICON both in the 2.2-2.4" range. The snow line's sitting around 10,200' right now and it'll drop through the day, but it stays rain at lake level (7,650') straight through. The 240 should be wet all day with gusty conditions this afternoon, 25-30mph.
+The Grand Junction office has a Winter Weather Advisory up for COZ019, which is Vallecito and the higher elevations, through 6pm today. That's for the Weminuche and the passes, not the lake itself.
 
-The high Weminuche is right on the line. Models have it as rain/snow mix today, then switching over tonight as temps drop. Maybe half an inch up there by tomorrow morning, dont lock onto that number (the line's the whole question and it could shift 500' either way).
+Durango and the Animas Valley are looking at around half an inch of rain through the day, heaviest before noon, with gusts 20-30mph mid-morning. Temps in the mid-40s dropping into the low 40s this afternoon.
 
-The passes are getting enough that Wednesday morning's the concern, not this morning. Coal Bank should see 8-15" by tomorrow, Molas 3-7", Red Mountain 6-11", Wolf Creek 4-7". Gusts 45-50mph up high tonight. That's the forecast, for current conditions and closures check https://www.cotrip.org/
+Bayfield and up the Pine should see around 0.45" liquid, most of it before lunch, with gusts 20-30mph. Could see a trace of wet snow mixing in late morning as temps drop into the low 40s, but I'd expect the 501 to stay wet pavement rather than anything that sticks.
 
-The passes get the worst of it overnight into Wednesday morning, with that snow and wind combo making for tough travel.
+Vallecito and the Florida are looking at around 0.6" liquid. Models are all over the place here, GFS has 0.57", GEM is calling 1.58", and I wouldn't bet the farm on either one (the spread is huge and the snow line's the whole question). A dusting of wet snow is possible late morning into afternoon as temps drop, especially above 8,000'. The 240 should be fine for the morning run but could get slushy by afternoon.
 
-How much has the reservoir dropped since last week?
+The high Weminuche is looking at around 5" through the day, heaviest 6am to noon, with gusts 30-40mph.
+
+Coal Bank should see 8-15" up top, Molas 4-8", and Red Mountain 5-10" with gusts to 41mph. Wolf Creek should see 6-10" with gusts to 44mph. The passes should be getting snow rather than rain by mid-morning, and I'd expect chain law by late morning. Check CDOT for current closures and chain law: https://www.cotrip.org/
+
+The forecast is mine. The road status is theirs.
+
+Districts decide by 6:30. Tomorrow's clearing out and cold, mid-30s overnight into Thursday with nothing falling.
+
+Anybody chaining up for the passes today or staying off them?
 ```
