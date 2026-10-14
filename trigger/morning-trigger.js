@@ -40,6 +40,25 @@
 
 const REPO = "GoVallecito/govallecito-bot";
 const WORKFLOW = "forecast.yml";
+
+/* SECOND JOB (2026-10-14): start the emergency-alert system-health check every hour.
+ * system-health.yml asks GitHub for "7 * * * *" and GitHub delivered it every 3-8 hours
+ * (Oct 7-13), while its limits (worker-lpcalerts/health-logic.js: canary and report 150
+ * min, emergency run 180 min) assume hourly. So govallecito.com/data/health.json, the page
+ * UptimeRobot watches, read FAIL most of every day with nothing broken, and the
+ * health-alert issue + healthchecks.io /fail fired every day or two (#84 #89 #93 #100
+ * #104, all the same stale-run line). A monitor that is red by default cannot report a
+ * real outage. Same fix as the forecast: workflow_dispatch on Cloudflare's clock.
+ * GitHub's own hourly cron stays as the backup; an extra run is harmless (the repo is
+ * public, so Actions minutes are free, and each run takes ~20 s). Uses the same
+ * GITHUB_TOKEN (Actions: read and write on this repo) the forecast dispatch uses. */
+export const HEALTH_CRON = "7 * * * *";
+export const HEALTH_WORKFLOW = "system-health.yml";
+
+/** Which job a firing belongs to. Cloudflare passes the cron expression that fired. */
+export function jobFor(cron) {
+  return cron === HEALTH_CRON ? "health" : "morning";
+}
 const FEED = `https://raw.githubusercontent.com/${REPO}/main/site/weather/feed.json`;
 
 export const ATTEMPT_HOURS = [5, 6, 7, 8];
@@ -82,9 +101,9 @@ async function feedHasToday(localDate) {
   return hasPostFor(await res.json(), localDate);
 }
 
-async function dispatch(token) {
+async function dispatch(token, workflow = WORKFLOW, inputs = { slot: "", dry_run: "false" }) {
   const res = await fetch(
-    `https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/dispatches`,
+    `https://api.github.com/repos/${REPO}/actions/workflows/${workflow}/dispatches`,
     {
       method: "POST",
       headers: {
@@ -95,7 +114,7 @@ async function dispatch(token) {
         "User-Agent": "wx-morning-trigger",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ ref: "main", inputs: { slot: "", dry_run: "false" } }),
+      body: JSON.stringify({ ref: "main", inputs }),
     },
   );
   // 204 No Content is success, and carries no run id, so "the API accepted it"
@@ -116,6 +135,19 @@ async function ping(url, suffix = "", body = "") {
 
 export default {
   async scheduled(event, env, ctx) {
+    if (jobFor(event.cron) === "health") {
+      // Not the morning logic at all: no feed check, no window, never touches the
+      // morning healthcheck ping. If this stops working, system-health's own
+      // healthchecks.io heartbeat goes overdue and alarms -- that is its backstop.
+      try {
+        await dispatch(env.GITHUB_TOKEN, HEALTH_WORKFLOW, {});
+        console.log(`dispatched ${HEALTH_WORKFLOW}`);
+      } catch (e) {
+        console.log(`HEALTH DISPATCH FAILED: ${e.message}`);
+        throw e;
+      }
+      return;
+    }
     const now = new Date(event.scheduledTime ?? Date.now());
     const { action, date, hour } = decide(now);
     console.log(`fired ${now.toISOString()} -> Denver ${date} ${hour}:00, action=${action}`);
@@ -167,6 +199,7 @@ export default {
     return Response.json({
       utc: now.toISOString(), denver: d, todaysPost: feed,
       tokenConfigured: Boolean(env.GITHUB_TOKEN),
+      healthDispatch: `${HEALTH_WORKFLOW} on cron "${HEALTH_CRON}"`,
       healthcheckConfigured: Boolean(env.HEALTHCHECK_URL),
     }, { headers: { "cache-control": "no-store" } });
   },

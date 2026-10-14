@@ -1,4 +1,4 @@
-import W, { decide, hasPostFor, denverParts } from "./morning-trigger.js";
+import W, { decide, hasPostFor, denverParts, jobFor, HEALTH_CRON, HEALTH_WORKFLOW } from "./morning-trigger.js";
 import { readFileSync } from "node:fs";
 let fail = 0;
 const t = (l, g, w) => { const ok = g === w; if (!ok) fail++; console.log(`${ok ? "ok  " : "FAIL"} ${l}: got ${JSON.stringify(g)}${ok ? "" : ` want ${JSON.stringify(w)}`}`); };
@@ -44,6 +44,23 @@ t("empty object is safe", hasPostFor({}, "2026-09-29"), false);
 t("null is safe", hasPostFor(null, "2026-09-29"), false);
 t("an evening post does not satisfy the morning",
   hasPostFor({ posts: [{ forDate: "2026-09-30", postType: "evening" }] }, "2026-09-30"), false);
+
+console.log("-- hourly health dispatch --");
+t("the health cron routes to the health job", jobFor("7 * * * *"), "health");
+t("the morning cron still routes to the morning job", jobFor("0 11-16 * * *"), "morning");
+t("an unknown or missing cron falls back to the morning job", jobFor(undefined), "morning");
+t("HEALTH_CRON matches wrangler.toml", readFileSync(new URL("./wrangler.toml", import.meta.url), "utf8").includes(`"${HEALTH_CRON}"`), true);
+{
+  const calls = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, opts) => { calls.push({ url, body: opts && opts.body }); return { status: 204, text: async () => "" }; };
+  try { await W.scheduled({ cron: HEALTH_CRON, scheduledTime: Date.parse("2026-10-14T12:07:00Z") }, { GITHUB_TOKEN: "x", HEALTHCHECK_URL: "https://hc.example/abc" }); }
+  finally { globalThis.fetch = realFetch; }
+  t("health firing makes exactly one request", calls.length, 1);
+  t("...to the system-health dispatch endpoint", calls[0] && calls[0].url.endsWith(`/actions/workflows/${HEALTH_WORKFLOW}/dispatches`), true);
+  t("...with no inputs", calls[0] && JSON.parse(calls[0].body).inputs && Object.keys(JSON.parse(calls[0].body).inputs).length, 0);
+  t("...and never pings the morning healthcheck", calls.some(c => String(c.url).startsWith("https://hc.example")), false);
+}
 
 console.log("-- module shape --");
 t("exports scheduled()", typeof W.scheduled, "function");
