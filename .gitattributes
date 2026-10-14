@@ -1,0 +1,4 @@
+# The daily run logs are append-only. Two runs that each add lines to the end
+# of the same day's log are not in conflict: keep both sides' lines. Without
+# this a rebase in a workflow's "Commit state" step stops on them (2026-10-03).
+state/logs/*.log merge=union
