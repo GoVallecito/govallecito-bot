@@ -1,48 +1,47 @@
 # Forecast run: blocked
 
-When: 2026-10-14T05:04:36-06:00 (Mountain)
+When: 2026-10-15T05:04:22-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 4
+heldDays: 5
 
-> **STANDING FAILURE: 4 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
+> **STANDING FAILURE: 5 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): The draft has two critical timing errors (rain already fell overnight, not arriving now; 0.6 vs 0.57), two automated gate violations (point-value gusts), one present-tense road claim, one recycled model-disagreement construction, one invented chain-law timing not in the brief, and one reused pivot. All have concrete replacements. The chain-law timing must be deleted entirely since the brief provides no timing for it.
-draft states a present-tense road surface condition ("The snow line is around 9,350' right now and dropping, which puts rain on the 501 and the 240 for the bus run, wet pavement through town and up the Pine, and snow starting around 10,000'+ in the high country.") with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+review panel: not approved after 3 round(s): The gate blocked on two point-value gusts ('13-17mph' missing mph unit, 'gusts to around 40'). The brief shows Coal Bank gusts at 41mph, so '35-45' contains it. The editor correctly caught the road-status violation: 'roads should stay dry' states what roads ARE; the brief's road rule requires conditional phrasing. All three fixes are required and supported by the brief.
+draft states a present-tense road surface condition ('Dry roads for the bus run this morning.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+draft gives a point-value gust ('gusts to 41mph'); gusts are always a range, e.g. 'gusts 15-25'
 a rewrite was attempted and was blocked too
 ```
 
 ## What the data looked like
 
-- Snow line: 9350
-- Alerts: ['Winter Weather Advisory']
+- Snow line: no precipitation forecast
+- Alerts: none
 - Missing sources: none
 - Pass forecast: built
 
 ## Draft
 
 ```
-10/14/26 5:45am: Morning, its Wednesday. The clouds are sitting low over the ridge and the air's got that October cold to it.
+10/15/26 5:45am: Morning, its Thursday. The kitchen window was clear enough to see every ridge line and the air had that sharp bite when I stepped outside.
 
-Rain should be moving in around now down here at 7,650' and looks like it'll keep coming through late morning. The snow line is around 9,350' and dropping, which should put rain on the 501 and the 240 for the bus run, wet pavement through town and up the Pine, and snow starting around 10,000'+ in the high country. Vallecito and up the Florida should see all rain this morning.
+No precipitation overnight and none expected through the day, so the morning drive should be straightforward and roads should stay dry all day.
 
-The Grand Junction office has a Winter Weather Advisory up for COZ019, which is Vallecito and the higher elevations, through 6pm today. That's for the Weminuche and the passes, not the lake itself.
+Durango and the Animas Valley (6,500') start at 37F this morning and climb to near 60F this afternoon under clear skies. Light winds, gusts 5-8mph. Tomorrow looks the same, just a couple degrees warmer.
 
-Durango and the Animas Valley are looking at around half an inch of rain through the day, heaviest before noon, with gusts 20-30mph mid-morning. Temps in the mid-40s dropping into the low 40s this afternoon.
+Bayfield and up the Pine (6,900') are running a few degrees cooler, mid-30s now and upper 50s this afternoon. Gusts pick up a bit more this evening, 13-17mph, but nothing that'll cause trouble. Tomorrow's a repeat.
 
-Bayfield and up the Pine should see around 0.45" liquid, most of it before lunch, with gusts 20-30mph. Could see a trace of wet snow mixing in late morning as temps drop into the low 40s, but I'd expect the 501 to stay wet pavement rather than anything that sticks.
+Vallecito and the Florida (7,650'+) are sitting at 35F right now with a climb to the mid-50s this afternoon. Gusts 13-14mph through the day. The SNOTEL at 10,740' shows 4 inches on the ground from earlier this week and temps dropped to 25F overnight up there.
 
-Vallecito and the Florida are looking at around 0.6" liquid. Models are all over the place here, GFS has 0.57", GEM is calling 1.58", and I wouldn't bet the farm on either one (the spread is huge and the snow line's the whole question). A dusting of wet snow is possible late morning into afternoon as temps drop, especially above 8,000'. The 240 should be fine for the morning run but could get slushy by afternoon.
+The high Weminuche (10,000'+) stayed in the upper 20s overnight and won't break 45F this afternoon. Gusts 19-22mph through the day, so if you're still hunting up high dress for wind chill.
 
-The high Weminuche is looking at around 5" through the day, heaviest 6am to noon, with gusts 30-40mph.
+The passes should stay dry through today and tomorrow. Coal Bank, Molas and Red Mountain should see gusts to around 40 at Coal Bank, lighter elsewhere. Wolf Creek should stay calm and dry. Check COtrip for current conditions: https://www.cotrip.org/
 
-Coal Bank should see 8-15" up top, Molas 4-8", and Red Mountain 5-10" with gusts to 41mph. Wolf Creek should see 6-10" with gusts to 44mph. The passes should be getting snow rather than rain by mid-morning, and I'd expect chain law by late morning. Check CDOT for current closures and chain law: https://www.cotrip.org/
+The Grand Junction discussion has the low tracking east into the plains and high pressure building in from the west. That sets up quiet, dry weather through the weekend with temps starting below normal and warming back toward average by Saturday.
 
-The forecast is mine. The road status is theirs.
+All four models (Euro, GFS, ICON, GEM) are locked in on dry through the next 48 hours, so this one's straightforward.
 
-Districts decide by 6:30. Tomorrow's clearing out and cold, mid-30s overnight into Thursday with nothing falling.
-
-Anybody chaining up for the passes today or staying off them?
+Quiet pattern holds through the weekend. How cold did it get at your place last night?
 ```
