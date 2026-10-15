@@ -53,7 +53,7 @@ jobs:
       HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL_ENGAGEMENT_CHECK }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-python@v5
         with:
