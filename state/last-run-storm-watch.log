@@ -1,8 +1,7 @@
-=== storm watch @ 2026-10-16 02:07 MDT ===
-decision: fire=True -- new system peaking 2026-10-20 clears the threshold
-  window 2026-10-18T00:00 -> 2026-10-20T23:00, 0.41in liquid / 0.0in snow, peak 2026-10-20T06:00
-guardrails: BLOCK
-  - draft states a present-tense road surface condition ('The passes stay dry all weekend.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+=== storm watch @ 2026-10-16 13:55 MDT ===
+decision: fire=True -- new system peaking 2026-10-19 clears the threshold
+  window 2026-10-18T00:00 -> 2026-10-20T23:00, 0.47in liquid / 0.0in snow, peak 2026-10-19T00:00
+guardrails: REVIEW
   - first-30-days policy: review everything
-BLOCKED -- nothing published.
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/113
 exit=0
