@@ -1746,8 +1746,15 @@
       "alert_category": "flood",
       "alert_id": "site-stream-creek-1",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-16T14:28:00.700370+00:00"
     },
     {
       "post_id": "1138532512682553_122137432041360003",
@@ -1761,8 +1768,15 @@
       "alert_category": "flood",
       "alert_id": "site-stream-pine-1",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-16T14:28:01.034902+00:00"
     }
   ]
 }
