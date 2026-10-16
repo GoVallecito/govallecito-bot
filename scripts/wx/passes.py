@@ -59,6 +59,19 @@ def fetch(days=2, fetch_band=None):
                         error="; ".join(errors) if errors else None)
 
 
+def gust_range(gust):
+    """A pass gust as a range, never a point value.
+
+    The brief used to say "gusts to 41". The persona and the rule gate both ban a point
+    gust ("gusts are always a range"), and the fact checker rejects a range the brief does
+    not contain, so the writer could not satisfy all three: it copied "gusts to 41", the gate
+    blocked it, the rewrite wrote "35-45", the fact checker called that an invented number.
+    That loop held the morning post on 2026-10-11, 10-14 and 10-15. The range is built here so
+    it IS in the brief: the nearest 5 mph, plus and minus 5 (41 -> "35-45")."""
+    mid = 5 * round(float(gust) / 5)
+    return f"{mid - 5}-{mid + 5}"
+
+
 def _phrase(p):
     snow, gust = p["snow_in"], p.get("gust_mph_max")
     bits = []
@@ -74,7 +87,7 @@ def _phrase(p):
     else:
         bits.append("dry")
     if gust and gust >= WINDY_MPH:
-        bits.append(f"gusts to {round(gust)}")
+        bits.append(f"gusts {gust_range(gust)}")
     return ", ".join(bits)
 
 

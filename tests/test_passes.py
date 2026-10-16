@@ -104,3 +104,33 @@ def test_status_claims_are_allowed_once_live_data_exists():
     with_roads = dict(BUNDLE, roads={"us550_north": {"summary": "closed"}})
     v, _ = G.evaluate(with_roads, BASE + " Red Mountain Pass is closed this morning.")
     assert v == G.PASS
+
+
+# --- gusts are a range in the brief (2026-10-16) -------------------------------------------
+# The brief said "gusts to 41"; the rule gate bans a point gust and the fact checker bans a
+# range the brief lacks, so the writer could not pass both. The brief now carries the range.
+
+def test_gust_range_is_nearest_five_plus_minus_five():
+    assert P.gust_range(41) == "35-45"
+    assert P.gust_range(40) == "35-45"
+    assert P.gust_range(43) == "40-50"
+    assert P.gust_range(55.4) == "50-60"
+
+
+def test_windy_pass_card_gives_a_range_not_a_point_gust():
+    r = P.fetch(fetch_band=fake_band(gust=41))
+    card = P.format_card(r.data)
+    assert "gusts 35-45" in card
+    assert "gusts to" not in card
+
+
+def test_pass_card_never_trips_the_point_gust_gate():
+    """Whatever the brief says, the writer may copy it verbatim without a BLOCK."""
+    for gust in (12, 25, 40, 41, 47, 60, 85):
+        card = P.format_card(P.fetch(fetch_band=fake_band(gust=gust)).data)
+        assert not G.POINT_GUST.search(card), (gust, card)
+
+
+def test_calm_pass_card_mentions_no_gust_at_all():
+    card = P.format_card(P.fetch(fetch_band=fake_band(gust=15)).data)
+    assert "gust" not in card
