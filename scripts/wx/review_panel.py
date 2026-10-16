@@ -203,6 +203,10 @@ judged acceptable in your rationale.
 important first. Never ask the writer to restructure the post, and never put a \
 number or fact in a replacement that the brief does not contain. If two \
 reviewer fixes conflict, resolve them by the rules below and give ONE change.
+- EDITORIAL POLICY (relaxed): voice, novelty, repetition of a recent post's \
+construction, opener/closer reuse and phrasing taste are advisory and never \
+block approval. Block only for an unsupported or wrong fact, an unsafe \
+statement, or a flag from the automated gate that you cannot judge acceptable.
 - A reviewer issue whose evidence is missing, or does not match the brief, is \
 not an issue: dismiss it.
 
@@ -396,6 +400,16 @@ def _evidence_ok(evidence, brief):
     return any(_norm(p).strip(" .") in hay for p in parts or [ev])
 
 
+def strict_editor():
+    """Editorial strictness switch. Off by default (relaxed, 2026-10-15): the
+    editor's voice/novelty/repetition objections are advisory, capped at minor,
+    so they cannot by themselves stop a draft from being approved. Set
+    WX_PANEL_STRICT_EDITOR=true to restore the old behaviour. The fact checker,
+    the rule gate and the magistrate's own judgement are unaffected."""
+    return (os.environ.get("WX_PANEL_STRICT_EDITOR") or "false").strip().lower() \
+        in ("true", "1", "yes", "on")
+
+
 def _normalize_report(obj, who, diag=None, brief=None):
     if not obj:
         rep = {"verdict": "issues", "unparseable": True, "issues": [
@@ -425,6 +439,10 @@ def _normalize_report(obj, who, diag=None, brief=None):
                 and not _evidence_ok(issue["evidence"], brief)):
             issue["severity"] = "minor"
             issue["problem"] = "(no matching brief line, downgraded) " + issue["problem"]
+        if who == "editor" and not strict_editor() \
+                and issue["severity"] in ("critical", "major"):
+            issue["severity"] = "minor"
+            issue["problem"] = "(editorial, advisory) " + issue["problem"]
         issues.append(issue)
     if obj.get("_truncated") and not issues:
         # Cut off before any issue made it out. Repairing that gives an empty
