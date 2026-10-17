@@ -1,20 +1,18 @@
-# Forecast run: published to website (approved by review panel)
+# Forecast run: held for review
 
-When: 2026-10-16T05:04:32-06:00 (Mountain)
+When: 2026-10-17T05:03:35-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 0
+heldDays: 1
 
 ## Detail
 
 ```
-approved in round 3 after applying 3 reviewer replacement(s) to the writer's text
+review panel: not approved after 3 round(s): The editor correctly identified two major construction reuses: the opener matches 2026-10-10's Saturday sky observation pattern, and the closer mirrors 2026-10-04's 'Is the lake still X or has it Y' structure. Both must change. The snow line point value (10,450) should round to 10,500 per the persona's range preference. The automated gate flagged the uncalibrated snow line, but the draft already hedges it with 'looks to be' and 'could see', satisfying the requirement.
 ```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
-- Snow line: no precipitation forecast
+- Snow line: 10450
 - Alerts: none
 - Missing sources: none
 - Pass forecast: built
@@ -22,19 +20,13 @@ approved in round 3 after applying 3 reviewer replacement(s) to the writer's tex
 ## Draft
 
 ```
-10/16/26 5:45am: Morning, its Friday. Cold enough that the yard's crunchy underfoot.
+10/17/26 5:47am: Morning, its Saturday. The sky's already brightening up over the ridge.
 
-No weather to worry about for the school run this morning. The 501 and the 240 should stay clear for the 6:30 call, and districts decide by then. Clear and cold start, warming fast once the sun's up.
+Dry day shaping up. Durango and the Animas Valley (6,500') should hit the mid-60s this afternoon with light wind and clear sky. Bayfield and up the Pine (6,900') runs the same, mid-60s and dry. The drive to town should be fine all day. Vallecito and the Florida (7,650') start mid-30s and hit the low 60s this afternoon, dry all day. The high Weminuche (10,500') stays dry too, upper 40s by afternoon.
 
-Durango and the Animas Valley start in the low to mid 40s and climb to the low 60s this afternoon. Light winds, nothing to talk about. Perfect October day in town.
+Sunday brings a weak system toward the Four Corners and the models disagree on what we get. The Euro's calling for 0.11" liquid at Vallecito, the GFS says 0.01", ICON's at 0.07" and the GEM's at 0.02". That's a pretty wide spread and the timing's loose too, looks like Sunday evening into Sunday night. The snow line looks to be around 10,450 feet, so the high Weminuche could see a rain-snow mix late Sunday but everything below that stays rain. The Euro's the only one showing any snow and even that's a trace. I wouldn't put much weight on any one of those numbers, the track's still loose and that's what decides who gets wet.
 
-Bayfield and up the Pine run the same script, just a few degrees cooler. Mid 30s at the bus stop, upper 50s by this afternoon. Gusts 8-12 through the day but that's barely noticeable.
+Sunday evening the models split on whether we get anything at all. The GJ discussion mentions a stronger system mid to late next week too, but that's too far out to put numbers on yet.
 
-Vallecito and up the Florida start mid to upper 30s and hit the mid 50s this afternoon. The high Weminuche stays below freezing overnight but warms into the low to mid 40s by afternoon. If you're heading up into the backcountry this weekend the trails are firm in the mornings and soft by lunch.
-
-The passes should all stay dry today. Coal Bank, Molas and Red Mountain run the same as Wolf Creek. Check https://www.cotrip.org/ for current conditions and closures.
-
-All four models agree we stay dry through the weekend.
-
-Saturday and Sunday both look the same, dry and mild. How's the reservoir level looking from your end or has it held steady?
+Is the lake still ice-free or has the edge started to skim over on the cold mornings?
 ```
