@@ -246,7 +246,8 @@ def test_the_editor_is_shown_the_brief():
     assert "YOUR OWN GAUGE AND STAKE" in editor_user
 
 
-def test_the_editors_evidence_is_not_checked_against_the_brief():
+def test_the_editors_evidence_is_not_checked_against_the_brief(monkeypatch):
+    monkeypatch.setenv("WX_PANEL_STRICT_EDITOR", "true")
     """Editor issues are about voice and repetition; their evidence is the
     persona or the recent posts, not the brief."""
     s = Script([ok()], editor=_report(severity="major",
