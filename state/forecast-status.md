@@ -1,18 +1,18 @@
 # Forecast run: held for review
 
-When: 2026-10-17T05:03:35-06:00 (Mountain)
+When: 2026-10-18T04:53:25-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 1
+heldDays: 2
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): The editor correctly identified two major construction reuses: the opener matches 2026-10-10's Saturday sky observation pattern, and the closer mirrors 2026-10-04's 'Is the lake still X or has it Y' structure. Both must change. The snow line point value (10,450) should round to 10,500 per the persona's range preference. The automated gate flagged the uncalibrated snow line, but the draft already hedges it with 'looks to be' and 'could see', satisfying the requirement.
+review panel: not approved after 3 round(s): Three critical/major road-status violations require fixes: the gust range overstates the brief's 19mph figure, and two road statements assert present conditions without CDOT data. The opener's second clause and the COtrip/CDOT inconsistency also need correction. The pattern reference and pivot similarity are dismissed as acceptable conversational elements that do not block publication.
 ```
 
 ## What the data looked like
 
-- Snow line: 10450
+- Snow line: 10000
 - Alerts: none
 - Missing sources: none
 - Pass forecast: built
@@ -20,13 +20,19 @@ review panel: not approved after 3 round(s): The editor correctly identified two
 ## Draft
 
 ```
-10/17/26 5:47am: Morning, its Saturday. The sky's already brightening up over the ridge.
+10/18/26 4:50am: Morning, its Sunday. The aspen leaves are piling up in the driveway and I need to rake before they turn into a soggy mess.
 
-Dry day shaping up. Durango and the Animas Valley (6,500') should hit the mid-60s this afternoon with light wind and clear sky. Bayfield and up the Pine (6,900') runs the same, mid-60s and dry. The drive to town should be fine all day. Vallecito and the Florida (7,650') start mid-30s and hit the low 60s this afternoon, dry all day. The high Weminuche (10,500') stays dry too, upper 40s by afternoon.
+Dry and mild today, which is a nice break from the pattern we've been watching. Durango and the Animas Valley should see mostly sunny skies with temps climbing into the low 60s by afternoon. Winds pick up a bit this evening, gusts 15-20, but nothing that'll cause trouble.
 
-Sunday brings a weak system toward the Four Corners and the models disagree on what we get. The Euro's calling for 0.11" liquid at Vallecito, the GFS says 0.01", ICON's at 0.07" and the GEM's at 0.02". That's a pretty wide spread and the timing's loose too, looks like Sunday evening into Sunday night. The snow line looks to be around 10,450 feet, so the high Weminuche could see a rain-snow mix late Sunday but everything below that stays rain. The Euro's the only one showing any snow and even that's a trace. I wouldn't put much weight on any one of those numbers, the track's still loose and that's what decides who gets wet.
+Bayfield and up the Pine get the same setup. Clear start, warming into the upper 50s to low 60s through the afternoon. A few clouds roll in later but no precipitation expected. The 501 should stay dry all day.
 
-Sunday evening the models split on whether we get anything at all. The GJ discussion mentions a stronger system mid to late next week too, but that's too far out to put numbers on yet.
+Vallecito and the Florida drainage stay dry too. Temps top out in the upper 50s with light winds. The Florida Road should be fine for anyone heading up to the lake or into the high country.
 
-Is the lake still ice-free or has the edge started to skim over on the cold mornings?
+The high Weminuche stays cold overnight, low 30s, but warms into the low to mid 40s during the day. Isolated light showers are possible this afternoon above 10,000 feet but amounts look minimal. Maybe a dusting up high if anything falls at all.
+
+Tomorrow's where it gets interesting. Models are all over the place on moisture. The Euro is pushing 0.23 inches for the lake while the GFS and GEM are both at 0.02 inches. That's a huge spread and it tells me the setup's still uncertain. Light showers are possible Monday, mainly over the mountains, with a snow line around 10,000 feet. I wouldn't bet the farm on either number, the moisture feed is still coming together and that's the whole question.
+
+Check COtrip for current road conditions: https://www.cotrip.org/
+
+Today's the window before things shift midweek. Is the lake still ice-free or has it started to skim over on the cold mornings?
 ```
