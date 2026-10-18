@@ -1,7 +1,8 @@
-=== storm watch @ 2026-10-17 17:58 MDT ===
-decision: fire=True -- new system peaking 2026-10-21 clears the threshold
-  window 2026-10-19T00:00 -> 2026-10-21T23:00, 0.66in liquid / 0.0in snow, peak 2026-10-21T20:00
-guardrails: REVIEW
+=== storm watch @ 2026-10-18 01:59 MDT ===
+decision: fire=True -- the 2026-10-21 system escalated materially since the last post
+  window 2026-10-20T00:00 -> 2026-10-22T23:00, 2.03in liquid / 0.0in snow, peak 2026-10-21T18:00
+guardrails: BLOCK
+  - draft states a bare percentage ('64%'); this voice never gives one, it names which models disagree instead
   - first-30-days policy: review everything
-Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/117
+BLOCKED -- nothing published.
 exit=0
