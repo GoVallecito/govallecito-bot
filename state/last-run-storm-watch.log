@@ -1,8 +1,8 @@
-=== storm watch @ 2026-10-18 01:59 MDT ===
-decision: fire=True -- the 2026-10-21 system escalated materially since the last post
-  window 2026-10-20T00:00 -> 2026-10-22T23:00, 2.03in liquid / 0.0in snow, peak 2026-10-21T18:00
+=== storm watch @ 2026-10-18 13:24 MDT ===
+decision: fire=True -- new system peaking 2026-10-22 clears the threshold
+  window 2026-10-20T00:00 -> 2026-10-22T23:00, 1.29in liquid / 0.0in snow, peak 2026-10-22T10:00
 guardrails: BLOCK
-  - draft states a bare percentage ('64%'); this voice never gives one, it names which models disagree instead
+  - draft states a bare percentage ('7%'); this voice never gives one, it names which models disagree instead
   - first-30-days policy: review everything
 BLOCKED -- nothing published.
 exit=0
