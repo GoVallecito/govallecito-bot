@@ -1,0 +1,27 @@
+=== 2026-10-19T05:04:07-06:00 run 39241524272 ===
+NOTE: running at 05:00, inside the 4:00-9:00 window but later than the 4:00 target. Posting anyway, flagged late.
+=== Vallecito forecast: school_call @ 2026-10-19 05:00 MDT ===
+snow-line calibration: offset=0.0ft active=False
+guardrails: BLOCK
+  - draft states a present-tense road surface condition ('Dry roads should be fine for the bus run.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+  - first-30-days policy: review everything
+BLOCK is about the wording, not the data. Rewriting once.
+guardrails after rewrite: REVIEW
+  - first-30-days policy: review everything
+rewrite cleared the gate
+review panel: fact checker + editor -> magistrate
+panel round 1/3: facts=issues editor=issues (critical/major=4) gate=pass -> magistrate REVISE
+panel round 2/3: facts=issues editor=issues (critical/major=3) gate=pass -> magistrate REVISE
+panel round 3/3: facts=issues editor=issues (critical/major=4) gate=pass -> magistrate REVISE
+panel round 3: final-round auto-patch applied 9 replacement(s), skipped 0, outstanding 0; gate=pass, unresolved fact issues=3
+panel transcript -> state/panel/2026-10-19-school_call.md
+Archived draft -> state/drafts/2026-10-19-school_call.md
+HELD FOR REVIEW -- draft saved to output/draft.txt
+staged for review -> site/weather/_pending/2026-10-19-morning-forecast-for-vallecito-bayfield-and-durango.md
+  promote with: python scripts/wx/promote_draft.py 2026-10-19
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/121
+HELD STREAK: 3 consecutive days drafted and published nothing.
+[notify] held-streak issue already open (#88); not filing a second one
+Wrote state/forecast-status.md
+exit=0
+

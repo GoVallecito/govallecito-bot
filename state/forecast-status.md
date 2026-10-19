@@ -1,18 +1,20 @@
 # Forecast run: held for review
 
-When: 2026-10-18T04:53:25-06:00 (Mountain)
+When: 2026-10-19T05:04:07-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 2
+heldDays: 3
+
+> **STANDING FAILURE: 3 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): Three critical/major road-status violations require fixes: the gust range overstates the brief's 19mph figure, and two road statements assert present conditions without CDOT data. The opener's second clause and the COtrip/CDOT inconsistency also need correction. The pattern reference and pivot similarity are dismissed as acceptable conversational elements that do not block publication.
+review panel: not approved after 3 round(s): The fact checker identified four issues that must be fixed: the Durango shower forecast needs the 0.2in figure from the brief, the road status claim violates the no-live-data rule, Wolf Creek needs 'should' not 'could', and the closer invents yesterday's storms. The editor's model-disagreement and repetition flags are valid: the construction repeats 2026-10-10 and the Vallecito paragraph duplicates the model totals already stated. All six changes are required and have concrete replacements.
 ```
 
 ## What the data looked like
 
-- Snow line: 10000
+- Snow line: no precipitation forecast
 - Alerts: none
 - Missing sources: none
 - Pass forecast: built
@@ -20,19 +22,21 @@ review panel: not approved after 3 round(s): Three critical/major road-status vi
 ## Draft
 
 ```
-10/18/26 4:50am: Morning, its Sunday. The aspen leaves are piling up in the driveway and I need to rake before they turn into a soggy mess.
+10/19/26 5:45am: Morning, its Monday. The stars are out but high clouds are moving in from the west.
 
-Dry and mild today, which is a nice break from the pattern we've been watching. Durango and the Animas Valley should see mostly sunny skies with temps climbing into the low 60s by afternoon. Winds pick up a bit this evening, gusts 15-20, but nothing that'll cause trouble.
+Straightforward bus run this morning. Temperatures stayed above freezing overnight and I'd expect dry pavement across all the school routes. Districts decide by 6:30 as usual.
 
-Bayfield and up the Pine get the same setup. Clear start, warming into the upper 50s to low 60s through the afternoon. A few clouds roll in later but no precipitation expected. The 501 should stay dry all day.
+Durango and the Animas Valley should see mostly sunny skies through midday, then isolated showers this afternoon. The Euro's showing 0.31in for Vallecito, the GFS keeps us completely dry, and with that kind of spread I'm not betting on measurable rain in town. Highs in the low 60s. Light winds through the day, then gusts 10-20mph this evening.
 
-Vallecito and the Florida drainage stay dry too. Temps top out in the upper 50s with light winds. The Florida Road should be fine for anyone heading up to the lake or into the high country.
+Bayfield and up the Pine stay dry through the day. Upper 50s to low 60s for highs.
 
-The high Weminuche stays cold overnight, low 30s, but warms into the low to mid 40s during the day. Isolated light showers are possible this afternoon above 10,000 feet but amounts look minimal. Maybe a dusting up high if anything falls at all.
+Vallecito and the Florida drainage have the widest model spread. The Euro's showing 0.31in, the GEM has 0.23in, the ICON shows 0.05in and the GFS keeps us completely dry. Mid 50s for highs.
 
-Tomorrow's where it gets interesting. Models are all over the place on moisture. The Euro is pushing 0.23 inches for the lake while the GFS and GEM are both at 0.02 inches. That's a huge spread and it tells me the setup's still uncertain. Light showers are possible Monday, mainly over the mountains, with a snow line around 10,000 feet. I wouldn't bet the farm on either number, the moisture feed is still coming together and that's the whole question.
+The high Weminuche stays dry through the day. Low 40s up high with gusts 5-15mph.
 
-Check COtrip for current road conditions: https://www.cotrip.org/
+The passes should stay dry through the morning commute. Coal Bank, Molas and Red Mountain could see wet pavement late afternoon if those isolated showers develop, but no snow expected at pass level. Wolf Creek could see 2-4" of snow at pass level. Check COTRIP for current conditions: https://www.cotrip.org/
 
-Today's the window before things shift midweek. Is the lake still ice-free or has it started to skim over on the cold mornings?
+Tuesday looks similar, maybe a touch drier. The bigger story is Wednesday night into Thursday when the discussion mentions remnant moisture from Hurricane Trudy pushing in, but that's still three days out and the details will shift.
+
+Did the afternoon storms chase anybody off the water yesterday or did it stay dry on your end?
 ```
