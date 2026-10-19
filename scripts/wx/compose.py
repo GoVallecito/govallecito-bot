@@ -22,6 +22,7 @@ import json
 import os
 
 from . import constants as C
+from .passes import gust_range
 
 PROMPT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "prompts")
 
@@ -281,11 +282,13 @@ def render_bundle(bundle, post_type="school_call"):
         A(f"  {b['label']} ({b['elevation_ft']} ft, zone {b['nws_zone']}):")
         A(f"    next 48h totals: {s.get('total_snow_in', 0)}in snow, "
           f"{s.get('total_precip_in', 0)}in liquid")
+                   
         for blk in (s.get("blocks") or [])[:8]:
             A(f"    {blk['from']} -> {blk['to']}: "
               f"{blk['temp_f_min']}-{blk['temp_f_max']}F, "
               f"snow {blk['snow_in']}in, liquid {blk['precip_in']}in, "
-              f"gust {blk['gust_mph_max']}mph, pop {blk['pop_max']}%")
+              f"gusts {gust_range(blk['gust_mph_max'] or 0)}mph, pop {blk['pop_max']}%")
+                            
     A("")
 
     # --- model disagreement: this IS the uncertainty statement ---
