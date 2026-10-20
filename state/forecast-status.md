@@ -1,20 +1,23 @@
-# Forecast run: held for review
+# Forecast run: blocked
 
-When: 2026-10-19T05:04:07-06:00 (Mountain)
+When: 2026-10-20T05:04:20-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 3
+heldDays: 4
 
-> **STANDING FAILURE: 3 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
+> **STANDING FAILURE: 4 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): The fact checker identified four issues that must be fixed: the Durango shower forecast needs the 0.2in figure from the brief, the road status claim violates the no-live-data rule, Wolf Creek needs 'should' not 'could', and the closer invents yesterday's storms. The editor's model-disagreement and repetition flags are valid: the construction repeats 2026-10-10 and the Vallecito paragraph duplicates the model totals already stated. All six changes are required and have concrete replacements.
+review panel: not approved after 3 round(s): Two critical fact errors block approval: the precipitation ranges don't contain the brief's totals, and the travel window timing is wrong. Two major road-status phrasings violate the conditional-only rule. The pivot reuses retired construction. All have concrete fixes that preserve the post's voice and structure.
+draft states a present-tense road surface condition ('The Florida Road and Vallecito the same, dry pavement and warming through the 50s.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+states a snow line of 12,000 ft on a day the derived line sits above the passes, the Weminuche and everywhere else anyone here goes; the post should say it is rain everywhere including up high, rather than print a figure for ground nobody stands on
+a rewrite was attempted and was blocked too
 ```
 
 ## What the data looked like
 
-- Snow line: no precipitation forecast
+- Snow line: 11500
 - Alerts: none
 - Missing sources: none
 - Pass forecast: built
@@ -22,21 +25,19 @@ review panel: not approved after 3 round(s): The fact checker identified four is
 ## Draft
 
 ```
-10/19/26 5:45am: Morning, its Monday. The stars are out but high clouds are moving in from the west.
+10/20/26 5:45am: Morning, its Tuesday. The truck started rough and the battery's probably next on the list.
 
-Straightforward bus run this morning. Temperatures stayed above freezing overnight and I'd expect dry pavement across all the school routes. Districts decide by 6:30 as usual.
+Dry run for the school routes this morning and through the afternoon. Durango and Bayfield both stay clear all day, warming into the mid-60s. Up the Pine and the 501 should stay dry for the 6:30 call. The Florida Road and Vallecito look to stay dry today, warming through the 50s into the low 60s. Districts decide by 6:30 but nothing weather-wise is putting that in question today.
 
-Durango and the Animas Valley should see mostly sunny skies through midday, then isolated showers this afternoon. The Euro's showing 0.31in for Vallecito, the GFS keeps us completely dry, and with that kind of spread I'm not betting on measurable rain in town. Highs in the low 60s. Light winds through the day, then gusts 10-20mph this evening.
+Tomorrow's the question. A deep low off the West Coast is tracking northeast across the Great Basin, pulling tropical moisture straight up from the remnants of Hurricane Trudy. The setup has forecasters watching rain-on-snow risk and river levels across the southern mountains. This is all rain everywhere through Thursday, including the high Weminuche and every pass.
 
-Bayfield and up the Pine stay dry through the day. Upper 50s to low 60s for highs.
+Wednesday afternoon into Thursday morning is when the heaviest stuff moves through. The models disagree on totals and I'm naming them: ICON has 0.56 inches for Vallecito, GFS has 0.88 inches, GEM splits the middle at 0.77 inches. Durango's looking at 0.3-0.5 inches, Bayfield 0.4-0.7 inches, Vallecito 0.6-1.0 inches depending on which model verifies. I wouldn't lock onto any one number (the exact track of this plume is still shifting run to run and the southern mountains are right on the edge of the heaviest corridor).
 
-Vallecito and the Florida drainage have the widest model spread. The Euro's showing 0.31in, the GEM has 0.23in, the ICON shows 0.05in and the GFS keeps us completely dry. Mid 50s for highs.
+Timing matters more than totals for tomorrow. Looks like light rain starts Wednesday morning, then the heavy stuff Wednesday night through Thursday morning. Worst travel window probably 6pm Wednesday to 9am Thursday. The 160 into town and the 501 will both see steady rain during that stretch. Check https://www.cotrip.org/ before you head out Wednesday evening.
 
-The high Weminuche stays dry through the day. Low 40s up high with gusts 5-15mph.
+The passes stay rain at pass level through this whole thing. Coal Bank, Molas and Red Mountain should all see wet pavement but stay rain at pass level. Wolf Creek should see the same, wet pavement but rain at pass level. Current road status at cotrip.org, the forecast's mine but the closures are theirs.
 
-The passes should stay dry through the morning commute. Coal Bank, Molas and Red Mountain could see wet pavement late afternoon if those isolated showers develop, but no snow expected at pass level. Wolf Creek could see 2-4" of snow at pass level. Check COTRIP for current conditions: https://www.cotrip.org/
+Rivers are already running high. The Animas is at 1190 cfs, Los Pinos above the reservoir at 391 cfs. This system dumps warm rain on top of the early snowpack up high, so I'd expect those numbers to jump Thursday and Friday.
 
-Tuesday looks similar, maybe a touch drier. The bigger story is Wednesday night into Thursday when the discussion mentions remnant moisture from Hurricane Trudy pushing in, but that's still three days out and the details will shift.
-
-Did the afternoon storms chase anybody off the water yesterday or did it stay dry on your end?
+Today's easy. Tomorrow through Thursday is the setup to watch. How's the reservoir looking from where you sit, still dropping or holding?
 ```
