@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-19T16:44:58.394548+00:00",
+  "updated_at": "2026-10-20T14:37:04.696205+00:00",
   "hook_weights": {
     "morning": {},
     "afternoon": {}
@@ -16,7 +16,7 @@
       "Rise and shine, lake people.": 2,
       "Here's where things stand.": 2,
       "Here's the morning read.": 2,
-      "Midday conditions check.": 2,
+      "Midday conditions check.": 3,
       "Coffee's on \u2014 here's today's conditions.": 2,
       "Afternoon update, Vallecito.": 2,
       "Morning check-in from the lake.": 1,
@@ -25,13 +25,13 @@
       "Clear skies tonight over the lake.": 1
     },
     "grounded_vs_plain": {
-      "grounded": 28,
+      "grounded": 29,
       "plain": 0
     }
   },
   "impressions": {
     "available_count": 0,
-    "checked_count": 28,
+    "checked_count": 29,
     "avg_impressions": null,
     "avg_engagement_rate": null
   }

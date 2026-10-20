@@ -1790,8 +1790,15 @@
       "alert_category": null,
       "alert_id": null,
       "caption": "Saturday, October 17 \u2014 midday conditions check.\n\n\ud83d\udca7 Lake: 61% of full pool (elev. 7,647 ft, full pool is 7,665 ft)\n\ud83c\udf21\ufe0f 63\u00b0F now. Clear.\n\ud83d\udd25 Fire restrictions: Campfires are allowed again, at the lake and on the\u2026\n\ud83c\udf0a Streamflow: 836 cfs combined inflow\n\ud83d\udea8 1 active wildfire within 50 mi -- nearest is Gold Mountain, 46 mi away, 92% contained.\n\nDid the forecast hold up where you were today? Let us know in the comments.\n\nFull conditions \u2192 govallecito.com\n#VallecitoLake #KnowBeforeYouGo #SanJuanMountains #AfternoonUpdate",
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-20T14:37:04.693864+00:00"
     },
     {
       "post_id": "1138532512682553_122138301117360003",
