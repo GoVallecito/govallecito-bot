@@ -1,43 +1,42 @@
-# Forecast run: blocked
+# Forecast run: held for review
 
-When: 2026-10-20T05:04:20-06:00 (Mountain)
+When: 2026-10-21T04:39:30-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 4
+heldDays: 5
 
-> **STANDING FAILURE: 4 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
+> **STANDING FAILURE: 5 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): Two critical fact errors block approval: the precipitation ranges don't contain the brief's totals, and the travel window timing is wrong. Two major road-status phrasings violate the conditional-only rule. The pivot reuses retired construction. All have concrete fixes that preserve the post's voice and structure.
-draft states a present-tense road surface condition ('The Florida Road and Vallecito the same, dry pavement and warming through the 50s.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
-states a snow line of 12,000 ft on a day the derived line sits above the passes, the Weminuche and everywhere else anyone here goes; the post should say it is rain everywhere including up high, rather than print a figure for ground nobody stands on
-a rewrite was attempted and was blocked too
+review panel: not approved after 3 round(s): Four critical and major issues require fixes: the Durango total must be a single rounded figure not a range, the Euro figure needs hedge language to contain 1.99, the editorial opinion about the GEM must be removed, and the Weminuche total needs precision. All four have concrete replacements from the fact checker that satisfy the brief. The editor's construction-reuse flags are advisory only under relaxed editorial policy and do not block. Once these four substitutions are applied, the post is sound.
 ```
 
 ## What the data looked like
 
-- Snow line: 11500
-- Alerts: none
+- Snow line: 12350
+- Alerts: ['Flood Watch']
 - Missing sources: none
 - Pass forecast: built
 
 ## Draft
 
 ```
-10/20/26 5:45am: Morning, its Tuesday. The truck started rough and the battery's probably next on the list.
+10/21/26 4:36am: Morning, its Wednesday. The truck's still beaded up from yesterday's sprinkle.
 
-Dry run for the school routes this morning and through the afternoon. Durango and Bayfield both stay clear all day, warming into the mid-60s. Up the Pine and the 501 should stay dry for the 6:30 call. The Florida Road and Vallecito look to stay dry today, warming through the 50s into the low 60s. Districts decide by 6:30 but nothing weather-wise is putting that in question today.
+We're under a Flood Watch from the Grand Junction office starting noon today through Friday noon, covering both Vallecito (COZ019) and Durango/Bayfield (COZ022). This is an all-rain setup everywhere, even up in the high country, so its straight liquid all the way up and that's why the watch is out.
 
-Tomorrow's the question. A deep low off the West Coast is tracking northeast across the Great Basin, pulling tropical moisture straight up from the remnants of Hurricane Trudy. The setup has forecasters watching rain-on-snow risk and river levels across the southern mountains. This is all rain everywhere through Thursday, including the high Weminuche and every pass.
+Durango and the Animas Valley should stay mostly dry through the school run with rain chances building through the afternoon and evening. The 160 into town should be fine for the 6:30 call. Tonight through Thursday looks like around 1.25-1.3" total.
 
-Wednesday afternoon into Thursday morning is when the heaviest stuff moves through. The models disagree on totals and I'm naming them: ICON has 0.56 inches for Vallecito, GFS has 0.88 inches, GEM splits the middle at 0.77 inches. Durango's looking at 0.3-0.5 inches, Bayfield 0.4-0.7 inches, Vallecito 0.6-1.0 inches depending on which model verifies. I wouldn't lock onto any one number (the exact track of this plume is still shifting run to run and the southern mountains are right on the edge of the heaviest corridor).
+Bayfield and up the Pine, mostly dry morning then rain moves in this evening. I'd expect the 501 to stay dry for buses with the wet stuff holding off until later.
 
-Timing matters more than totals for tomorrow. Looks like light rain starts Wednesday morning, then the heavy stuff Wednesday night through Thursday morning. Worst travel window probably 6pm Wednesday to 9am Thursday. The 160 into town and the 501 will both see steady rain during that stretch. Check https://www.cotrip.org/ before you head out Wednesday evening.
+Vallecito and up the Florida, the GFS is calling for 4" through Thursday night but the Euro has half that at 2" and the ICON splits the difference at 2.7". The GEM's way out there at 5.3" and I don't buy that at all. That's a wide spread and worth watching how it plays out. Thursday looks like the heavier day with most of it falling then.
 
-The passes stay rain at pass level through this whole thing. Coal Bank, Molas and Red Mountain should all see wet pavement but stay rain at pass level. Wolf Creek should see the same, wet pavement but rain at pass level. Current road status at cotrip.org, the forecast's mine but the closures are theirs.
+The high Weminuche's getting 5+ inches of rain with gusts 30-40 Thursday evening, all liquid even at 10,500 feet.
 
-Rivers are already running high. The Animas is at 1190 cfs, Los Pinos above the reservoir at 391 cfs. This system dumps warm rain on top of the early snowpack up high, so I'd expect those numbers to jump Thursday and Friday.
+The passes are getting some accumulation Thursday but its minimal. Coal Bank and Molas should see a couple inches at most. Red Mountain gets 6-11" up top with Wolf Creek at 3-6" and gusts 40-50. That's the forecast, current closures and chain law at https://www.cotrip.org/
 
-Today's easy. Tomorrow through Thursday is the setup to watch. How's the reservoir looking from where you sit, still dropping or holding?
+This is a prolonged event. The watch runs through Friday noon and the NWS discussion talks about river flooding potential and impressive rainfall rates once this tropical moisture gets squeezed against the San Juans. Thursday's the day to watch.
+
+How much can the Florida take before it starts pushing into the low spots?
 ```

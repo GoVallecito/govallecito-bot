@@ -1,0 +1,26 @@
+=== 2026-10-21T04:39:30-06:00 run 39585759785 ===
+=== Vallecito forecast: school_call @ 2026-10-21 04:36 MDT ===
+snow-line calibration: offset=0.0ft active=False
+guardrails: BLOCK
+  - draft states a present-tense road surface condition ('Dry roads for the bus run this morning.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+  - first-30-days policy: review everything
+BLOCK is about the wording, not the data. Rewriting once.
+guardrails after rewrite: REVIEW
+  - first-30-days policy: review everything
+rewrite cleared the gate
+review panel: fact checker + editor -> magistrate
+panel round 1/3: facts=issues editor=issues (critical/major=6) gate=pass -> magistrate REVISE
+panel round 2/3: facts=issues editor=issues (critical/major=4) gate=pass -> magistrate REVISE
+panel round 3/3: facts=issues editor=issues (critical/major=3) gate=pass -> magistrate REVISE
+panel round 3: final-round auto-patch applied 6 replacement(s), skipped 1, outstanding 0; gate=block, unresolved fact issues=4
+panel transcript -> state/panel/2026-10-21-school_call.md
+Archived draft -> state/drafts/2026-10-21-school_call.md
+HELD FOR REVIEW -- draft saved to output/draft.txt
+staged for review -> site/weather/_pending/2026-10-21-flood-watch-for-vallecito-bayfield-and-durango.md
+  promote with: python scripts/wx/promote_draft.py 2026-10-21
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/123
+HELD STREAK: 5 consecutive days drafted and published nothing.
+[notify] held-streak issue already open (#88); not filing a second one
+Wrote state/forecast-status.md
+exit=0
+
