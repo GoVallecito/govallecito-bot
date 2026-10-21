@@ -1,59 +1,71 @@
 """
-Looks back at posts that are at least 48 hours old, pulls their current
-like/comment/share counts from the Graph API, and (gradually, gated on
-sample size) turns that into state/content_preferences.json -- the weights
+Looks back at posts that are at least 48 hours old, pulls their reaction /
+comment / share counts from the Graph API, and (gradually, gated on sample
+size) turns that into state/content_preferences.json -- the weights
 generate_post_text.py reads for hook-line selection and how often "grounded"
 seasonal posts happen.
 
 Run via .github/workflows/engagement-check.yml (daily). Can also be run by
 hand: python scripts/check_engagement.py
 
-*** NOT CONFIRMED LIVE *** same caveat as the rest of this repo: the Graph
-API call's exact field syntax (likes.summary(true) etc.) is written from
-long-stable, well-documented Graph API convention, not a live test call --
-this sandbox can't reach graph.facebook.com any more than the others. Errors
-per-post are caught and logged rather than crashing the whole run, so one
-bad response doesn't block checking every other post.
+WHAT WAS LEARNED THE HARD WAY (2026-10-10). From the first run on
+2026-07-26 until this rewrite, every single engagement fetch failed with
+Graph error #10 and nothing noticed: the workflow stayed green, failures were
+retried for 14 days and then the post was silently written off as
+"engagement_unavailable". 69 posts went that way and content_preferences.json
+never received one data point. A read-only probe (run 38084760366) settled
+why, against the live API:
 
-On "learning": with a brand new page, don't expect this file to say
-anything meaningful for a while. MIN_SAMPLES (15) per hook line, at roughly
-one use per hook per week, is realistically a few months of real posting
-before hook-level weighting activates at all. That's intentional -- see the
-comments in generate_post_text.py for why guessing from 3 data points would
-be worse than not guessing.
+  * The Page token HAS pages_read_engagement and can read each post's id,
+    created_time and shares.
+  * reactions and comments on a Page post are user content. They need
+    pages_read_user_content, which the token was never minted with. Meta's
+    error for the old `likes` field misleadingly names pages_read_engagement;
+    the reactions and comments errors name pages_read_user_content correctly.
+  * Sending the token as a Bearer header vs. an access_token parameter makes
+    no difference.
+  * /{post-id}/insights?metric=post_impressions is rejected outright in v25
+    (#100, "must be a valid insights metric"), on top of Meta returning no
+    insights for Pages under ~100 followers. The impressions code was removed
+    rather than repaired: there is no reach data to collect at this size.
 
-Impressions/reach (added 2026-07-26): the FB_PAGE_ACCESS_TOKEN now carries
-read_insights (added to the app's "Manage everything on your Page" use case
-that day), so fetch_post_impressions() can pull each post's lifetime
-impression count via /{post-id}/insights. Two things worth knowing before
-touching this:
+So the rules this file now follows:
 
-1. Meta's own Page Insights docs are explicit that insights data isn't
-   available for Pages under 100 likes/followers. GoVallecito is nowhere
-   close as of this writing, so expect fetch_post_impressions() to return
-   None for every post for a long while yet -- that's the normal, expected
-   state, not a bug. Confirmed the permission itself is active and working
-   (a live /insights call returned Meta's own "No Metric Specified" error,
-   not a permission error, on 2026-07-26), so when the Page does cross that
-   threshold this should just start working with no further changes needed.
-2. This deliberately uses the "post_impressions" metric, NOT
-   "post_impressions_unique" -- Meta is actively deprecating the "_unique"
-   family of post-insights metrics (removal tied to the v26.0 Graph API
-   version bump, confirmed against Meta's own changelog as of 2026-07-26).
-   "post_impressions" itself is not on that deprecation list. If a future
-   version bump deprecates this one too, fetch_post_impressions() failing
-   just means impressions go back to being None everywhere -- the rest of
-   this file's raw-count-based logic is unaffected either way (see
-   compute_preferences()'s docstring for how impressions are currently
-   used: collected and surfaced, not yet fed into hook_weights or the
-   grounded-post interval -- there's no real reach data to validate that
-   change against yet, and there won't be until the Page has real
-   followers).
+1. FIELDS. reactions (every reaction type, not just likes), comments and
+   shares -- each read with limit(0) so only the counts come back. No name
+   of anyone who reacted or commented is ever fetched, let alone written to
+   state/ in this public repo.
+2. CLASSIFY EVERY FAILURE. A failed read is one of:
+     permission  the token can see the post but not its engagement (or the
+                 token itself is invalid). NOT the post's fault, so it never
+                 counts toward giving up on a post; the run stops calling
+                 Facebook and exits 2 so the workflow goes red.
+     gone        the post itself can no longer be read (deleted, or never
+                 existed). Told apart from `permission` by a second, minimal
+                 read of the post's id: the token can read ids of posts that
+                 exist (the probe proved that), so an id read that fails too
+                 means the post is the problem. Recorded once, never retried.
+     transient   network, 5xx, rate limiting, anything else. Retried next
+                 run; written off only after 14 days AND 3 attempts.
+3. NEVER FAIL SILENTLY. If posts were due and not one could be read, exit 2
+   (red run) even if every failure looked transient.
+4. RECOVERY. Posts written off before this rewrite carry
+   engagement_unavailable without an engagement_unavailable_reason. They are
+   re-opened and checked again -- lifetime counts are still on Facebook.
+   Recording a reason on every new write-off is what keeps this a one-time
+   migration rather than an endless retry loop.
+
+On "learning": with a page this small (6 followers as of 2026-10-10), don't
+expect this file to say anything meaningful for a long while. MIN_SAMPLES
+(15) per hook line is far more data than the page produces; see the comments
+in generate_post_text.py for why guessing from a few data points would be
+worse than not guessing.
 """
 
+import json
 import os
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 import requests
 
@@ -68,6 +80,30 @@ PREFERENCES_PATH = os.path.join(post_history.REPO_ROOT, "state", "content_prefer
 WEIGHT_FLOOR = 0.6
 WEIGHT_CEILING = 1.6
 
+ENGAGEMENT_FIELDS = ",".join((
+    "reactions.summary(total_count).limit(0)",
+    "comments.summary(true).limit(0)",
+    "shares",
+))
+
+# Give up on a post only when BOTH are true. Hours alone used to be the rule,
+# which meant a post re-opened long after it was published would be written
+# off again on its first transient hiccup.
+MAX_HOURS_BEFORE_GIVING_UP = 24 * 14
+MIN_ATTEMPTS_BEFORE_GIVING_UP = 3
+
+# Exit code for "the run worked, but the feedback loop is broken" -- the
+# workflow commits whatever was learned and THEN goes red (see
+# engagement-check.yml). Distinct from 1 (crash / misconfiguration).
+EXIT_LOOP_BROKEN = 2
+
+OK, PERMISSION, GONE, TRANSIENT = "ok", "permission", "gone", "transient"
+
+# Graph error codes meaning "this token can't do that", as opposed to
+# "something went wrong this time". 10 / 200-299 are permission errors,
+# 190 is an invalid or expired token, 102 is a session error.
+_PERMISSION_CODES = {10, 102, 190}
+
 
 def _hours_since(iso_timestamp):
     posted = datetime.fromisoformat(iso_timestamp)
@@ -76,144 +112,178 @@ def _hours_since(iso_timestamp):
     return (datetime.now(timezone.utc) - posted).total_seconds() / 3600
 
 
-def fetch_engagement(post_id, access_token):
-    """Returns {"likes": N, "comments": N, "shares": N, "total": N,
-    "impressions": N or None} or None on failure (the whole call failed --
-    not to be confused with "impressions" being None inside a successful
-    result, which just means Insights data isn't available for this post
-    yet; see fetch_post_impressions())."""
-    url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{post_id}"
-    params = {
-        "fields": "likes.summary(true),comments.summary(true),shares",
-    }
-    # access_token goes in the Authorization header, NOT the URL query
-    # string -- requests/urllib3 connection-level exception messages (DNS,
-    # timeout, proxy failures) frequently embed the full attempted URL, so a
-    # token passed as a query param can end up printed in cleartext in the
-    # except-block log line below. post_to_facebook.py already avoids this
-    # (it uses the POST body); Graph API documents Bearer-header auth as an
-    # equally valid alternative to the query-param form for GET requests.
-    headers = {"Authorization": f"Bearer {access_token}"}
+def _graph_get(path, params, access_token, get=None):
+    """(http_status, body_dict) or (None, None) on a network failure.
+    The token rides in the Authorization header so it can never appear in a
+    URL that a requests exception might print. Exceptions are reported by
+    type only, for the same reason."""
+    get = get or requests.get
     try:
-        resp = requests.get(url, params=params, headers=headers, timeout=20)
-        data = resp.json()
-        if resp.status_code >= 400 or "error" in data:
-            print(f"[fetch_engagement] {post_id}: API error -> {data.get('error')}")
-            return None
-        likes = data.get("likes", {}).get("summary", {}).get("total_count", 0)
-        comments = data.get("comments", {}).get("summary", {}).get("total_count", 0)
-        shares = data.get("shares", {}).get("count", 0)
-        impressions = fetch_post_impressions(post_id, access_token)
-        return {
-            "likes": likes,
+        resp = get(f"https://graph.facebook.com/{GRAPH_API_VERSION}/{path}",
+                   params=params, headers={"Authorization": f"Bearer {access_token}"},
+                   timeout=20)
+    except Exception as exc:  # noqa: BLE001
+        print(f"  [graph] {path}: network failure ({type(exc).__name__})")
+        return None, None
+    try:
+        body = resp.json()
+    except ValueError:
+        body = {}
+    return resp.status_code, body if isinstance(body, dict) else {}
+
+
+def _error_of(status, body):
+    """The Graph error dict, {} for a network failure, or None on success."""
+    if status is None:
+        return {}
+    err = body.get("error")
+    if status >= 400 or err:
+        return err if isinstance(err, dict) else {"message": f"HTTP {status}"}
+    return None
+
+
+def _is_permission_error(err):
+    code = err.get("code")
+    return isinstance(code, int) and (code in _PERMISSION_CODES or 200 <= code <= 299)
+
+
+def _summary(err):
+    return (f"code={err.get('code')} sub={err.get('error_subcode')} "
+            f"{str(err.get('message', 'no message'))[:160]}")
+
+
+def fetch_engagement(post_id, access_token, get=None):
+    """Returns (kind, payload).
+
+    (OK, {"reactions", "comments", "shares", "total"}) on success.
+    Otherwise (PERMISSION | GONE | TRANSIENT, short error description).
+    """
+    status, body = _graph_get(post_id, {"fields": ENGAGEMENT_FIELDS}, access_token, get)
+    err = _error_of(status, body)
+    if err is None:
+        def total_count(key):
+            return ((body.get(key) or {}).get("summary") or {}).get("total_count") or 0
+        reactions = total_count("reactions")
+        comments = total_count("comments")
+        # "shares" is absent entirely (not 0) on a post nobody has shared.
+        shares = (body.get("shares") or {}).get("count") or 0
+        return OK, {
+            "reactions": reactions,
             "comments": comments,
             "shares": shares,
-            "total": likes + comments + shares,
-            "impressions": impressions,
+            "total": reactions + comments + shares,
         }
-    except Exception as exc:
-        print(f"[fetch_engagement] {post_id}: failed -> {exc}")
-        return None
+    if status is None:
+        return TRANSIENT, "network failure"
+    if not _is_permission_error(err) and not (err.get("code") == 100):
+        return TRANSIENT, _summary(err)
+
+    # A permission-shaped error. Is it the token, or is the post gone? Meta
+    # answers a deleted post with #10 too ("Object does not exist, cannot be
+    # loaded due to missing permission..."), so ask for the post's bare id:
+    # the token can read that for any post that still exists.
+    id_status, id_body = _graph_get(post_id, {"fields": "id"}, access_token, get)
+    id_err = _error_of(id_status, id_body)
+    if id_err is None:
+        if err.get("code") == 100:
+            return TRANSIENT, _summary(err)  # post exists; a bad field, not a missing permission
+        return PERMISSION, _summary(err)
+    if id_status is None:
+        return TRANSIENT, "network failure on the id check"
+    if err.get("code") == 190 or id_err.get("code") == 190:
+        return PERMISSION, _summary(id_err)  # the token itself is dead
+    return GONE, _summary(id_err)
 
 
-def fetch_post_impressions(post_id, access_token):
-    """Returns the post's lifetime impression count (int), or None if
-    unavailable. None is the NORMAL, expected result for basically every
-    call right now -- Meta doesn't return Page/post Insights data until a
-    Page passes ~100 likes/followers, and GoVallecito is nowhere near that
-    yet (see the module docstring). A None here is not an error and is not
-    logged as one.
+def _needs_check(post):
+    """A post is due if it was never checked, or if it was written off before
+    failures carried a reason (the pre-2026-10-10 permission bug). Explicit
+    `is True` rather than truthiness: a hand-edited history could hold the
+    STRING "false", which is truthy."""
+    if post.get("engagement_checked") is not True:
+        return True
+    return (post.get("engagement_unavailable") is True
+            and post.get("engagement") is None
+            and not post.get("engagement_unavailable_reason"))
 
-    Kept as its own function/endpoint (/{post-id}/insights) rather than
-    folded into fetch_engagement's single fields= call because Insights has
-    a completely different response shape and error behavior than the
-    likes/comments/shares fields do, and a problem here must never take
-    down the fetch of the numbers that DO work today. Every failure mode
-    (HTTP error, Facebook error payload, malformed/empty data, exception)
-    falls through to returning None rather than raising, for exactly that
-    reason.
+
+def _mark(post, **fields):
+    post.update(fields)
+    post["engagement_checked"] = True
+    post["engagement_checked_at"] = datetime.now(timezone.utc).isoformat()
+
+
+def update_pending_engagement(access_token, get=None):
+    """Checks every due post that's old enough and records what it finds.
+
+    Returns a dict: updated, ok, gone, transient, permission (counts), plus
+    attempted and loop_broken. loop_broken is True when the token cannot read
+    engagement, or when posts were due and none could be read at all.
     """
-    url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{post_id}/insights"
-    params = {"metric": "post_impressions", "period": "lifetime"}
-    headers = {"Authorization": f"Bearer {access_token}"}
-    try:
-        resp = requests.get(url, params=params, headers=headers, timeout=20)
-        data = resp.json()
-        if resp.status_code >= 400 or "error" in data:
-            return None
-        # Deliberately `or []` / `or {}` rather than relying on .get()'s
-        # default -- Facebook can return "data": [] (key present, value
-        # empty) when insights aren't available yet, and .get(key, default)
-        # only falls back to default when the KEY is missing, not when it's
-        # present but empty. Indexing an empty list from a .get() default
-        # that never gets used would throw IndexError instead of just
-        # meaning "no data yet".
-        entries = data.get("data") or []
-        if not entries:
-            return None
-        values = entries[0].get("values") or []
-        if not values:
-            return None
-        return values[0].get("value")
-    except Exception as exc:
-        print(f"[fetch_post_impressions] {post_id}: failed -> {exc}")
-        return None
-
-
-MAX_HOURS_BEFORE_GIVING_UP = 24 * 14  # ~2 weeks -- if a post's engagement still
-                                       # can't be fetched by then (deleted post,
-                                       # permissions change, bad post_id, etc.),
-                                       # stop retrying forever and record it as
-                                       # unavailable instead.
-
-
-def update_pending_engagement(access_token):
-    """Checks every unchecked post that's old enough, records what it finds.
-    Returns the number of posts updated."""
     history = post_history.load_history()
-    updated = 0
+    stats = {"updated": 0, "ok": 0, "gone": 0, "transient": 0, "permission": 0, "attempted": 0}
+    permission_error = None
     for post in history["posts"]:
         try:
-            # Explicit `is True` rather than plain truthiness -- a hand-edited
-            # or otherwise corrupted history file could have this field as
-            # the STRING "false", which Python treats as truthy and would
-            # silently skip checking that post forever.
-            if post.get("engagement_checked") is True:
+            if not _needs_check(post):
                 continue
             hours_old = _hours_since(post["posted_at"])
             if hours_old < MIN_HOURS_BEFORE_CHECK:
                 continue
-            engagement = fetch_engagement(post["post_id"], access_token)
-            if engagement is None:
-                if hours_old >= MAX_HOURS_BEFORE_GIVING_UP:
-                    print(f"  {post['post_id']}: still unfetchable after {hours_old:.0f}h -- "
-                          "giving up, recording as unavailable rather than retrying forever")
-                    post["engagement"] = None
-                    post["engagement_checked"] = True
-                    post["engagement_checked_at"] = datetime.now(timezone.utc).isoformat()
-                    post["engagement_unavailable"] = True
-                    updated += 1
+            post_id = post["post_id"]
+            stats["attempted"] += 1
+            kind, payload = fetch_engagement(post_id, access_token, get)
+
+            if kind == OK:
+                _mark(post, engagement=payload, engagement_unavailable=False)
+                post.pop("engagement_unavailable_reason", None)
+                post.pop("engagement_attempts", None)
+                stats["ok"] += 1
+                stats["updated"] += 1
+                print(f"  {post_id} ({post['posted_at'][:10]}): {payload}")
+            elif kind == GONE:
+                _mark(post, engagement=None, engagement_unavailable=True,
+                      engagement_unavailable_reason="post_unreadable")
+                stats["gone"] += 1
+                stats["updated"] += 1
+                print(f"  {post_id}: the post itself can't be read (deleted?) -- recorded, "
+                      f"won't retry. {payload}")
+            elif kind == PERMISSION:
+                # Not this post's fault and the same for every post: stop
+                # hammering the API and change nothing about this post.
+                stats["permission"] += 1
+                permission_error = payload
+                print(f"  {post_id}: PERMISSION -- {payload}")
+                break
+            else:  # TRANSIENT
+                stats["transient"] += 1
+                attempts = int(post.get("engagement_attempts") or 0) + 1
+                post["engagement_attempts"] = attempts
+                stats["updated"] += 1  # the attempt counter changed
+                if hours_old >= MAX_HOURS_BEFORE_GIVING_UP and attempts >= MIN_ATTEMPTS_BEFORE_GIVING_UP:
+                    _mark(post, engagement=None, engagement_unavailable=True,
+                          engagement_unavailable_reason="gave_up_transient")
+                    print(f"  {post_id}: still failing after {attempts} attempts and "
+                          f"{hours_old:.0f}h -- giving up. {payload}")
                 else:
-                    print(f"  {post['post_id']}: could not fetch engagement this run, will retry next run")
-                continue
-            post["engagement"] = engagement
-            post["engagement_checked"] = True
-            post["engagement_checked_at"] = datetime.now(timezone.utc).isoformat()
-            updated += 1
-            print(f"  {post['post_id']} ({post['posted_at']}): {engagement}")
+                    print(f"  {post_id}: failed this run (attempt {attempts}), will retry. {payload}")
         except Exception as exc:
-            # One malformed record (missing/unparseable posted_at, missing
-            # post_id, etc.) must not take down every other post's check --
-            # this loop used to have no per-post isolation at all, so a
-            # single bad row permanently halted engagement-checking for the
-            # entire history, every run.
+            # One malformed record must not take down every other post's check.
             print(f"  [update_pending_engagement] skipping malformed post record "
-                  f"({post.get('post_id', '<no post_id>')}): {exc}")
+                  f"({post.get('post_id', '<no post_id>')}): {type(exc).__name__}: {exc}")
             continue
 
-    if updated:
+    if stats["updated"]:
         post_history.save_history(history)
-    return updated
+
+    # Broken = the token can't read engagement, or at least two posts were
+    # due and not one could be read for a reason other than being deleted.
+    # (One lone failure is allowed to be a blip; it is retried tomorrow,
+    # when the next day's posts are due too.)
+    stats["loop_broken"] = bool(permission_error) or (
+        stats["ok"] == 0 and stats["transient"] >= 2)
+    stats["permission_error"] = permission_error
+    return stats
 
 
 def _clamp(value, low, high):
@@ -243,8 +313,7 @@ def compute_preferences():
     totals_by_hook = {}
     grounded_totals = []
     plain_totals = []
-    impressions_values = []
-    engagement_rates = []
+    raw_totals = {"reactions": 0, "comments": 0, "shares": 0}
     for p in checked:
         try:
             total = p["engagement"]["total"]
@@ -262,18 +331,10 @@ def compute_preferences():
         else:
             plain_totals.append(total)
 
-        # Impressions (added 2026-07-26): informational only for now, see
-        # this file's module docstring for why. Plain .get() rather than a
-        # subscript -- every engagement record saved before this change has
-        # no "impressions" key at all (not even set to None), and a record
-        # saved after this change will very likely still HAVE the key but
-        # BE None (no Insights data yet, see fetch_post_impressions). Both
-        # cases need to just skip this post for impressions purposes, not
-        # raise or get counted as a real 0.
-        impressions = p["engagement"].get("impressions")
-        if impressions is not None and impressions > 0:
-            impressions_values.append(impressions)
-            engagement_rates.append(total / impressions)
+        for k in raw_totals:
+            value = p["engagement"].get(k)
+            if isinstance(value, int):
+                raw_totals[k] += value
 
         try:
             key = (p["slot"], p["hook_line"])
@@ -321,24 +382,12 @@ def compute_preferences():
     # unclamped, regardless of which branch above ran (or whether any did).
     interval = _clamp(interval, 3, 6)
 
-    # Impressions summary (added 2026-07-26): purely informational. Written
-    # into content_preferences.json and this script's own print output so
-    # it's visible, but generate_post_text.py does not read this key, and
-    # nothing above (hook_weights, grounded_post_interval_days) factors it
-    # in -- see the module docstring for why (no real follower base yet to
-    # validate a reach-normalized change against; revisit once
-    # available_count is actually growing).
-    impressions_summary = {
-        "available_count": len(impressions_values),
+    # Plain-sight summary of what the loop has actually collected, so a
+    # human reading this file can tell "no data" from "data, all zeros"
+    # without opening post_history.json. Not read by generate_post_text.py.
+    collected = {
         "checked_count": len(checked),
-        "avg_impressions": (
-            round(sum(impressions_values) / len(impressions_values), 1)
-            if impressions_values else None
-        ),
-        "avg_engagement_rate": (
-            round(sum(engagement_rates) / len(engagement_rates), 4)
-            if engagement_rates else None
-        ),
+        "totals": raw_totals,
     }
 
     new_prefs = {
@@ -349,11 +398,10 @@ def compute_preferences():
             "hooks": sample_counts_flat,
             "grounded_vs_plain": {"grounded": len(grounded_totals), "plain": len(plain_totals)},
         },
-        "impressions": impressions_summary,
+        "collected": collected,
     }
     os.makedirs(os.path.dirname(PREFERENCES_PATH), exist_ok=True)
     with open(PREFERENCES_PATH, "w") as f:
-        import json
         json.dump(new_prefs, f, indent=2)
         f.write("\n")
     return new_prefs
@@ -361,7 +409,6 @@ def compute_preferences():
 
 def _load_existing_preferences():
     try:
-        import json
         with open(PREFERENCES_PATH) as f:
             return json.load(f)
     except Exception:
@@ -375,19 +422,28 @@ def main():
         return 1
 
     print(f"Checking posts older than {MIN_HOURS_BEFORE_CHECK}h with unchecked engagement...")
-    updated = update_pending_engagement(access_token)
-    print(f"Updated {updated} post(s).")
+    stats = update_pending_engagement(access_token)
+    print(f"Attempted {stats['attempted']}: {stats['ok']} read, {stats['gone']} unreadable "
+          f"(deleted?), {stats['transient']} failed this run, "
+          f"{stats['permission']} stopped on a permission error.")
 
     print("Recomputing content preferences from all checked posts...")
     prefs = compute_preferences()
     print(f"grounded_post_interval_days = {prefs['grounded_post_interval_days']}")
     print(f"hook sample counts = {prefs['sample_counts']['hooks']}")
     print(f"grounded vs plain samples = {prefs['sample_counts']['grounded_vs_plain']}")
-    impressions = prefs.get("impressions", {})
-    print(f"impressions available for {impressions.get('available_count', 0)}/"
-          f"{impressions.get('checked_count', 0)} checked posts "
-          f"(avg impressions = {impressions.get('avg_impressions')}, "
-          f"avg engagement rate = {impressions.get('avg_engagement_rate')})")
+    print(f"collected so far = {prefs['collected']}")
+
+    if stats["permission_error"]:
+        print("::error title=Engagement loop broken: token permission::"
+              "The Page token can read posts but not their reactions/comments "
+              f"({stats['permission_error']}). Re-mint FB_PAGE_ACCESS_TOKEN with "
+              "pages_read_user_content added -- see README step 2.")
+        return EXIT_LOOP_BROKEN
+    if stats["loop_broken"]:
+        print(f"::error title=Engagement loop broken::{stats['attempted']} post(s) were due and "
+              "not one could be read. Check the per-post lines above.")
+        return EXIT_LOOP_BROKEN
     return 0
 
 
