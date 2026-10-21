@@ -1,4 +1,9 @@
-=== storm watch @ 2026-10-20 18:33 MDT ===
-decision: fire=False -- already posted about the 2026-10-22 system and it has not materially escalated
-  window 2026-10-22T00:00 -> 2026-10-24T23:00, 2.41in liquid / 0.0in snow, peak 2026-10-22T17:00
+=== storm watch @ 2026-10-21 02:31 MDT ===
+decision: fire=True -- new system peaking 2026-10-24 clears the threshold
+  window 2026-10-23T00:00 -> 2026-10-25T23:00, 0.88in liquid / 0.0in snow, peak 2026-10-24T18:00
+guardrails: BLOCK
+  - draft states a present-tense road surface condition ('The 501, the 240, the 160 into town all look fine for the 6:30 call.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
+  - mentions a burn scar -- debris flows here have been triggered by ordinary sub-two-year storms
+  - first-30-days policy: review everything
+BLOCKED -- nothing published.
 exit=0
