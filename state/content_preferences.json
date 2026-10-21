@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-20T14:37:04.696205+00:00",
+  "updated_at": "2026-10-21T14:48:26.028056+00:00",
   "hook_weights": {
     "morning": {},
     "afternoon": {}
@@ -18,20 +18,20 @@
       "Here's the morning read.": 2,
       "Midday conditions check.": 3,
       "Coffee's on \u2014 here's today's conditions.": 2,
-      "Afternoon update, Vallecito.": 2,
+      "Afternoon update, Vallecito.": 3,
       "Morning check-in from the lake.": 1,
       "Golden hour's coming up at the dam.": 1,
       "Early light on the water.": 1,
       "Clear skies tonight over the lake.": 1
     },
     "grounded_vs_plain": {
-      "grounded": 29,
+      "grounded": 30,
       "plain": 0
     }
   },
   "impressions": {
     "available_count": 0,
-    "checked_count": 29,
+    "checked_count": 30,
     "avg_impressions": null,
     "avg_engagement_rate": null
   }

@@ -1812,8 +1812,15 @@
       "alert_category": null,
       "alert_id": null,
       "caption": "Sunday, October 18 \u2014 afternoon update, Vallecito.\n\n\ud83d\udca7 Lake: 62% of full pool (elev. 7,647 ft, full pool is 7,665 ft)\n\ud83c\udf21\ufe0f 47\u00b0F now. Partly sunny.\n\ud83d\udd25 Fire restrictions: Campfires are allowed again, at the lake and on the\u2026\n\ud83c\udf0a Streamflow: 761 cfs combined inflow\n\nWhat did the water look like at your spot on the lake today? Tell us in the comments.\n\nFull conditions \u2192 govallecito.com\n#VallecitoLake #KnowBeforeYouGo #SanJuanMountains #AfternoonUpdate",
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-21T14:48:26.025934+00:00"
     },
     {
       "post_id": "1138532512682553_122138488131360003",
