@@ -1,5 +1,7 @@
 {
-  "posted_alert_ids": [],
+  "posted_alert_ids": [
+    "urn:oid:2.49.0.1.840.0.98214017c22b766bd2c736aa82684dc784400df5.001.1"
+  ],
   "manual_override": {
     "last_posted_fingerprint": null
   },
