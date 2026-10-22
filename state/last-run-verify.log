@@ -1,4 +1,4 @@
-=== verify run @ 2026-10-21 13:27 MDT ===
-observations: {'date': '2026-10-21', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
+=== verify run @ 2026-10-22 13:20 MDT ===
+observations: {'date': '2026-10-22', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
 Nothing to verify -- no unverified forecast in window. Exiting.
 exit=0
