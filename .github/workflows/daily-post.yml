@@ -156,22 +156,13 @@ jobs:
         run: |
           git config user.name "govallecito-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add state/post_history.json state/daily_post_state.json
-          if git diff --staged --quiet; then
-            echo "No change to post_history.json/daily_post_state.json this run -- nothing to commit."
+          # Race-safe push (scripts/push_state.py): emergency-alert.yml has its own
+          # concurrency group and also writes post_history.json, so a rejected push
+          # merges that file by post_id instead of rebasing into a conflict.
+          if python scripts/push_state.py "Log post to history" \
+               state/post_history.json state/daily_post_state.json; then
             exit 0
           fi
-          git commit -m "Log post to history"
-          for attempt in 1 2 3 4 5; do
-            if git push; then
-              echo "Pushed on attempt $attempt."
-              exit 0
-            fi
-            echo "Push rejected (attempt $attempt/5) -- likely a concurrent run updated the same file. Fetching latest and rebasing before retrying..."
-            git fetch origin "${GITHUB_REF_NAME}"
-            git rebase "origin/${GITHUB_REF_NAME}"
-            sleep $((attempt * 5))
-          done
           echo "::error::Could not push state/post_history.json / state/daily_post_state.json after 5 attempts. A live Facebook post from this run may now have NO record in post_history.json, and/or the wildfire new-vs-ongoing tracking in daily_post_state.json may be stale (risking the safety note wrongly winning or losing its slot next run) -- check the Page directly and consider manually reconciling both files."
           exit 1
 

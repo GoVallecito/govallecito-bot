@@ -41,6 +41,7 @@ import render_card
 import post_to_facebook
 import post_history
 import post_miss
+import incident_mode
 
 TIMEZONE = ZoneInfo("America/Denver")
 SLOT_HOURS = {14: "afternoon"}   # the nominal hours, kept for docs and tests
@@ -59,6 +60,31 @@ def enabled():
     "false" (any casing, any padding) turns it off; anything else, including empty, is on."""
     raw = (os.environ.get("CONDITIONS_BOT_ENABLED") or "").strip().lower()
     return raw != "false"
+
+
+PAUSE_STATE_KEY = "incident_pauses"   # { "2026-10-22": ["afternoon"] }, read by post_miss.py
+
+
+def incident_pause(slot, now, get_json=None):
+    """Incident mode (scripts/incident_mode.py): the reason to hold this upbeat card
+    while the county has an active emergency, or None to post. A pause is recorded in
+    state/daily_post_state.json so post_miss.py does not report the slot as missed.
+    Fails open: a site that cannot be reached means post."""
+    reason = incident_mode.check(get_json or fetch_conditions._get_json)
+    if not reason:
+        return None
+    try:
+        state = generate_post_text._load_daily_post_state()
+        day = now.astimezone(TIMEZONE).date().isoformat()
+        paused = state.setdefault(PAUSE_STATE_KEY, {})
+        if slot not in paused.get(day, []):
+            paused.setdefault(day, []).append(slot)
+            cutoff = sorted(paused)[-post_miss.KEEP_DAYS:]
+            state[PAUSE_STATE_KEY] = {d: paused[d] for d in cutoff}
+            generate_post_text._save_daily_post_state(state)
+    except Exception as exc:  # noqa: BLE001 -- bookkeeping must not turn a pause into a post
+        print(f"[incident_mode] could not record the pause ({exc}); a [miss] issue may follow.")
+    return reason
 
 
 def slot_for_hour(hour):
@@ -132,6 +158,14 @@ def main():
         # Nothing to post now. This is also the moment to notice a slot that CLOSED without a post:
         # a green run that did nothing is exactly how 47 of 64 slots vanished unseen (scripts/post_miss.py).
         post_miss.report_if_needed(now, sys.modules[__name__])
+        return 0
+
+    # Incident mode: no upbeat card while the county has an emergency or just gave the
+    # all-clear. Replaces flipping CONDITIONS_BOT_ENABLED by hand (2026-10-23).
+    reason = incident_pause(slot, now)
+    if reason:
+        print(f"Incident mode: skipping the {slot} conditions card ({reason}). "
+              "It posts on the first run in the window after the incident ends.")
         return 0
 
     print(f"=== GoVallecito daily post: {slot} slot, {now.strftime('%Y-%m-%d %H:%M %Z')} ===")

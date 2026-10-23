@@ -291,13 +291,24 @@ recorded as the starting baseline rather than treated as a brand new
 emergency the moment this feature goes live; only increases from that point
 on count.
 
-**A real tradeoff, stated plainly:** this workflow shares a concurrency lock
-with the two scheduled ones (all three touch the same state files, and
-letting two of them write at once is worse than a delay). If a scheduled
-post happens to be mid-run when an emergency is detected, the alert queues
-behind it instead of posting instantly -- bounded by that other workflow's
-own 15-minute timeout, worst case. Judged the better default, but worth
-knowing rather than assuming "immediately" is an absolute guarantee.
+**Its own concurrency lock (since 2026-10-23).** It used to share one lock with
+the scheduled workflows, so an alert could queue behind a 15-minute run; during
+the Oct 22-23 flood that delay was real. Now only emergency runs wait for each
+other. The one state file it shares, `state/post_history.json`, is pushed by all
+three writers through `scripts/push_state.py`, which on a rejected push merges
+that file by post id instead of rebasing into a conflict.
+
+**County alerts post once per order.** The county evacuation map, a texted copy
+of the same order and a hand relay used to post separately. Now a map entry is
+keyed `<incident>:<status>`, and a text/relay/email of the same kind and level
+within 3 hours of it is the same order, whichever arrived first. A status change
+(Set to Go, anything to all-clear) is a new post; a zone-list change is not.
+
+**Incident mode.** While the county feed shows a danger alert, a danger stream
+chip, or an all-clear less than 2 hours old, the afternoon conditions card skips
+itself (`scripts/incident_mode.py`) and posts on the first run after. If the
+site cannot be reached it posts as normal. `CONDITIONS_BOT_ENABLED=false` still
+turns the bot off entirely.
 
 ## One-time setup
 
@@ -542,10 +553,8 @@ setting is almost certainly why.
   `config/emergency_override.json` triggers a check within seconds; the
   automated NWS feed, the automatic fire/wildfire escalation check, and your
   Worker's `restriction.override` flag are all only checked on the 10-minute
-  poll, so worst case is about that long for any of those three. All of
-  these can also queue behind a scheduled daily-post run that's already in
-  progress, up to that workflow's 15-minute timeout -- see "Emergency
-  alerts" above for the reasoning.
+  poll, so worst case is about that long for any of those three. They no
+  longer queue behind scheduled runs (own concurrency group since 2026-10-23).
 - **Emergency alerts only fire on escalation, not de-escalation.** A fire
   stage or nearby-wildfire count going down doesn't produce an "all clear"
   post -- only increases are treated as alert-worthy. Restrictions being

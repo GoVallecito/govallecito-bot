@@ -69,26 +69,19 @@ on:
           - "false"
         default: "true"
 
-# Same shared group as daily-post.yml/engagement-check.yml -- this workflow
-# also reads/writes state/post_history.json (and now
-# state/emergency_alert_state.json), so it must never run at the same time
-# as either of the other two.
+# OWN group since 2026-10-23. It used to share govallecito-bot-state with
+# daily-post/engagement-check and the forecaster, and during the Oct 22-23 flood
+# an alert run could queue behind a 15-minute forecast or daily run. Now only
+# emergency runs serialize against each other (so state/emergency_alert_state.json
+# has exactly one writer at a time).
 #
-# Real tradeoff, stated plainly rather than glossed over: if daily-post.yml
-# or engagement-check.yml happens to be mid-run when an emergency is
-# detected, this run queues behind it instead of posting instantly --
-# bounded by that other workflow's own 15-minute timeout, worst case.
-# Judged the better default versus the alternative (two workflows racing to
-# write the same JSON file), but it IS a real, if rare, added delay worth
-# knowing about -- see the README.
-#
-# The group is govallecito-bot-state, shared with the weather forecaster's
-# workflows. Both families commit and push state/, and while they could run
-# concurrently, the race ends in a live Facebook post with NO record in
-# post_history.json; the next run in the window then believes the slot has
-# not posted, and posts again (see daily-post.yml's error text).
+# The one file it shares with other workflows is state/post_history.json
+# (daily-post.yml and engagement-check.yml write it too). Two runs appending to
+# it at once used to end in a rebase conflict and a lost record; all three
+# workflows now push through scripts/push_state.py, which on a rejected push
+# resets to the remote, MERGES post_history.json by post_id, and retries.
 concurrency:
-  group: govallecito-bot-state
+  group: govallecito-emergency-alert
   cancel-in-progress: false
 
 permissions:
@@ -169,22 +162,11 @@ jobs:
           fi
           git config user.name "govallecito-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add state/post_history.json state/emergency_alert_state.json
-          if git diff --staged --quiet; then
-            echo "No change to tracked state this run -- nothing to commit."
+          # Race-safe push: merges post_history.json if another workflow pushed first.
+          if python scripts/push_state.py "Emergency alert check: update state" \
+               state/post_history.json state/emergency_alert_state.json; then
             exit 0
           fi
-          git commit -m "Emergency alert check: update state"
-          for attempt in 1 2 3 4 5; do
-            if git push; then
-              echo "Pushed on attempt $attempt."
-              exit 0
-            fi
-            echo "Push rejected (attempt $attempt/5) -- likely a concurrent run updated the same file. Fetching latest and rebasing before retrying..."
-            git fetch origin "${GITHUB_REF_NAME}"
-            git rebase "origin/${GITHUB_REF_NAME}"
-            sleep $((attempt * 5))
-          done
           echo "::error::Could not push updated state after 5 attempts. A live emergency alert post from this run may now have NO record in post_history.json, and/or its dedup state may not be saved (risking a duplicate re-post next run) -- check the Page directly and consider manually reconciling state/post_history.json and state/emergency_alert_state.json."
           exit 1
 
