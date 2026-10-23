@@ -76,22 +76,13 @@ jobs:
         run: |
           git config user.name "govallecito-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add state/post_history.json state/content_preferences.json
-          if git diff --staged --quiet; then
-            echo "No new engagement data this run -- nothing to commit."
+          # Race-safe push (scripts/push_state.py): emergency-alert.yml has its own
+          # concurrency group and also writes post_history.json, so a rejected push
+          # merges that file by post_id (checked engagement wins) instead of rebasing.
+          if python scripts/push_state.py "Update engagement data and content preferences" \
+               state/post_history.json state/content_preferences.json; then
             exit 0
           fi
-          git commit -m "Update engagement data and content preferences"
-          for attempt in 1 2 3 4 5; do
-            if git push; then
-              echo "Pushed on attempt $attempt."
-              exit 0
-            fi
-            echo "Push rejected (attempt $attempt/5) -- likely a concurrent run updated the same file. Fetching latest and rebasing before retrying..."
-            git fetch origin "${GITHUB_REF_NAME}"
-            git rebase "origin/${GITHUB_REF_NAME}"
-            sleep $((attempt * 5))
-          done
           echo "::error::Could not push updated engagement data after 5 attempts. This run's engagement checks and preference updates were NOT saved -- they should get picked up again on the next scheduled run, since check_engagement.py re-checks anything not marked as checked, so nothing here is permanently lost, just delayed."
           exit 1
 

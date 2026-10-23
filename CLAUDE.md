@@ -33,6 +33,9 @@ scripts/                 the conditions bot (main.py is the entry point)
   render_card.py         the 1080x1080 card (PIL + numpy)
   check_emergency.py     the every-10-minutes alert path
   check_engagement.py    48h+ engagement -> state/content_preferences.json
+  site_alerts.py         govallecito.com county alerts + stream chips; one post per ORDER
+  incident_mode.py       pauses the conditions card during a county incident (fails open)
+  push_state.py          race-safe commit+push of state/ (merges post_history.json)
 scripts/wx/              the forecaster
   constants.py           zones (COZ019 Vallecito, COZ022 Durango/Bayfield),
                          bands, TIMEZONE, SLOT_WINDOWS, school calendar
@@ -72,8 +75,8 @@ site/weather/            published forecasts + feed.json (the site reads this)
 site/weather/_pending/   HELD drafts, awaiting promotion. The feed ignores them.
 site-astro/              copies of the Astro pages that belong in the SITE repo
 config/                  hand-edited inputs (emergency_override.json, almanac)
-tests/                   421 offline pytest tests (python -m pytest tests/ -q),
-                         no network, no API key; 426 with scripts/ collected too
+tests/                   512 offline pytest tests (python -m pytest tests/ -q),
+                         no network, no API key
 ```
 
 ## Workflows (all in `.github/workflows/`)
@@ -85,7 +88,7 @@ DST without YAML edits.
 | Workflow | Schedule (UTC → MT) | What it does | Publishes? |
 |---|---|---|---|
 | `daily-post.yml` | `0 * * * *` hourly | Conditions card; `scripts/main.py` acts in the 7:00-10:59 and 14:00-17:59 Denver windows, once per slot per day (first surviving run wins; `post_history.json` is the ledger). A slot that closes with no post opens one `[miss] no <slot> conditions post for <date>` issue (`scripts/post_miss.py`; remembered in `state/daily_post_state.json` so it is never filed twice; silent under DRY_RUN) | **Yes**, FB Page (unless `DRY_RUN`); commits state |
-| `emergency-alert.yml` | `*/10 * * * *`; also **push to `main` touching `config/emergency_override.json`** | Flood/fire/evac/disaster check, posts at once | **Yes**, FB Page (unless `DRY_RUN`); commits state |
+| `emergency-alert.yml` | `*/10 * * * *`; also **push to `main` touching `config/emergency_override.json`** | Flood/fire/evac/disaster check, posts at once. Own concurrency group (`govallecito-emergency-alert`); pushes via `scripts/push_state.py` | **Yes**, FB Page (unless `DRY_RUN`); commits state |
 | `engagement-check.yml` | `0 10` → 04:00 MDT / 03:00 MST | Engagement on 48h+ posts, recomputes preferences | No; commits state |
 | `forecast.yml` | `5,20,35,50 10-15` → 04:05–09:50 MDT / 03:05–08:50 MST; `5,35 1-6` → 19:05–00:35 MDT / 18:05–23:35 MST; `45 * * * *` heartbeat | The forecaster. Windows + ledger, because GitHub drops scheduled runs | **Yes**, `site/weather/` + FB Page on PASS; commits `state/` and `site/`; pings `SITE_DEPLOY_HOOK` |
 | `verify.yml` | `30 15` → 09:30 MDT / 08:30 MST | Scores yesterday, adds a calibration point, drafts the totals post | Same gate as forecast; commits state |
@@ -184,9 +187,8 @@ escalate every draft to REVIEW — `scripts/wx/guardrails.py:398`, read in
 
 ```bash
 pip install -r requirements.txt && pip install pytest   # pytest is not pinned
-python -m pytest tests/ -q      # 421 collected, offline, no keys, no network
-                                # (426 when scripts/ is collected too)
-                                # (one shells out to node, two to git;
+python -m pytest tests/ -q      # 512 collected, offline, no keys, no network
+                                # (one shells out to node, five to git;
                                 #  they skip if those are missing)
 npm test                        # 69 subtests: node --test tools/draft-lint.test.mjs
 ```

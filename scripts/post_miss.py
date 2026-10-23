@@ -40,14 +40,18 @@ def _dry_run():
     return (os.environ.get("DRY_RUN") or "").strip().lower() in ("1", "true", "yes")
 
 
-def missed_slots(now, main, history):
+def missed_slots(now, main, history, paused=None):
     """[(date, slot)] for today and yesterday whose window has closed with no daily post.
     `main` is scripts/main.py (passed in to avoid a circular import): it owns the windows
-    and the once-per-slot check."""
+    and the once-per-slot check. `paused` ({date: [slot]}) lists slots incident mode held
+    on purpose (main.incident_pause); those are not misses."""
+    paused = paused or {}
     out = []
     for back in (1, 0):
         day = now - timedelta(days=back)
         for slot, (_lo, hi) in main.SLOT_WINDOWS.items():
+            if slot in (paused.get(day.date().isoformat()) or []):
+                continue
             closed = back == 1 or now.hour >= hi
             if closed and not main.slot_already_posted(slot, day, history):
                 out.append((day.date().isoformat(), slot))
@@ -138,10 +142,10 @@ def report_if_needed(now, main, history=None):
         if _dry_run():
             return []
         history = history if history is not None else main.post_history.load_history()
-        todo = missed_slots(now, main, history)
+        state = generate_post_text._load_daily_post_state()
+        todo = missed_slots(now, main, history, state.get("incident_pauses"))
         if not todo:
             return []
-        state = generate_post_text._load_daily_post_state()
         reported = state.get(STATE_KEY) or {}
         misses = week_of_misses(now, main, history)
         done = []
