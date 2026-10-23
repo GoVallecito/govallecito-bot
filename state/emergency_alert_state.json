@@ -1,6 +1,6 @@
 {
   "posted_alert_ids": [
-    "urn:oid:2.49.0.1.840.0.cb56863c318cfe6453c4d84ef2afb4027f44e356.001.1"
+    "urn:oid:2.49.0.1.840.0.7aff6e7b499588ea45403ba63f4221c2775e9daa.001.1"
   ],
   "manual_override": {
     "last_posted_fingerprint": null
@@ -20,7 +20,8 @@
     "stream": {
       "creek": {
         "rank": 3,
-        "posted_at": "2026-10-23T03:01:21.345561+00:00"
+        "posted_at": "2026-10-23T03:01:21.345561+00:00",
+        "cleared_at": "2026-10-23T19:50:15.299429+00:00"
       }
     }
   }

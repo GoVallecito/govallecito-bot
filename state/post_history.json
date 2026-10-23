@@ -2105,6 +2105,21 @@
       "caption": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122139300363360003",
+      "posted_at": "2026-10-23T13:50:18.612651-06:00",
+      "slot": "emergency",
+      "hook_line": "Flood alert \u2014 Vallecito.",
+      "had_image": false,
+      "image_topic": null,
+      "fire_stage": 0,
+      "post_type": "emergency_alert",
+      "alert_category": "flood",
+      "alert_id": "urn:oid:2.49.0.1.840.0.7aff6e7b499588ea45403ba63f4221c2775e9daa.001.1",
+      "caption": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
