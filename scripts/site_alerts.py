@@ -40,11 +40,31 @@ SITE_ALERTS_URL = os.environ.get("SITE_ALERTS_URL", "https://govallecito.com/dat
 STREAM_RESET_AFTER = timedelta(hours=6)
 KEEP_COUNTY_IDS = 50
 
+# 2026-10-22 Vallecito Rain Event: La Plata County's own notice, appended to creek gauge
+# posts until COUNTY_INCIDENT_UNTIL. Relays the county; claims no order. Delete afterwards.
+COUNTY_INCIDENT_URL = "https://www.lpcgov.org/news_detail_T18_R299.php"
+COUNTY_INCIDENT_FROM = datetime(2026, 10, 22, 6, 0, tzinfo=timezone.utc)
+COUNTY_INCIDENT_UNTIL = datetime(2026, 10, 26, 6, 0, tzinfo=timezone.utc)
+COUNTY_INCIDENT_TEXT = (" La Plata County's Oct 22 notice sets pre-evacuation at 3,200 cfs and evacuation "
+                        "orders at 4,200 cfs for North Vallecito. Orders come only from the county, through "
+                        "LPC Alerts (lpcgov.org/lpcalerts). County notice: " + COUNTY_INCIDENT_URL +
+                        ". Never drive through flooded roads.")
+
+
+def _incident_active(now):
+    try:
+        return COUNTY_INCIDENT_FROM <= now < COUNTY_INCIDENT_UNTIL
+    except TypeError:
+        return False
+
+
 # chip id -> (gauge key, rank). Higher rank = more severe.
 STREAM_RANKS = {
     "stream-creek-rise": ("creek", 1),
     "stream-creek-high": ("creek", 2),
     "stream-creek-flood": ("creek", 3),
+    # 2026-10-22 county incident: creek at the county's evacuation (Go) trigger.
+    "stream-creek-go": ("creek", 4),
     "stream-pine-rise": ("pine", 1),
     "stream-below-dam-action": ("below", 1),
     "stream-below-dam-minor": ("below", 2),
@@ -171,15 +191,16 @@ def stream_events(state, feed, now=None):
             "category": "flood",
             "headline": text,
             "description": "",
-            "full_text": ("Measured by the stream gauge, refreshed about every 15 minutes. "
+            "full_text": (("Measured by the stream gauge, refreshed about every 15 minutes. "
                           "This is a gauge reading, not an official warning: follow the National "
                           "Weather Service and La Plata County for instructions, and stay off creek "
-                          "banks and low crossings."),
-            "hook": "Flood-level water at Vallecito." if danger else "Rising water at Vallecito.",
+                          "banks and low crossings.") + (COUNTY_INCIDENT_TEXT if key == "creek" and _incident_active(now) else "")),
+            "hook": "Very high water on Vallecito Creek." if danger else "Rising water at Vallecito.",
             "row_label": "STREAM GAUGE",
             "calm": False,
             "source_name": "USGS and NWS stream gauges (via GoVallecito)",
-            "source_url": "https://govallecito.com/streamflow",
+            "source_url": (COUNTY_INCIDENT_URL if key == "creek" and _incident_active(now)
+                           else "https://govallecito.com/streamflow"),
         })
     return events
 

@@ -1031,7 +1031,14 @@ def build_alert_post(conditions, alert, dt=None):
     # Skip the separate fire-status row when the alert itself IS a fire
     # alert -- the alert row above already says everything that row would,
     # and repeating it would burn one of the "4-6 lines" on a duplicate.
-    if category != "fire" and fire:
+    # 2026-10-22 (Vallecito flood): an all-clear fire row ("No fire restrictions")
+    # under a flood/evacuation alert reads as a contradiction. Only show the row
+    # when a restriction is actually in force.
+    try:
+        _fire_stage = int((fire or {}).get("stage") or 0)
+    except (TypeError, ValueError):
+        _fire_stage = 0
+    if category != "fire" and fire and _fire_stage > 0:
         stage_label = fire.get("stage_label", "Fire restrictions")
         raw_summary = fire.get("restrictions_summary", "")
         fire_value = _condense(f"{stage_label}: {raw_summary}" if raw_summary else stage_label, ROW_VALUE_CHAR_BUDGET)

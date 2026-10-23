@@ -103,6 +103,9 @@ jobs:
     # but it can read `env`.
     env:
       HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL_EMERGENCY_ALERT }}
+      # Card/caption dates in lake time, not the runner's UTC (an alert at 8 pm MT
+      # was dated tomorrow). 2026-10-22.
+      TZ: America/Denver
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5

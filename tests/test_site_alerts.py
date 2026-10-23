@@ -70,7 +70,7 @@ def test_stream_posts_only_on_escalation_and_resets_after_6h():
     assert run([chip("stream-creek-rise")], T0 + timedelta(minutes=10)) == []          # same level: silent
 
     [e] = run([chip("stream-creek-flood", "danger", "Vallecito Creek at flood level: 3,050 cfs")], T0 + timedelta(hours=20))
-    assert e["rank"] == 3 and e["hook"] == "Flood-level water at Vallecito."
+    assert e["rank"] == 3 and e["hook"] == "Very high water on Vallecito Creek."
     site_alerts.mark(state, e, now=T0 + timedelta(hours=20))
     assert run([chip("stream-creek-high")], T0 + timedelta(hours=30)) == []             # drop: silent
     assert run([chip("stream-creek-flood", "danger")], T0 + timedelta(hours=31)) == []  # back up: already posted
@@ -120,3 +120,24 @@ def test_existing_nws_alert_post_unchanged():
     assert "Full details:" not in post["caption"]
     assert post["card_data"]["rows"][0]["label"] == "FLOOD ALERT"
     assert post["card_data"]["rows"][0]["badge"] == generate_post_text.DANGER
+
+
+def test_county_go_level_reposts_above_flood():
+    run = lambda chips, now, st={}: site_alerts.stream_events(st, {"stream": chips}, now)
+    st = {}
+    [e] = site_alerts.stream_events(st, {"stream": [chip("stream-creek-flood", "danger")]}, T0)
+    site_alerts.mark(st, e, T0)
+    [g] = site_alerts.stream_events(st, {"stream": [chip("stream-creek-go", "danger")]}, T0 + timedelta(hours=1))
+    assert g["rank"] == 4 and g["gauge"] == "creek"
+
+
+def test_creek_post_carries_county_notice_during_incident():
+    now = datetime(2026, 10, 23, 3, 0, tzinfo=timezone.utc)
+    [e] = site_alerts.stream_events({}, {"stream": [chip("stream-creek-flood", "danger")]}, now)
+    assert "lpcgov.org/lpcalerts" in e["full_text"] and "3,200" in e["full_text"]
+    assert e["source_url"] == site_alerts.COUNTY_INCIDENT_URL
+    [p] = site_alerts.stream_events({}, {"stream": [chip("stream-pine-rise")]}, now)
+    assert "lpcgov" not in p["full_text"]
+    later = datetime(2026, 10, 27, tzinfo=timezone.utc)
+    [e2] = site_alerts.stream_events({}, {"stream": [chip("stream-creek-flood", "danger")]}, later)
+    assert "lpcgov" not in e2["full_text"]
