@@ -1856,8 +1856,15 @@
       "alert_category": null,
       "alert_id": null,
       "caption": "Tuesday, October 20 \u2014 clear skies tonight over the lake.\n\n\ud83d\udca7 Lake: 65% of full pool (elev. 7,649 ft, full pool is 7,665 ft)\n\ud83c\udf21\ufe0f 52\u00b0F now. Mostly sunny.\n\ud83d\udd25 Fire restrictions: Campfires are allowed again, at the lake and on the\u2026\n\ud83c\udf0a Streamflow: 652 cfs combined inflow\n\nClear, dark nights like this are good for stargazing at the lake \u2014 planning to stay out and look up?\n\nFull conditions \u2192 govallecito.com\n#VallecitoLake #KnowBeforeYouGo #SanJuanMountains #AfternoonUpdate",
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-23T14:35:00.625473+00:00"
     },
     {
       "post_id": "1138532512682553_122138918721360003",

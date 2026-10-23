@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-22T14:49:09.379279+00:00",
+  "updated_at": "2026-10-23T14:35:00.628486+00:00",
   "hook_weights": {
     "morning": {},
     "afternoon": {}
@@ -22,16 +22,16 @@
       "Morning check-in from the lake.": 1,
       "Golden hour's coming up at the dam.": 2,
       "Early light on the water.": 1,
-      "Clear skies tonight over the lake.": 1
+      "Clear skies tonight over the lake.": 2
     },
     "grounded_vs_plain": {
-      "grounded": 31,
+      "grounded": 32,
       "plain": 0
     }
   },
   "impressions": {
     "available_count": 0,
-    "checked_count": 31,
+    "checked_count": 32,
     "avg_impressions": null,
     "avg_engagement_rate": null
   }
