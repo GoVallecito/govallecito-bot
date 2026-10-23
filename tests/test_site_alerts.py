@@ -141,3 +141,16 @@ def test_creek_post_carries_county_notice_during_incident():
     later = datetime(2026, 10, 27, tzinfo=timezone.utc)
     [e2] = site_alerts.stream_events({}, {"stream": [chip("stream-creek-flood", "danger")]}, later)
     assert "lpcgov" not in e2["full_text"]
+
+
+def test_county_map_and_relay_entries_are_labelled_by_their_real_source():
+    feed = {"active": [
+        {"id": "zone-x", "kind": "alert", "source": "readylaplata", "subject": "PRE-EVACUATION, zones VAL-1 to VAL-4", "body": "b", "receivedMs": 2},
+        {"id": "lpc-manual-x", "kind": "alert", "manual": True, "subject": "PRE-EVACUATION for North Vallecito", "body": "b", "receivedMs": 1},
+        {"id": "lpc-abc", "kind": "alert", "subject": "EVACUATE NOW", "body": "b", "receivedMs": 3},
+    ]}
+    ev = {e["id"]: e for e in site_alerts.county_events({}, feed)}
+    assert ev["zone-x"]["hook"] == "La Plata County evacuation map."
+    assert "readylaplata.org" in ev["zone-x"]["source_url"]
+    assert "relayed word for word" in ev["lpc-manual-x"]["source_name"]
+    assert ev["lpc-abc"]["source_name"] == "La Plata County, LPC Alerts (reposted by GoVallecito)"

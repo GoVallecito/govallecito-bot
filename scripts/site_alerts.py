@@ -129,6 +129,20 @@ def county_events(state, feed):
             "correction": ("La Plata County correction.", "COUNTY CORRECTION"),
             "clear": ("La Plata County update.", "COUNTY UPDATE"),
         }[kind]
+        # Say where it really came from (2026-10-22): the county's evacuation MAP (polled by the
+        # site), a county TEXT relayed by GoVallecito, or an LPC Alerts EMAIL.
+        src = a.get("source")
+        if src == "readylaplata":
+            hook = {"clear": "La Plata County evacuation map update."}.get(kind, "La Plata County evacuation map.")
+            row = "COUNTY EVAC MAP"
+            source_name = "La Plata County evacuation map (readylaplata.org), shown by GoVallecito"
+            source_url = "https://readylaplata.org"
+        elif a.get("manual") or a.get("relayed"):
+            source_name = "La Plata County LPC Alerts text, relayed word for word by GoVallecito"
+            source_url = "https://govallecito.com/county-alert"
+        else:
+            source_name = "La Plata County, LPC Alerts (reposted by GoVallecito)"
+            source_url = "https://govallecito.com/county-alert"
         events.append({
             "id": a["id"],
             "kind": "site_county",
@@ -140,8 +154,8 @@ def county_events(state, feed):
             "hook": hook,
             "row_label": row,
             "calm": kind == "clear",
-            "source_name": "La Plata County, LPC Alerts (reposted by GoVallecito)",
-            "source_url": "https://govallecito.com/county-alert",
+            "source_name": source_name,
+            "source_url": source_url,
         })
     return events
 
