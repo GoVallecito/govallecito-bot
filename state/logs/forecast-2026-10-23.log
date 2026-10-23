@@ -3,3 +3,25 @@
 2026-10-23 01:56 MDT is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
 exit=0
 
+=== 2026-10-23T05:04:34-06:00 run 39943010303 ===
+NOTE: running at 05:00, inside the 4:00-9:00 window but later than the 4:00 target. Posting anyway, flagged late.
+=== Vallecito forecast: school_call @ 2026-10-23 05:00 MDT ===
+snow-line calibration: offset=0.0ft active=False
+guardrails: REVIEW
+  - first-30-days policy: review everything
+review panel: fact checker + editor -> magistrate
+panel round 1/3: facts=issues editor=issues (critical/major=5) gate=pass -> magistrate REVISE
+panel round 2/3: facts=issues editor=issues (critical/major=4) gate=pass -> magistrate REVISE
+panel round 3/3: facts=issues editor=issues (critical/major=5) gate=pass -> magistrate REVISE
+panel round 3: dropped 3 replacement(s): "We're under a Flood Watch through midnight tonight (Grand Ju" (the substitution would leave broken English at the seam); "We're under a Flood Watch through midnight tonight (Grand Ju" (the replacement reuses "we're under a flood watch through" from one of the last six published posts); 'The real question is how much more rain the drainages can ta' (the replacement reuses "the ground's already soaked from" from one of the last six published posts)
+panel round 3: 1 required change(s) could not be applied and still stand: "We're under a Flood Watch through midnight tonight (Grand Ju"
+panel round 3: final-round auto-patch applied 3 replacement(s), skipped 1, outstanding 1; gate=pass, unresolved fact issues=4
+panel transcript -> state/panel/2026-10-23-school_call.md
+Archived draft -> state/drafts/2026-10-23-school_call.md
+HELD FOR REVIEW -- draft saved to output/draft.txt
+staged for review -> site/weather/_pending/2026-10-23-flood-watch-for-vallecito-bayfield-and-durango.md
+  promote with: python scripts/wx/promote_draft.py 2026-10-23
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/130
+Wrote state/forecast-status.md
+exit=0
+
