@@ -14,7 +14,8 @@
   },
   "site_alerts": {
     "county_posted_ids": [
-      "lpc-manual-2026-10-22-preevac-north-vallecito"
+      "lpc-manual-2026-10-22-preevac-north-vallecito",
+      "zone-vallecito-creek-flooding-set-val-1-val-2-val-3-val-4"
     ],
     "stream": {
       "creek": {
