@@ -2135,6 +2135,21 @@
       "caption": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122139311499360003",
+      "posted_at": "2026-10-23T15:37:35.423855-06:00",
+      "slot": "emergency",
+      "hook_line": "La Plata County update.",
+      "had_image": false,
+      "image_topic": null,
+      "fire_stage": 0,
+      "post_type": "emergency_alert",
+      "alert_category": "flood",
+      "alert_id": "relay-d723268d4e40f577",
+      "caption": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
