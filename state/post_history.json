@@ -1963,6 +1963,36 @@
       "caption": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122139173055360003",
+      "posted_at": "2026-10-22T21:46:15.791894-06:00",
+      "slot": "emergency",
+      "hook_line": "Flood alert \u2014 Vallecito.",
+      "had_image": false,
+      "image_topic": null,
+      "fire_stage": 0,
+      "post_type": "emergency_alert",
+      "alert_category": "flood",
+      "alert_id": "urn:oid:2.49.0.1.840.0.39ae79931bc07893ddeadf7f4c7b717140679ea0.001.1",
+      "caption": null,
+      "engagement_checked": false,
+      "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122139173133360003",
+      "posted_at": "2026-10-22T21:46:20.884273-06:00",
+      "slot": "emergency",
+      "hook_line": "La Plata County alert.",
+      "had_image": false,
+      "image_topic": null,
+      "fire_stage": 0,
+      "post_type": "emergency_alert",
+      "alert_category": "evacuation",
+      "alert_id": "lpc-manual-2026-10-22-preevac-north-vallecito",
+      "caption": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }

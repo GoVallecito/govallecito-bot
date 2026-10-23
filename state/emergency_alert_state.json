@@ -1,6 +1,6 @@
 {
   "posted_alert_ids": [
-    "urn:oid:2.49.0.1.840.0.98214017c22b766bd2c736aa82684dc784400df5.001.1"
+    "urn:oid:2.49.0.1.840.0.39ae79931bc07893ddeadf7f4c7b717140679ea0.001.1"
   ],
   "manual_override": {
     "last_posted_fingerprint": null
@@ -13,7 +13,9 @@
     "last_posted_nearby_count": 4
   },
   "site_alerts": {
-    "county_posted_ids": [],
+    "county_posted_ids": [
+      "lpc-manual-2026-10-22-preevac-north-vallecito"
+    ],
     "stream": {
       "creek": {
         "rank": 3,
