@@ -1,18 +1,18 @@
 # Forecast run: held for review
 
-When: 2026-10-23T05:04:34-06:00 (Mountain)
+When: 2026-10-24T04:47:15-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 1
+heldDays: 2
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): Four factual errors block approval. The Flood Watch expires at 4pm, not midnight (critical timing error for a safety alert). Bayfield's precipitation timing is reversed in the draft (0.0in overnight, 0.04in morning, not 'through mid-morning'). Durango's 'done by now' at 5:47am claims the 00:00-05:00 window has ended when it runs until 6am. Vallecito's 'around a tenth' sits outside the range containing 0.12in per Rule 1. All four have concrete replacements from the reviewers that satisfy the brief.
+review panel: not approved after 3 round(s): Five critical fact-check issues block approval: wrong time window for heaviest rain (6pm vs 5pm), and four road-status violations where the draft states what roads will be getting without the required conditional hedging. The brief explicitly forbids road status claims without 'should' or conditional phrasing. All five have straightforward fixes that preserve the draft's voice and structure.
 ```
 
 ## What the data looked like
 
-- Snow line: 10650
+- Snow line: 9950
 - Alerts: ['Flood Watch']
 - Missing sources: none
 - Pass forecast: built
@@ -20,23 +20,19 @@ review panel: not approved after 3 round(s): Four factual errors block approval.
 ## Draft
 
 ```
-10/23/26 5:47am: Morning, its Friday. The truck's sitting in a puddle and the rain hasn't let up yet.
+10/24/26 4:44am: The woodpile's still dry but the clouds are already building.
 
-We're under a Flood Watch through midnight tonight (Grand Junction office), and the 501 and the 240 should both be wet pavement for the bus run but passable. Districts decide by 6:30, check with your school. The real question is how much more rain the drainages can take after what we've had this week, and that's the reason the watch is up.
+Rain's coming back today and the Flood Watch stays up through tomorrow noon for Vallecito and Durango both. Grand Junction's calling for another 0.5-1.0" along the 160 corridor with higher amounts in the mountains, and after what we've already had that's enough to keep things messy. The Animas is running 7,950 cfs and the creeks are still high, so any additional rain hits saturated ground.
 
-In town and down the Animas Valley (6,500') the forecast has a few hundredths overnight, done by now, dry through mid-morning. The 160 into Durango should be fine, just wet.
+Durango and the Animas Valley (6,500') should see rain starting late morning, heaviest noon to 6pm with close to an inch total through tomorrow. Wind picks up this afternoon with gusts 25-35mph through the evening. I'd expect wet pavement on the 160 by midday and through tonight.
 
-Up the Pine and around Bayfield (6,900') the forecast has a few hundredths through mid-morning then tapering off. Temps in the upper 40s to mid-50s through the day.
+Bayfield and up the Pine (6,900') gets the same window, noon through evening, with close to half an inch and gusts 20-30mph. I'd expect the 501 to start seeing wet pavement by mid-morning as the rain moves in.
 
-Vallecito and up the Florida (7,650') should see around a tenth overnight and the morning window brings another quarter inch, heavier than what just passed. The Florida Road should be passable but wet, and if you're on a dirt section watch for soft spots.
+Vallecito and the Florida (7,650') sees lighter totals, around 0.2" spread through the afternoon, but the models are all over the place here. GFS has 0.18" while GEM's cranking out 2.6". I wouldn't bet the farm on any one number with that kind of spread. The 240 should handle it but I'd expect wet conditions by early afternoon.
 
-The high Weminuche (10,500'+) was right on the snow line overnight and it came down as rain, half an inch of it. The SNOTEL at Vallecito (10,740') is sitting at a tenth of an inch of water equivalent as of yesterday, temps in the upper 30s up there.
+Snow line sits around 9,950' and holds steady, so the high Weminuche (10,500'+) gets a mix turning to snow this evening with maybe half an inch up top. Wolf Creek Pass is looking at 10-18" through tomorrow, the 550 passes 6-13". If you're headed north or east check COtrip for closures and chain law before you go: https://www.cotrip.org/
 
-The passes are the story for the weekend, not today. Coal Bank is looking at 4-7" tomorrow, Molas 9-17", Red Mountain 8-14", Wolf Creek 10-18". Today they stay rain at pass level.
+Rain winds down overnight into Sunday morning, then we're looking at isolated showers Sunday and drying out Monday.
 
-The models are all over the place on how much more we get. GFS has another inch total through Saturday, GEM is cranking out over 3", Euro has 1.76", ICON 1.7". I'm not picking a winner on that spread (the models can't agree and the snow line's the whole ballgame). The NWS discussion talks about soils being saturated and not needing much more to cause problems, which is why the watch stays up.
-
-Today dries out after morning. Tomorrow's the next round, heavier, and that one drops the snow line hard.
-
-How much has the reservoir come up this week or is it still climbing?
+Is the Florida Road holding up after this week or are the washouts getting worse?
 ```
