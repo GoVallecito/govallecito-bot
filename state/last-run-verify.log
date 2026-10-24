@@ -1,8 +1,4 @@
-=== verify run @ 2026-10-23 13:26 MDT ===
-observations: {'date': '2026-10-23', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
-  2026-10-22-7: hit_rate=1.0 line_error=Noneft
-calibration: active=False offset=0.0ft (0/20 events)
-track record: {'verified_events': 8, 'mean_hit_rate': 1.0, 'snow_line_mean_abs_error_ft': None, 'worst_miss': ('durango', 0.0)}
-guardrails: REVIEW
-Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/131
+=== verify run @ 2026-10-24 12:17 MDT ===
+observations: {'date': '2026-10-24', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
+Nothing to verify -- no unverified forecast in window. Exiting.
 exit=0
