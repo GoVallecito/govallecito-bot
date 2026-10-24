@@ -19,12 +19,6 @@
       "zone-vallecito-creek-flooding-clear-1792789115739",
       "relay-d723268d4e40f577"
     ],
-    "stream": {
-      "creek": {
-        "rank": 3,
-        "posted_at": "2026-10-23T03:01:21.345561+00:00",
-        "cleared_at": "2026-10-23T19:50:15.299429+00:00"
-      }
-    }
+    "stream": {}
   }
 }
