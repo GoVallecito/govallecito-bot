@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-24T13:47:39.782495+00:00",
+  "updated_at": "2026-10-25T14:03:16.069150+00:00",
   "hook_weights": {
     "morning": {},
     "afternoon": {}
@@ -10,7 +10,7 @@
       "Cast lines are already out this morning.": 2,
       "Afternoon bite report from the lake.": 3,
       "Trailheads are filling in early.": 2,
-      "Trail conditions holding up this week.": 2,
+      "Trail conditions holding up this week.": 3,
       "Good morning, Vallecito.": 2,
       "Afternoon at the lake.": 2,
       "Rise and shine, lake people.": 2,
@@ -25,13 +25,13 @@
       "Clear skies tonight over the lake.": 2
     },
     "grounded_vs_plain": {
-      "grounded": 33,
+      "grounded": 34,
       "plain": 0
     }
   },
   "impressions": {
     "available_count": 0,
-    "checked_count": 33,
+    "checked_count": 34,
     "avg_impressions": null,
     "avg_engagement_rate": null
   }
