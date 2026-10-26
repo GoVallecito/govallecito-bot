@@ -2186,8 +2186,15 @@
       "alert_category": "flood",
       "alert_id": "urn:oid:2.49.0.1.840.0.f02f40f262c07cb90bdef2768bf897e9844b347a.001.1",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-26T16:25:13.688970+00:00"
     },
     {
       "post_id": "1138532512682553_122139285795360003",
@@ -2201,8 +2208,15 @@
       "alert_category": "flood",
       "alert_id": "urn:oid:2.49.0.1.840.0.cb56863c318cfe6453c4d84ef2afb4027f44e356.001.1",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-26T16:25:14.228360+00:00"
     },
     {
       "post_id": "1138532512682553_122139300363360003",
@@ -2216,8 +2230,15 @@
       "alert_category": "flood",
       "alert_id": "urn:oid:2.49.0.1.840.0.7aff6e7b499588ea45403ba63f4221c2775e9daa.001.1",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-26T16:25:15.061878+00:00"
     },
     {
       "post_id": "1138532512682553_122139307503360003",
@@ -2231,8 +2252,15 @@
       "alert_category": "evacuation",
       "alert_id": "zone-vallecito-creek-flooding-clear-1792789115739",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-26T16:25:15.616281+00:00"
     },
     {
       "post_id": "1138532512682553_122139311499360003",
@@ -2246,8 +2274,15 @@
       "alert_category": "flood",
       "alert_id": "relay-d723268d4e40f577",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-26T16:25:16.241096+00:00"
     },
     {
       "post_id": "1138532512682553_122139314235360003",
@@ -2261,8 +2296,15 @@
       "alert_category": "flood",
       "alert_id": "urn:oid:2.49.0.1.840.0.e90202f1f6afd1fe91fe5187ef58da7e89d0b07d.001.1",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-26T16:25:16.763167+00:00"
     },
     {
       "post_id": "1138532512682553_122139490425360003",
