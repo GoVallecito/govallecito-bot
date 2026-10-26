@@ -1,42 +1,44 @@
-# Forecast run: held for review
+# Forecast run: published to website (approved by review panel)
 
-When: 2026-10-25T04:12:57-06:00 (Mountain)
+When: 2026-10-26T05:03:17-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 3
-
-> **STANDING FAILURE: 3 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
+heldDays: 0
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): The Flood Watch expiration time is wrong (critical fact error: midnight vs 6pm). The grain-of-salt repetition from 10/22 and the internal model-spread repetition both stand and have concrete replacements from the editor. The opener's compound detail violates the one-detail rule. The fact checker's number precision demands on 0.28" and the SNOTEL date are dismissed under Rule 1 - both existing phrasings contain the brief's figures.
+approved by the magistrate in round 3
 ```
+
+**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
-- Snow line: 9550
-- Alerts: ['Flood Watch']
+- Snow line: no precipitation forecast
+- Alerts: none
 - Missing sources: none
 - Pass forecast: built
 
 ## Draft
 
 ```
-10/25/26 4:09am: The woodpile's soaked through and the sky's already spitting.
+10/26/26 5:45am: Morning, its Monday. The dog wanted out before the sky even started lightening.
 
-We're under a Flood Watch through midnight tonight, Grand Junction office, and the rivers are still running high from this week's rain. The San Juan's still rising and a few more showers this morning will keep the runoff coming. The full product's at weather.gov/gjt.
+Perfect school-run weather across the board. Clear skies, light winds, temps in the mid-30s to low 40s for the bus pickup and warming into the low 50s by afternoon dismissal.
 
-Durango and the Animas Valley (6,500') stay dry all day. Temps mid-40s to mid-50s, gusts 10-20mph.
+Durango and the Animas Valley should stay dry all day, starting in the upper 30s this morning and topping out in the low to mid 50s this afternoon. The 160 into town should be fine for the 6:30 call and through the afternoon.
 
-Bayfield and up the Pine (6,900') should see rain through the morning with close to 0.3" of liquid and maybe a half inch of wet snow mixed in that won't stick. The models spread from the GFS at 0.2" to the GEM at 0.44" at Vallecito, so there's uncertainty in the totals. Take that with a big grain of salt (the snow line's the whole question and it's bouncing around 9,500' which puts us right on the edge). Gusts 15-25mph this morning, then ramping to 25-35mph this afternoon as things clear out.
+Bayfield and up the Pine are the same story, mid-30s at bus time and climbing into the low 50s by lunch. The 501 should stay dry for the morning run.
 
-Vallecito and the Florida (7,650') are in the same boat, rain with maybe a trace of snow mixed in mid-morning that melts on contact. The models spread from the GFS at 0.2" to the GEM at 0.44" liquid and none of them are confident. Gusts 15-25mph.
+Vallecito and up the Florida drainage are looking at mid-30s for the early routes, hitting the upper 40s by midday. The 240 looks like it'll be fine all morning.
 
-The high Weminuche (10,500'+) gets legitimate snow, close to 6" through midmorning with gusts 25-35mph, then clearing. The SNOTEL at Vallecito's already showing 7" depth and 1.0" SWE from earlier this week.
+The passes should all stay dry today. Coal Bank, Molas and Red Mountain should stay clear through the commute, same for Wolf Creek on the east side. Current closures and chain law: https://www.cotrip.org/
 
-Coal Bank, Molas and Red Mountain should see 2-4" at pass level by midmorning. Wolf Creek's the bigger story, 7-12" through the morning with gusts and blowing snow. Both setups could make for slippery commutes if you're heading over early. Check cotrip.org before you leave, that's the real status and not my guess.
+The high Weminuche is sitting in the upper 20s this morning with no precipitation in the forecast, just another quiet October day up high.
 
-The Animas is running 5,360 cfs at Durango and Vallecito Creek's at 884 cfs, both elevated from the week's rain. The reservoir's at 85% of full pool.
+Tuesday looks like a repeat. A little breezier in the afternoon with gusts 5-15mph across the lower elevations, but still dry and mild. The GFS and Euro both keep us completely dry through midweek, and the ICON agrees. Friday is when things might get interesting again as some Pacific moisture starts nosing in, but thats far enough out that the models are still working out the details.
 
-How's the Florida Road holding up with all this runoff or is it starting to wash out in spots?
+Basin-wide we're sitting at 460% of median across the SNOTEL network, which is wild for late October. Vallecito SNOTEL is at 1.3 inches of SWE with 7 inches of depth at 10,740 feet. The reservoir's at 88% of full pool.
+
+Wednesday looks the same as Tuesday, then Friday's the question as Pacific moisture starts moving in. Anybody getting out on the water this week or is it done for the season?
 ```
