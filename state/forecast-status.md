@@ -1,13 +1,13 @@
 # Forecast run: published to website (approved by review panel)
 
-When: 2026-10-26T05:03:17-06:00 (Mountain)
+When: 2026-10-27T05:01:33-06:00 (Mountain)
 Slot: `school_call`
 heldDays: 0
 
 ## Detail
 
 ```
-approved by the magistrate in round 3
+approved by the magistrate in round 1
 ```
 
 **What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
@@ -22,23 +22,19 @@ approved by the magistrate in round 3
 ## Draft
 
 ```
-10/26/26 5:45am: Morning, its Monday. The dog wanted out before the sky even started lightening.
+10/27/26 5:47am: Morning, its Tuesday. The woodpile's still got frost on the north side from yesterday.
 
-Perfect school-run weather across the board. Clear skies, light winds, temps in the mid-30s to low 40s for the bus pickup and warming into the low 50s by afternoon dismissal.
+Straightforward one for the bus run. Durango and Bayfield (6,500' to 6,900') start in the mid to upper 30s and climb to the mid 50s by lunch. No precipitation, light winds. The 160 and 501 should be dry pavement all morning. Districts decide by 6:30.
 
-Durango and the Animas Valley should stay dry all day, starting in the upper 30s this morning and topping out in the low to mid 50s this afternoon. The 160 into town should be fine for the 6:30 call and through the afternoon.
+Vallecito and up the Florida (7,650'+) start mid 30s, reach low 50s this afternoon. Clear skies, calm winds, zero precipitation in the forecast. The 240 should be fine all day.
 
-Bayfield and up the Pine are the same story, mid-30s at bus time and climbing into the low 50s by lunch. The 501 should stay dry for the morning run.
+The high Weminuche (10,500') stays in the mid 20s overnight, climbs to near 40 this afternoon. All four models, Euro, GFS, ICON and GEM, agree on dry conditions through Wednesday night.
 
-Vallecito and up the Florida drainage are looking at mid-30s for the early routes, hitting the upper 40s by midday. The 240 looks like it'll be fine all morning.
+Coal Bank, Molas and Red Mountain should stay dry through today and tomorrow. Wolf Creek looks the same. That's the forecast; for current closures and chain law check https://www.cotrip.org/
 
-The passes should all stay dry today. Coal Bank, Molas and Red Mountain should stay clear through the commute, same for Wolf Creek on the east side. Current closures and chain law: https://www.cotrip.org/
+Wednesday's a repeat of today: dry, light winds, mid 50s in the valleys. Thursday too. The discussion out of Grand Junction has Friday as the start of a pattern shift, with Pacific moisture beginning to move back in and scattered showers possible by Friday afternoon. They're watching another strong system for the weekend that could pull subtropical moisture back into the Four Corners, but the setup's still uncertain and the bulk of it may stay south of us. Take that with a big grain of salt (the weekend forecast's still four days out and the pattern's shifting).
 
-The high Weminuche is sitting in the upper 20s this morning with no precipitation in the forecast, just another quiet October day up high.
+Basin SNOTEL's at 353% of median across six stations this morning, which is a strong start for late October. Vallecito's at 1.2 inches SWE.
 
-Tuesday looks like a repeat. A little breezier in the afternoon with gusts 5-15mph across the lower elevations, but still dry and mild. The GFS and Euro both keep us completely dry through midweek, and the ICON agrees. Friday is when things might get interesting again as some Pacific moisture starts nosing in, but thats far enough out that the models are still working out the details.
-
-Basin-wide we're sitting at 460% of median across the SNOTEL network, which is wild for late October. Vallecito SNOTEL is at 1.3 inches of SWE with 7 inches of depth at 10,740 feet. The reservoir's at 88% of full pool.
-
-Wednesday looks the same as Tuesday, then Friday's the question as Pacific moisture starts moving in. Anybody getting out on the water this week or is it done for the season?
+Two easy days before things get interesting again Friday. What's the lake level looking like from the dam end?
 ```
