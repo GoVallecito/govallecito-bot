@@ -1,8 +1,8 @@
-=== verify run @ 2026-10-27 14:10 MDT ===
-observations: {'date': '2026-10-27', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
-  2026-10-26-8: hit_rate=1.0 line_error=Noneft
+=== verify run @ 2026-10-28 14:27 MDT ===
+observations: {'date': '2026-10-28', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
+  2026-10-27-9: hit_rate=1.0 line_error=Noneft
 calibration: active=False offset=0.0ft (0/20 events)
-track record: {'verified_events': 9, 'mean_hit_rate': 1.0, 'snow_line_mean_abs_error_ft': None, 'worst_miss': ('durango', 0.0)}
-guardrails: REVIEW
-Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/137
+track record: {'verified_events': 10, 'mean_hit_rate': 1.0, 'snow_line_mean_abs_error_ft': None, 'worst_miss': ('durango', 0.0)}
+guardrails: BLOCK
+BLOCKED -- nothing published.
 exit=0
