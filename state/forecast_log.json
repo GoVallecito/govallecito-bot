@@ -8963,6 +8963,40 @@
       "verified": false,
       "observed": null,
       "score": null
+    },
+    {
+      "id": "2026-10-29-11",
+      "issued_at": "2026-10-29T04:25:17.865583-06:00",
+      "valid_date": "2026-10-29",
+      "post_id": null,
+      "predicted": {
+        "durango": {
+          "snow_low_in": 0.0,
+          "snow_high_in": 0.5,
+          "model_total_in": 0.0
+        },
+        "bayfield": {
+          "snow_low_in": 0.0,
+          "snow_high_in": 0.5,
+          "model_total_in": 0.0
+        },
+        "vallecito": {
+          "snow_low_in": 0.1,
+          "snow_high_in": 0.3,
+          "model_total_in": 0.19
+        },
+        "weminuche": {
+          "snow_low_in": 0.0,
+          "snow_high_in": 0.5,
+          "model_total_in": 0.0
+        }
+      },
+      "snow_line_predicted_ft": 10050,
+      "model_disagreement": "wide",
+      "note": null,
+      "verified": false,
+      "observed": null,
+      "score": null
     }
   ]
 }
