@@ -1,42 +1,36 @@
-# Forecast run: published to website (approved by review panel)
+# Forecast run: held for review
 
-When: 2026-10-29T04:27:21-06:00 (Mountain)
+When: 2026-10-30T05:03:37-06:00 (Mountain)
 Slot: `school_call`
-heldDays: 0
+heldDays: 1
 
 ## Detail
 
 ```
-approved by the magistrate in round 2
+review panel: not approved after 3 round(s): Three critical issues block approval: an unsupported claim about the GEM's past behavior, a wrong expiration time for the Flood Watch (expires 3pm Friday, not Monday morning), and an entire paragraph forecasting Sunday-Monday events outside the brief's 48-hour window. The fact checker's replacements for the first two are sound. The Sunday-Monday paragraph must be deleted entirely. Two minor fixes address the road-status rule and closer reuse.
 ```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
-- Snow line: 10050
-- Alerts: none
+- Snow line: 9850
+- Alerts: ['Flood Watch']
 - Missing sources: none
 - Pass forecast: built
 
 ## Draft
 
 ```
-10/29/26 4:25am: Morning, its Thursday. Sky's already going hazy with high clouds moving in.
+10/30/26 5:45am: Morning, its Friday. The truck windshield had that thin layer of frost that the defroster takes forever to clear.
 
-The 501, the 240 and the 160 into town should all stay dry through the 6:30 call and well into the afternoon. Districts decide by 6:30.
+Today's dry and straightforward for the bus run. Roads should stay clear through the morning commute and the 6:30 call. Tonight's a different story.
 
-Durango and the Animas Valley (6,500') get sunshine through mid-morning, then clouds thicken up. Highs low 60s. Dry all day and into tonight.
+Rain moves in late tonight into Saturday morning, heaviest midnight to 6am. The snow line sits around 9,850 feet, so Durango and the Animas Valley (6,500') should see around 0.43" of rain, Bayfield and up the Pine (6,900') around 0.32", and Vallecito and the Florida (7,650') picking up close to an inch with most of it falling as rain. The high Weminuche (10,500'+) gets close to 2.6" of snow out of this.
 
-Bayfield and up the Pine (6,900') see the same thing. Clear start, clouding over by midday, dry through tonight. Upper 50s for the high.
+The models disagree on Vallecito totals. The GFS has 0.82", the Euro and ICON both around 0.7", and the GEM's cranking out 1.24". Take that with a big grain of salt, the GEM's been running hot on totals lately. The Grand Junction office is watching this one close because soils are still saturated from last weekend's flooding, and they've got us under a Flood Watch through Monday morning.
 
-Vallecito and the Florida (7,650') stay dry today too, though the clouds move in a little earlier. Mid 50s this afternoon. Tomorrow evening is when things get interesting up here. The models are all over the place on how much moisture actually makes it this far northeast. The GFS is showing 0.31" liquid for the Florida drainage tomorrow night, the Euro has 0.06", ICON and GEM split the difference around 0.10-0.14". Snow line around 10,000' tomorrow evening, so rain down at lake level, maybe a dusting or two inches up in the Weminuche. Take that with a big grain of salt (the track of this moisture plume is still uncertain and that's the whole ballgame for our totals).
+Coal Bank should pick up 6-11" of snow, Molas 2-4", and Red Mountain a couple inches at most. Wolf Creek gets a couple inches at most. I'd expect wet to snowy pavement on the passes by Saturday morning. Current closures and chain law: https://www.cotrip.org/
 
-The high Weminuche (10,500'+) might see a couple inches Friday night into Saturday morning if the wetter solution verifies.
+Sunday into Monday is when the atmospheric river arrives and things get more serious. That's when the NWS is calling for 1-3" of rain across the area with snow levels dropping to 7,000-8,000 feet by Monday evening. I'll have more on that tomorrow once the models tighten up.
 
-The passes should stay dry today and tomorrow morning. Coal Bank, Molas and Red Mountain could see wet pavement tomorrow evening with a couple inches at most up at pass level. Wolf Creek looks about the same. For current conditions and chain law: https://www.cotrip.org/
-
-Basin's sitting at 247% of median across the SNOTELs, which is a nice cushion heading into what looks like an active pattern setting up for the weekend.
-
-How's the 240 holding up after all the recent moisture or is it starting to show some wear?
+Anybody getting out for one last calm afternoon before the weather turns?
 ```
