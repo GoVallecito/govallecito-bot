@@ -2340,8 +2340,15 @@
       "alert_category": "flood",
       "alert_id": "site-stream-below-1",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-10-30T16:27:14.726473+00:00"
     },
     {
       "post_id": "1138532512682553_122140370739360003",
