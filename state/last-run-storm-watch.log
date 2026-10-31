@@ -1,9 +1,4 @@
-=== storm watch @ 2026-10-30 15:26 MDT ===
-decision: fire=True -- the 2026-11-01 system escalated materially since the last post
-  window 2026-11-01T00:00 -> 2026-11-03T23:00, 3.33in liquid / 0.1in snow, peak 2026-11-01T07:00
-guardrails: BLOCK
-  - draft states a present-tense road surface condition ('The 501 and the county roads are gonna be wet and stay wet.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
-  - draft states a bare percentage ('400%'); this voice never gives one, it names which models disagree instead
-  - first-30-days policy: review everything
-BLOCKED -- nothing published.
+=== storm watch @ 2026-10-30 19:31 MDT ===
+decision: fire=False -- already posted about the 2026-11-01 system and it has not materially escalated
+  window 2026-11-01T00:00 -> 2026-11-03T23:00, 3.08in liquid / 0.2in snow, peak 2026-11-01T07:00
 exit=0
