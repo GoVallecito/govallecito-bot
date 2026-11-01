@@ -107,3 +107,10 @@ Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/148
 Wrote state/forecast-status.md
 exit=0
 
+=== 2026-11-01T09:26:55-07:00 run 41326363535 ===
+2026-11-01 09:26 MST is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
+MISS: no school_call went out for 2026-11-01. Recent misses: ['2026-11-01']
+[notify] opened miss issue #149
+2026-11-01 09:26 MST is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
+exit=0
+
