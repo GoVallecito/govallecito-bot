@@ -1,19 +1,19 @@
 # Sunday, 2026-11-01, life_safety
 
-Verdict: `review` | Snow line: 10900 | Alerts: ['Flood Watch', 'Avalanche Advisory', 'Winter Storm Warning']
+Verdict: `review` | Snow line: 10600 | Alerts: ['Winter Storm Warning', 'Flood Watch', 'Avalanche Advisory']
 
 ---
 
-11/01/26 7:00am: Morning, its Sunday. The dog didn't want to go out.
+11/01/26 8:00am: Morning, its Sunday. The dog didnt even want to go out.
 
-We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022). The concern is flash flooding and debris flows, Durango's looking at close to 1.75", Bayfield around 2", Vallecito 3.5", and the high country over 5" of liquid hitting already saturated ground, worst window today through tonight.
+Winter Storm Warning for Vallecito and the Florida drainage (COZ019) through noon Monday. Durango and Bayfield are under a Flood Watch through Monday morning but not the winter warning. The snow line's sitting around 10,600 feet right now and dropping through the day.
 
-Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires 5am Monday). Snow line stays above 10,000 feet until late tonight, so the lake and the 240 stay rain. The high country's getting hammered with liquid, the models spread from close to 3" (Euro 2.96, GFS 3.5, ICON 2.98) to 6.5" (GEM), before it flips to snow late tonight.
+Vallecito and the Florida drainage are looking at close to 4" of rain through Monday night, while Bayfield and up the Pine should see close to 1.75". The Euro shows close to 3", the GFS around 4", the GEM's cranking out 6.5" and I dont buy that at all. Take those with a big grain of salt (the models are all over the map on this one). Rain turns to snow above 10,500 feet this afternoon, then the line drops toward 9,000 feet overnight.
 
-Stay off small streams and out of drainages today. The Florida and Vallecito Creek should respond fast to this. If you're up a forest road, have a way out that doesn't cross water.
+The high Weminuche is looking at 12-18"+ by Monday morning with gusts 40-50mph through the day, worst conditions tonight into early Monday. Wolf Creek Pass should see 15-28" with gusts 65-75mph. The 550 passes (Coal Bank, Molas, Red Mountain) are looking at 9-17" with gusts 45-55mph up high.
 
-The official Flood Watch is here: https://forecast.weather.gov/
+I'd expect the Florida Road and the high country roads to be rough today if you're thinking about heading out. The rain rate's the issue below the snow line, and the wind and snow are the issue above it.
 
-The Winter Storm Warning: https://forecast.weather.gov/
+Official products and current road status: https://www.weather.gov/gjt/ and https://www.cotrip.org/
 
-Anybody up the Florida seeing the creek rising yet?
+How much have you caught in the gauge since midnight?
