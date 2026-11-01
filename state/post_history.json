@@ -2362,8 +2362,15 @@
       "alert_category": "flood",
       "alert_id": "lpc-0ff47594a828",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-01T16:32:17.217636+00:00"
     },
     {
       "post_id": "1138532512682553_122140561809360003",
