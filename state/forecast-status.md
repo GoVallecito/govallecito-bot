@@ -1,38 +1,40 @@
-# Forecast run: held for review
+# Forecast run: published to website (approved by review panel)
 
-When: 2026-10-31T05:03:10-06:00 (Mountain)
-Slot: `school_call`
-heldDays: 2
+When: 2026-11-01T05:03:40-07:00 (Mountain)
+Slot: `life_safety`
+heldDays: 0
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): The draft has four critical/major factual errors that must be fixed: wrong snow line direction (rising not dropping), wrong pass snow totals (Molas and Coal Bank differ), and two point values that need rounding. The personal detail contains a measurement when the brief says NO READING TODAY. All fixes are straightforward text substitutions with replacements drawn from the brief or the reviewers' suggested language.
+approved by the magistrate in round 3
+active life-safety alert(s): ['Winter Storm Warning']
+mentions avalanche conditions -- link CAIC, never interpret
 ```
+
+**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
-- Snow line: 10850
-- Alerts: ['Flood Watch', 'Winter Storm Watch']
+- Snow line: 11000
+- Alerts: ['Flood Watch', 'Avalanche Advisory', 'Winter Storm Warning']
 - Missing sources: none
 - Pass forecast: built
 
 ## Draft
 
 ```
-10/31/26 5:48am: Morning, its Saturday. The truck windows had a light sheen of rain on them when I walked out.
+11/01/26 5:00am: Morning, its Sunday. The truck windshield's already wet.
 
-Saturday's quiet before the main event arrives overnight into Sunday. The showers that moved through overnight are pulling out this morning and we'll see a dry afternoon with temps in the low-to-mid 50s in town and up the Pine, upper 40s at the lake. Clouds stay thick and wind picks up a bit later, gusts 10-15mph, but nothing that'll mess with plans.
+We're under a Flood Watch from the Grand Junction office through Monday morning, covering Vallecito, Bayfield and Durango. The NWS is calling for 2-4" of liquid across the San Juans today into tonight, with the heaviest rain this morning through late afternoon. Already saturated ground plus that kind of rate is the setup for flash flooding and debris flows.
 
-Sunday's the problem and its a big one. The Grand Junction office has us under a Flood Watch from Sunday morning through Monday morning, and Vallecito and up are also under a Winter Storm Watch starting Sunday morning. Both watches cover the same window because the setup's messy: heavy precip with a snow line that's gonna move around all day.
+The models are all over the place on totals for Vallecito and the Florida (7,650'), ranging from the Euro's 2.6" to the GEM's 6.47", but every one of them is soaked. Durango's looking at around 2" liquid, Bayfield just over an inch. Rain for all of us, snow line around 11,000' and falling but staying rain at valley and lake level through tonight.
 
-Rain arrives before dawn Sunday, likely between 3am-5am, and it comes in hard. Durango and the Animas Valley are looking at 3-3.25 inches of rain through Sunday night. Bayfield and up the Pine around 2 inches, maybe a bit more. Vallecito and the Florida drainage, the models can't agree: ICON's at 2.4 inches, Euro 2.75, GFS 4.2, GEM 5.4. That's a 3-inch spread and don't lock onto any single total, the exact track decides everything.
+I'd expect the 240 and the low crossings to be trouble today with this kind of rain coming. Do not try to cross moving water. The Animas is already running 1,810 cfs and its gonna respond fast.
 
-The snow line sits around 10,800 feet to start Sunday morning, then drops through the day. That puts the high Weminuche in the mix for serious snow, 11-20 inches on Coal Bank and Molas, 7-12 on Red Mountain, 15-28 on Wolf Creek with gusts hitting 55-65mph up there. At Vallecito elevation it stays rain the whole time.
+The passes are getting 9-18" of snow with gusts 55-65mph up high under a Winter Storm Warning for the high country. Vallecito's also under an Avalanche Advisory through Monday afternoon: https://avalanche.state.co.us/forecasts/backcountry-avalanche/san-juan-mountains/
 
-Heaviest rain looks like Sunday mid-morning through Sunday night, roughly 6am to midnight, with wind gusts ramping up to 30-40mph by afternoon. The 240 and the 501 should both see heavy rain and wind Sunday, and the flooding risk is real given how wet the basin already is. The official products are at weather.gov/gjt and cotrip.org has road status.
+Official products: https://www.weather.gov/gjt/
 
-Saturday's your window to get ready. Sunday you stay home if you can.
-
-Anybody already pulling boats or closing up camp for the season or is everything staying put?
+What's the situation looking like from your end?
 ```
