@@ -1,23 +1,27 @@
 # Review panel: 2026-11-01 life_safety
 
-Outcome: **NOT APPROVED**, not approved after 3 round(s): The fact checker caught two numerical issues: timing of Durango's heaviest rain and GFS precision at Vallecito. Both have concrete replacements that match the brief. The editor's road-status fix is valid under the live-road rule. The opener and closer flags are editorial taste, advisory under policy, and do not block a life-safety post with three active alerts and major flooding risk.
+Outcome: **NOT APPROVED**, not approved after 3 round(s): The Winter Storm Warning expiry time is wrong (the brief shows noon Monday, not 5am), and the Avalanche Advisory for COZ019 is missing entirely—both are critical safety alerts that must be corrected. The closing question reuses a recent construction and should be replaced. The Flood Watch parenthetical and dog opener are sound and do not block approval.
 
 ## Round 1
 
 ### Draft
 
 ```
-11/01/26 6:00am: Morning, its Sunday. Rain's already starting to fill the birdbath outside.
+11/01/26 7:00am: Morning, its Sunday. Rain's already coming down steady.
 
-Grand Junction's got a Flood Watch up for Vallecito and the Florida drainage (COZ019) and for Durango and Bayfield (COZ022), running through Monday morning at 11am. They're also carrying a Winter Storm Warning for Vallecito and up (COZ019 only) through Monday at noon. The threat is flash flooding, debris flows in steep terrain, and river flooding as saturated ground takes 2-4" of liquid across the San Juans today and tonight.
+We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022). The concern is flash flooding and debris flows with 3-4" of liquid hitting already saturated ground, worst window today through tonight.
 
-Durango and Bayfield should see 2-3" of rain through tonight with gusts 30-40mph this afternoon. Vallecito and up the Florida the Euro's calling 2.6" and the GEM's at 6.5", so anywhere in that window's possible, with gusts 35-45mph. Snow line stays above 10,000' until late tonight, then drops. The high country gets 12-18"+ with gusts 50-60mph up top.
+Vallecito and the Florida are also under a Winter Storm Warning through Monday noon. Snow line stays above 10,000 feet until late tonight, so the lake and the 240 stay rain. The high country's getting hammered with liquid, the models spread from 3" (Euro) to 6.5" (GEM), before it flips to snow late tonight.
 
-The passes are getting hammered. Coal Bank, Molas and Red Mountain 13-23". Wolf Creek 13-25". Current closures and chain law here: https://www.cotrip.org/
+Stay off small streams and out of drainages today. The Florida and Vallecito Creek are gonna respond fast to this. If you're up a forest road, have a way out that doesn't cross water.
 
-Do not drive through flowing water. The official Flood Watch is here: https://forecast.weather.gov/
+The official Flood Watch is here: https://forecast.weather.gov/
 
-Stay inside today if you can. What's the rain looking like from your end?
+The Winter Storm Warning: https://forecast.weather.gov/
+
+The NWS discussion lays out the atmospheric river setup and the rainfall mechanism if you want the full picture.
+
+Is the 240 still passable below the narrows or is water already running across?
 ```
 
 ### Rule gate: review
@@ -26,57 +30,53 @@ Stay inside today if you can. What's the rain looking like from your end?
 
 ### Fact checker
 
-- [critical] "Durango and Bayfield should see 2-3" of rain through tonight with gusts 30-40mph this afternoon." :: Durango's brief shows 2.03in total, Bayfield 1.98in; neither supports a 2-3" range. (evidence: Durango and the Animas Valley (6500 ft, zone COZ022): next 48h totals: 0.0in snow, 2.03in liquid
-Bayfield and up the Pine (6900 ft, zone COZ022): next 48h totals: 0.08in snow, 1.98in liquid) -> Durango should see around 2" of rain through tonight with gusts 30-40mph this afternoon, Bayfield close to 2".
-- [critical] "The threat is flash flooding, debris flows in steep terrain, and river flooding as saturated ground takes 2-4" of liquid across the San Juans today and tonight." :: The brief does not contain a 2-4" figure for the San Juans as a whole. (evidence: NOT IN BRIEF)
-- [minor] "Vallecito and up the Florida the Euro's calling 2.6" and the GEM's at 6.5", so anywhere in that window's possible, with gusts 35-45mph." :: The brief shows GFS 3.88" and ICON 2.98" but the draft omits them from the model spread. (evidence: MODEL DISAGREEMENT at Vallecito (next 48h): wide
-  liquid precipitation (rain plus melted snow): {'Euro': 2.6, 'GFS': 3.88, 'ICON': 2.98, 'GEM': 6.47} inches) -> Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.9", ICON 3.0", GEM 6.5", with gusts 35-45mph.
+- [critical] "the models spread from 3" (Euro) to 6.5" (GEM)" :: Euro shows 2.96in, not 3in (evidence: liquid precipitation (rain plus melted snow): {'Euro': 2.96, 'GFS': 3.5, 'ICON': 2.98, 'GEM': 6.47} inches) -> the models spread from close to 3" (Euro 2.96, GFS 3.5, ICON 2.98) to 6.5" (GEM)
+- [critical] "We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022)." :: The Flood Watch covers COZ019 and COZ022, which is correct, but the parenthetical about Durango and Bayfield is misleading since COZ022 includes both Durango/Animas Valley AND Bayfield/Pine bands (evidence: Flood Watch (COZ019, COZ022)) -> We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for both zones—Vallecito and up the Florida, plus Durango and Bayfield.
+- [critical] "The concern is flash flooding and debris flows with 3-4" of liquid hitting already saturated ground" :: 3-4in is only the high Weminuche figure; Durango gets 1.74in, Bayfield 1.98in, Vallecito 3.5in (evidence: Durango and the Animas Valley (6500 ft, zone COZ022): next 48h totals: 0.0in snow, 1.74in liquid; Bayfield and up the Pine (6900 ft, zone COZ022): next 48h totals: 0.08in snow, 1.98in liquid; Vallecito and the Florida (7650 ft, zone COZ019): next 48h totals: 0.0in snow, 3.5in liquid) -> The concern is flash flooding and debris flows—Durango's looking at close to 1.75", Bayfield around 2", Vallecito 3.5", and the high country 3-4" of liquid hitting already saturated ground
+- [major] "The NWS discussion lays out the atmospheric river setup and the rainfall mechanism if you want the full picture." :: The persona forbids quoting the NWS discussion (evidence: GRAND JUNCTION FORECAST DISCUSSION (the NWS forecaster's own reasoning -- read it for which model they trust today and why. DO NOT QUOTE IT.))
 
 ### Editor
 
-- [minor] "Grand Junction's got a Flood Watch up for Vallecito and the Florida drainage (COZ019) and for Durango and Bayfield (COZ022), running through Monday morning at 11am." :: (editorial, advisory) The alert window is stated wrong: the brief says the Flood Watch expires 2026-11-02T11:00:00-07:00, which is Monday at 11am MST, but this post is for Sunday, so it should say 'through tomorrow morning' or 'through Monday morning', not 'Monday morning at 11am' which reads as if Monday morning ends at 11am. (evidence: Flood Watch issued October 31 at 10:37PM MDT until November 2 at 11:00AM MST by NWS Grand Junction CO
-onset 2026-11-01T05:00:00-07:00  expires 2026-11-02T11:00:00-07:00) -> Grand Junction's got a Flood Watch up for Vallecito and the Florida drainage (COZ019) and for Durango and Bayfield (COZ022), running through Monday morning.
-- [minor] "They're also carrying a Winter Storm Warning for Vallecito and up (COZ019 only) through Monday at noon." :: (editorial, advisory) The Winter Storm Warning expires 2026-11-01T05:00:00-07:00 according to the brief, which is Sunday at 5am, not Monday at noon. This is a critical timing error on a life-safety alert. (evidence: Winter Storm Warning (COZ019)  [COZ019 ONLY, Vallecito and up, NOT Durango/Bayfield]
-Winter Storm Warning issued October 31 at 10:37AM MDT until November 2 at 12:00PM MST by NWS Grand Junction CO
-onset 2026-11-01T06:00:00-07:00  expires 2026-11-01T05:00:00-07:00)
-- [minor] "What's the rain looking like from your end?" :: (editorial, advisory) This closing question reuses the construction of the 2026-11-01 post's closer: 'What's the situation looking like from your end?' Same frame, different noun. (evidence: PERSONA: The closing question must not be a recent one in different clothes. 'What'd your gauge show overnight?' and 'What's the 501 looking like on your end?' are the same question wearing a different coat.) -> How high's the creek running where you are?
-- [minor] "Durango and Bayfield should see 2-3" of rain through tonight with gusts 30-40mph this afternoon." :: (editorial, advisory) The brief gives separate totals for Durango (2.03in) and Bayfield (1.98in), and the draft combines them into one sentence with a single range that does not contain Bayfield's figure. (evidence: Durango and the Animas Valley (6500 ft, zone COZ022):
-    next 48h totals: 0.0in snow, 2.03in liquid
-Bayfield and up the Pine (6900 ft, zone COZ022):
-    next 48h totals: 0.08in snow, 1.98in liquid) -> Durango should see around 2" of rain through tonight, Bayfield close to 2" as well, with gusts 30-40mph this afternoon.
-- [minor] "The passes are getting hammered." :: This is present tense stating what the passes ARE getting, which violates the road rule. The brief says YOU HAVE NO LIVE ROAD STATUS, so all pass statements must be future or conditional. (evidence: LIVE ROAD STATUS: YOU HAVE NONE. Not for the passes, not for US-550 or US-160, not for the 501, the 240 or the Florida Road, and not for the pavement in town.) -> The passes should get hammered today.
+- [minor] "We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022)." :: (editorial, advisory) The Flood Watch covers both COZ019 and COZ022, but the Winter Storm Warning and Avalanche Advisory cover only COZ019. The draft states the Flood Watch correctly but then fails to distinguish which alerts apply to which zones in the next paragraph. (evidence: - Winter Storm Warning (COZ019)  [COZ019 ONLY, Vallecito and up, NOT Durango/Bayfield])
+- [minor] "Vallecito and the Florida are also under a Winter Storm Warning through Monday noon." :: (editorial, advisory) The brief shows the Winter Storm Warning expires at 2026-11-01T05:00:00-07:00, which is 5am Sunday, not Monday noon. This is a critical timing error for a life-safety alert. (evidence: Winter Storm Warning issued October 31 at 10:37AM MDT until November 2 at 12:00PM MST by NWS Grand Junction CO
+    onset 2026-11-01T06:00:00-07:00  expires 2026-11-01T05:00:00-07:00)
+- [minor] "Morning, its Sunday. Rain's already coming down steady." :: (editorial, advisory) The opener reuses the construction of the 2026-11-01 5:00am post opener: 'Morning, its Sunday. [weather observation].' The second sentence structure is identical. (evidence: PERSONA: The line after the timestamp must not reuse the build of any of the six. 2026-11-01 opened: Morning, its Sunday. The truck windshield's already wet.) -> Morning, its Sunday. The kitchen window's streaming with water.
+- [minor] "Is the 240 still passable below the narrows or is water already running across?" :: (editorial, advisory) The closing question reuses the construction of the 2026-10-29 closer about the 240, just asking about current conditions instead of wear. (evidence: PERSONA: The closing question must not be a recent one in different clothes. 2026-10-29 closed: How's the 240 holding up after all the recent moisture or is it starting to show some wear?) -> Anybody up the Florida seeing culverts backing up yet?
+- [minor] "The high country's getting hammered with liquid, the models spread from 3" (Euro) to 6.5" (GEM), before it flips to snow late tonight." :: The brief shows Euro at 2.96in and GEM at 6.47in for Vallecito liquid. The draft rounds Euro to 3in (acceptable) but rounds GEM to 6.5in when 6.47 rounds to 6.5 only if we're rounding to tenths, which creates an inconsistency in precision. (evidence: liquid precipitation (rain plus melted snow): {'Euro': 2.96, 'GFS': 3.5, 'ICON': 2.98, 'GEM': 6.47} inches) -> The high country's getting hammered with liquid, the models spread from close to 3" (Euro) to 6-7" (GEM), before it flips to snow late tonight.
 
 ### Magistrate: REVISE
 
-The fact checker correctly identified three critical issues: Durango/Bayfield totals don't support a 2-3" range, the San Juans 2-4" figure is not in the brief, and two models are missing from the spread. The editor caught the present-tense road violation and the closer reuse. All fixes preserve the draft's voice while correcting unsupported numbers and rule violations.
+The Winter Storm Warning expiry requires clarification (the brief shows conflicting onset/expires timestamps, but the issued-until line reads Monday noon). The 3-4" liquid figure must be band-specific per the fact checker. The model spread needs the full model list as the brief requires. The NWS discussion reference violates the DO NOT QUOTE rule. All other issues are either editorial preference or misread the brief's late-run context.
 
 Required changes:
-- "They're also carrying a Winter Storm Warning for Vallecito and up (COZ019 only) through Monday at noon." -> They're also carrying a Winter Storm Warning for Vallecito and up (COZ019 only) through Monday noon.
-- "The threat is flash flooding, debris flows in steep terrain, and river flooding as saturated ground takes 2-4" of liquid across the San Juans today and tonight." -> The threat is flash flooding, debris flows in steep terrain, and river flooding as saturated ground takes heavy rain across the San Juans today and tonight.
-- "Durango and Bayfield should see 2-3" of rain through tonight with gusts 30-40mph this afternoon." -> Durango should see around 2" of rain through tonight, Bayfield close to 2" as well, with gusts 30-40mph this afternoon.
-- "Vallecito and up the Florida the Euro's calling 2.6" and the GEM's at 6.5", so anywhere in that window's possible, with gusts 35-45mph." -> Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.9", ICON 3.0", GEM 6.5", with gusts 35-45mph.
-- "The passes are getting hammered." -> The passes should get hammered today.
-- "What's the rain looking like from your end?" -> How high's the creek running where you are?
+- "Vallecito and the Florida are also under a Winter Storm Warning through Monday noon." -> Vallecito and the Florida are also under a Winter Storm Warning through Monday noon (onset 6am Sunday, expires noon Monday).
+- "The concern is flash flooding and debris flows with 3-4" of liquid hitting already saturated ground" -> The concern is flash flooding and debris flows—Durango's looking at close to 1.75", Bayfield around 2", Vallecito 3.5", and the high country 3-4" of liquid hitting already saturated ground
+- "The high country's getting hammered with liquid, the models spread from 3" (Euro) to 6.5" (GEM), before it flips to snow late tonight." -> The high country's getting hammered with liquid, the models spread from close to 3" (Euro 2.96, GFS 3.5, ICON 2.98) to 6.5" (GEM), before it flips to snow late tonight.
+- "The NWS discussion lays out the atmospheric river setup and the rainfall mechanism if you want the full picture." -> [delete this sentence entirely]
 
 Dismissed:
-- Editor's Winter Storm Warning timing concern: The brief shows conflicting data (onset 06:00, expires 05:00 same day), but the issued-until line states 'November 2 at 12:00PM MST' which is Monday noon. The draft's 'Monday at noon' is supported by the alert header.
+- Editor minor issue about opener construction: the 2026-11-01 5:00am post and this 7:00am post are both for Sunday 11/01, so they are the same day's posts at different times due to the late run. The brief's RUNNING LATE line explains this. Reusing the day and observation structure within the same calendar day is not the repetition the rule prohibits.
+- Editor minor issue about closer construction: the 2026-10-29 closer asks about the 240's condition after moisture; this draft asks about current passability during active flooding. Different safety concern, different question type, acceptable.
+- Fact checker critical issue about zone parenthetical: COZ022 does include both Durango and Bayfield bands, making the draft's statement factually correct. The suggested fix adds no clarity.
 
 ## Round 2
 
 ### Draft
 
 ```
-11/01/26 6:00am: Morning, its Sunday. Rain's already starting to fill the birdbath outside.
+11/01/26 7:00am: Morning, its Sunday. Rain's already coming down steady.
 
-Grand Junction's got a Flood Watch up for Vallecito and the Florida drainage (COZ019) and for Durango and Bayfield (COZ022), running through Monday morning at 11am. They're also carrying a Winter Storm Warning for Vallecito and up (COZ019 only) through Monday noon. The threat is flash flooding, debris flows in steep terrain, and river flooding as saturated ground takes heavy rain across the San Juans today and tonight.
+We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022). The concern is flash flooding and debris flows, Durango's looking at close to 1.75", Bayfield around 2", Vallecito 3.5", and the high country 3-4" of liquid hitting already saturated ground, worst window today through tonight.
 
-Durango should see around 2" of rain through tonight, Bayfield close to 2" as well, with gusts 30-40mph this afternoon. Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.9", ICON 3.0", GEM 6.5", with gusts 35-45mph. Snow line stays above 10,000' until late tonight, then drops. The high country gets 12-18"+ with gusts 50-60mph up top.
+Vallecito and the Florida are also under a Winter Storm Warning through Monday noon (onset 6am Sunday, expires noon Monday). Snow line stays above 10,000 feet until late tonight, so the lake and the 240 stay rain. The high country's getting hammered with liquid, the models spread from close to 3" (Euro 2.96, GFS 3.5, ICON 2.98) to 6.5" (GEM), before it flips to snow late tonight.
 
-The passes should get hammered today. Coal Bank, Molas and Red Mountain 13-23". Wolf Creek 13-25". Current closures and chain law here: https://www.cotrip.org/
+Stay off small streams and out of drainages today. The Florida and Vallecito Creek are gonna respond fast to this. If you're up a forest road, have a way out that doesn't cross water.
 
-Do not drive through flowing water. The official Flood Watch is here: https://forecast.weather.gov/
+The official Flood Watch is here: https://forecast.weather.gov/
 
-Stay inside today if you can. How high's the creek running where you are?
+The Winter Storm Warning: https://forecast.weather.gov/
+
+Is the 240 still passable below the narrows or is water already running across?
 ```
 
 ### Rule gate: review
@@ -85,46 +85,46 @@ Stay inside today if you can. How high's the creek running where you are?
 
 ### Fact checker
 
-- [critical] "Durango should see around 2" of rain through tonight" :: The brief shows 2.03in for Durango's next 48h total, but most of it (1.92in) falls by 5pm today, not 'through tonight'. (evidence: Durango and the Animas Valley (6500 ft, zone COZ022): next 48h totals: 0.0in snow, 2.03in liquid ... 2026-11-01T00:00 -> 2026-11-01T05:00: 47.6-49.0F, snow 0.0in, liquid 0.24in ... 2026-11-01T06:00 -> 2026-11-01T11:00: 48.0-52.7F, snow 0.0in, liquid 1.01in ... 2026-11-01T12:00 -> 2026-11-01T17:00: 51.4-55.0F, snow 0.0in, liquid 0.67in ... 2026-11-01T18:00 -> 2026-11-01T23:00: 46.6-49.4F, snow 0.0in, liquid 0.1in) -> Durango should see around 2" of rain, most of it by this evening, with gusts 30-40mph this afternoon.
-- [critical] "Bayfield close to 2" as well, with gusts 30-40mph this afternoon." :: Bayfield's 48h total is 1.98in, but the afternoon (12:00-17:00) gusts are 35-45mph, not 30-40mph. (evidence: Bayfield and up the Pine (6900 ft, zone COZ022): next 48h totals: 0.08in snow, 1.98in liquid ... 2026-11-01T12:00 -> 2026-11-01T17:00: 49.0-53.9F, snow 0.0in, liquid 0.44in, gusts 35-45mph, pop 100%) -> Bayfield close to 2" as well, with gusts 35-45mph this afternoon.
-- [minor] "Snow line stays above 10,000' until late tonight, then drops." :: The brief's snow line is 11,000ft representative, not 10,000ft. (evidence: SNOW LINE (derived, UNCALIBRATED HEURISTIC, hedge it): representative 11000 ft, falling (11050 -> 9900 ft)) -> Snow line stays above 11,000' until late tonight, then drops.
+- [critical] "Durango's looking at close to 1.75", Bayfield around 2", Vallecito 3.5", and the high country 3-4" of liquid hitting already saturated ground, worst window today through tonight." :: High country liquid range 3-4" not supported; brief shows 5.31" total for high Weminuche. (evidence: The high Weminuche (10500 ft, zone COZ019): next 48h totals: 1.35in snow, 5.31in liquid) -> Durango's looking at close to 1.75", Bayfield around 2", Vallecito 3.5", and the high country over 5" of liquid hitting already saturated ground, worst window today through tonight.
+- [critical] "Vallecito and the Florida are also under a Winter Storm Warning through Monday noon (onset 6am Sunday, expires noon Monday)." :: Expiration time is wrong; brief shows expires 5am Monday, not noon Monday. (evidence: Winter Storm Warning (COZ019) [COZ019 ONLY, Vallecito and up, NOT Durango/Bayfield] Winter Storm Warning issued October 31 at 10:37AM MDT until November 2 at 12:00PM MST by NWS Grand Junction CO onset 2026-11-01T06:00:00-07:00 expires 2026-11-01T05:00:00-07:00) -> Vallecito and the Florida are also under a Winter Storm Warning (onset 6am Sunday, expires 5am Monday).
+- [major] "The Florida and Vallecito Creek are gonna respond fast to this." :: Present-tense road/stream state without conditional hedge; no live streamflow status in brief. (evidence: LIVE ROAD STATUS: YOU HAVE NONE. Not for the passes, not for US-550 or US-160, not for the 501, the 240 or the Florida Road, and not for the pavement in town. There is no road-status source in this bundle and there was not one yesterday either. -> So you never write what a road IS.) -> The Florida and Vallecito Creek should respond fast to this.
 
 ### Editor
 
-- [minor] "Morning, its Sunday. Rain's already starting to fill the birdbath outside." :: (editorial, advisory) The opener reuses the construction of 2026-10-22's opener, which also described precipitation already happening in the present progressive tense. (evidence: PERSONA: The line after the timestamp must not reuse the build of any of the six. Recent opener 2026-10-22: 'Morning, its Thursday. The sky's been spitting rain since before I got up.')
-- [minor] "How high's the creek running where you are?" :: (editorial, advisory) The closing question reuses the construction of 2026-11-01's closer, asking what the situation looks like from the reader's location. (evidence: PERSONA: The closing question must not be a recent one in different clothes. Recent closer 2026-11-01: 'What's the situation looking like from your end?')
-- [minor] "The official Flood Watch is here: https://forecast.weather.gov/" :: The link text says 'Flood Watch' but the URL is the generic forecast.weather.gov, not the specific product. Earlier in the post the forecaster correctly linked the GJT office. (evidence: PERSONA: Always point at the official product. The draft already used https://www.weather.gov/gjt/ correctly earlier.) -> The official Flood Watch is here: https://www.weather.gov/gjt/
+- [minor] "We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022)." :: (editorial, advisory) The alert window is stated as raw product language instead of relative to Sunday, the day this post is for. (evidence: Flood Watch (COZ019, COZ022) ... expires 2026-11-02T11:00:00-07:00 ... THIS POST IS FOR: Sunday, 2026-11-01 -> An alert window is stated relative to the day the post is for, not copied out of the raw product. If the brief says a watch runs to 06:00 tomorrow and this post is for Monday, write 'through Tuesday morning,' never 'through Monday evening.') -> We're under a Flood Watch through Monday morning for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022).
+- [minor] "Vallecito and the Florida are also under a Winter Storm Warning through Monday noon (onset 6am Sunday, expires noon Monday)." :: (editorial, advisory) The Winter Storm Warning expires field in the brief shows 2026-11-01T05:00:00-07:00, which is 5am Sunday, not noon Monday, and the onset is also 6am Sunday which is after the expiration, indicating corrupt alert data that should not be stated as a hard window. (evidence: Winter Storm Warning (COZ019) ... onset 2026-11-01T06:00:00-07:00 expires 2026-11-01T05:00:00-07:00) -> Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office.
+- [minor] "Morning, its Sunday. Rain's already coming down steady." :: (editorial, advisory) The personal detail contains no measurement but describes a present condition (rain coming down) that requires observation, and the brief gives NO READING TODAY, meaning no measurement was taken and no observation can be stated as fact. (evidence: YOUR OWN GAUGE AND STAKE: NO READING TODAY. -> Nobody entered one, so you did not measure anything this morning. Your one personal detail must contain NO measurement today: the sky out the kitchen window, the drive, the dog, the woodpile, the truck, the yard.) -> Morning, its Sunday. The dog didn't want to go out.
+- [minor] "Is the 240 still passable below the narrows or is water already running across?" :: (editorial, advisory) The closing question reuses the construction of the 2026-10-29 closer about the 240, just with different specifics. (evidence: 2026-10-29 closed: How's the 240 holding up after all the recent moisture or is it starting to show some wear?) -> Anybody up the Florida seeing the creek rising yet?
 
 ### Magistrate: REVISE
 
-Four required fixes: timing precision for Durango rainfall, correct gust range for Bayfield afternoon, accurate snow line elevation, and proper NWS link. The fact checker correctly identified all numerical discrepancies with the brief. The two editorial flags on opener/closer construction are dismissed as advisory under relaxed editorial policy - they note similar patterns but not forbidden reuse of exact sentences or construction.
+The fact checker caught three critical/major errors: high country liquid understated (5.31" not 3-4"), Winter Storm Warning expiration wrong (5am not noon Monday), and a stream statement lacking conditional hedge. The editor's alert-window issue is advisory only (the parenthetical already states the correct endpoint), but the corrupt alert timestamps (onset after expiration) make the editor's vague-window fix safer. The opener and closer changes are editorial taste but both reviewers agree, so both go in. All five fixes are required.
 
 Required changes:
-- "Durango should see around 2" of rain through tonight" -> "Durango should see around 2" of rain, most of it by this evening"
-- "Bayfield close to 2" as well, with gusts 30-40mph this afternoon." -> "Bayfield close to 2" as well, with gusts 35-45mph this afternoon."
-- "Snow line stays above 10,000' until late tonight, then drops." -> "Snow line stays above 11,000' until late tonight, then drops."
-- "The official Flood Watch is here: https://forecast.weather.gov/" -> "The official Flood Watch is here: https://www.weather.gov/gjt/"
-
-Dismissed:
-- Editor flagged opener construction as reusing 2026-10-22 pattern - both describe current precipitation, but the specific observations differ (birdbath vs sky spitting rain), and editorial policy states construction/repetition concerns are advisory and never block approval.
-- Editor flagged closer as reusing 2026-11-01 construction - while both ask about local conditions, one asks about creek height (specific, measurable) and the other asks about 'the situation' (general), making them substantively different questions despite similar intent.
+- "Durango's looking at close to 1.75", Bayfield around 2", Vallecito 3.5", and the high country 3-4" of liquid hitting already saturated ground, worst window today through tonight." -> "Durango's looking at close to 1.75", Bayfield around 2", Vallecito 3.5", and the high country over 5" of liquid hitting already saturated ground, worst window today through tonight."
+- "Vallecito and the Florida are also under a Winter Storm Warning through Monday noon (onset 6am Sunday, expires noon Monday)." -> "Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires 5am Monday)."
+- "The Florida and Vallecito Creek are gonna respond fast to this." -> "The Florida and Vallecito Creek should respond fast to this."
+- "Morning, its Sunday. Rain's already coming down steady." -> "Morning, its Sunday. The dog didn't want to go out."
+- "Is the 240 still passable below the narrows or is water already running across?" -> "Anybody up the Florida seeing the creek rising yet?"
 
 ## Round 3
 
 ### Draft
 
 ```
-11/01/26 6:00am: Morning, its Sunday. Rain's already starting to fill the birdbath outside.
+11/01/26 7:00am: Morning, its Sunday. The dog didn't want to go out.
 
-Grand Junction's got a Flood Watch up for Vallecito and the Florida drainage (COZ019) and for Durango and Bayfield (COZ022), running through Monday morning at 11am. They're also carrying a Winter Storm Warning for Vallecito and up (COZ019 only) through Monday noon. The threat is flash flooding, debris flows in steep terrain, and river flooding as saturated ground takes heavy rain across the San Juans today and tonight.
+We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022). The concern is flash flooding and debris flows, Durango's looking at close to 1.75", Bayfield around 2", Vallecito 3.5", and the high country over 5" of liquid hitting already saturated ground, worst window today through tonight.
 
-Durango should see around 2" of rain, most of it by this evening. Bayfield close to 2" as well, with gusts 35-45mph this afternoon. Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.9", ICON 3.0", GEM 6.5", with gusts 35-45mph. Snow line stays above 11,000' until late tonight, then drops. The high country gets 12-18"+ with gusts 50-60mph up top.
+Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires 5am Monday). Snow line stays above 10,000 feet until late tonight, so the lake and the 240 stay rain. The high country's getting hammered with liquid, the models spread from close to 3" (Euro 2.96, GFS 3.5, ICON 2.98) to 6.5" (GEM), before it flips to snow late tonight.
 
-The passes should get hammered today. Coal Bank, Molas and Red Mountain 13-23". Wolf Creek 13-25". Current closures and chain law here: https://www.cotrip.org/
+Stay off small streams and out of drainages today. The Florida and Vallecito Creek should respond fast to this. If you're up a forest road, have a way out that doesn't cross water.
 
-Do not drive through flowing water. The official Flood Watch is here: https://www.weather.gov/gjt/
+The official Flood Watch is here: https://forecast.weather.gov/
 
-Stay inside today if you can. How high's the creek running where you are?
+The Winter Storm Warning: https://forecast.weather.gov/
+
+Anybody up the Florida seeing the creek rising yet?
 ```
 
 ### Rule gate: review
@@ -133,52 +133,51 @@ Stay inside today if you can. How high's the creek running where you are?
 
 ### Fact checker
 
-- [critical] "Durango should see around 2" of rain, most of it by this evening." :: The brief shows 2.03in total over 48h, with 0.24in overnight, 1.01in morning, 0.67in afternoon, and 0.1in evening—most comes during the morning and afternoon, not 'by this evening'. (evidence: 2026-11-01T00:00 -> 2026-11-01T05:00: 47.6-49.0F, snow 0.0in, liquid 0.24in, gusts 15-25mph, pop 93%
-2026-11-01T06:00 -> 2026-11-01T11:00: 48.0-52.7F, snow 0.0in, liquid 1.01in, gusts 20-30mph, pop 100%
-2026-11-01T12:00 -> 2026-11-01T17:00: 51.4-55.0F, snow 0.0in, liquid 0.67in, gusts 30-40mph, pop 100%
-2026-11-01T18:00 -> 2026-11-01T23:00: 46.6-49.4F, snow 0.0in, liquid 0.1in, gusts 30-40mph, pop 89%) -> Durango should see around 2" of rain through tonight, heaviest this morning and afternoon.
-- [minor] "Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.9", ICON 3.0", GEM 6.5", with gusts 35-45mph." :: The brief shows GFS at 3.88in, not 3.9in. (evidence: liquid precipitation (rain plus melted snow): {'Euro': 2.6, 'GFS': 3.88, 'ICON': 2.98, 'GEM': 6.47} inches) -> Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.88", ICON 3.0", GEM 6.5", with gusts 35-45mph.
+- [critical] "We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022)." :: The Avalanche Advisory for COZ019 is missing entirely from the post. (evidence: Avalanche Advisory (COZ019) [COZ019 ONLY, Vallecito and up, NOT Durango/Bayfield] Avalanche Advisory issued October 31 at 7:16PM MDT by NWS Denver CO onset 2026-10-31T18:16:00-07:00 expires 2026-11-02T16:30:00-07:00) -> We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022). Vallecito and the high country are also under an Avalanche Advisory through Monday afternoon.
+- [critical] "Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires 5am Monday)." :: The Winter Storm Warning expires at noon Monday (12:00PM MST on 2026-11-02), not 5am Monday. (evidence: Winter Storm Warning (COZ019) [COZ019 ONLY, Vallecito and up, NOT Durango/Bayfield] Winter Storm Warning issued October 31 at 10:37AM MDT until November 2 at 12:00PM MST by NWS Grand Junction CO onset 2026-11-01T06:00:00-07:00 expires 2026-11-01T05:00:00-07:00) -> Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires noon Monday).
 
 ### Editor
 
-- [minor] "Morning, its Sunday. Rain's already starting to fill the birdbath outside." :: (editorial, advisory) The opener reuses the construction of 2026-10-22: 'The sky's been spitting rain since before I got up' is the same sentence with different words, both opening with weather already happening in present progressive. (evidence: PERSONA: The line after the timestamp must not reuse the build of any of the six. Those exact sentences are forbidden. Do not reuse their construction with different numbers or nouns swapped in.)
-- [minor] "Stay inside today if you can. How high's the creek running where you are?" :: (editorial, advisory) The closing question reuses the construction of 2026-11-01: 'What's the situation looking like from your end?' Both ask the reader to report current conditions back. (evidence: PERSONA: The closing question must not be a recent one in different clothes.)
-- [minor] "The passes should get hammered today." :: (editorial, advisory) Present-tense road/pass statement without hedging. Must use future or conditional: 'should get', 'I'd expect', 'looks like'. (evidence: PERSONA: Correct: 'the 160 should be fine for the morning commute,' 'I'd expect dry pavement by the 6:30 call,' 'Coal Bank should stay rain at pass level.') -> The passes are gonna get hammered today.
+- [minor] "We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022)." :: (editorial, advisory) The Flood Watch covers both COZ019 and COZ022, but the draft states it as if both zones are listed separately when they are both covered; more critically, the alert expires at 11:00AM MST on November 2, and this post is for Sunday November 1, so 'through Monday morning' is correct but the parenthetical '11am Monday' should not appear since the brief shows the expiry is on the 2nd, not restated as 'Monday'. (evidence: Flood Watch (COZ019, COZ022) ... expires 2026-11-02T11:00:00-07:00) -> We're under a Flood Watch from the Grand Junction office through Monday morning, covering Vallecito, Bayfield and Durango.
+- [minor] "Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires 5am Monday)." :: (editorial, advisory) The Winter Storm Warning expires at 12:00PM MST on November 2 (Monday), not 5am Monday. The brief shows 'expires 2026-11-01T05:00:00-07:00' which is clearly a data error (expiring before onset), but the correct expiry from the alert text is 'until November 2 at 12:00PM MST'. (evidence: Winter Storm Warning issued October 31 at 10:37AM MDT until November 2 at 12:00PM MST by NWS Grand Junction CO) -> Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office through Monday noon.
+- [minor] "Morning, its Sunday. The dog didn't want to go out." :: (editorial, advisory) The opener reuses the construction of the 2026-10-26 opener 'The dog wanted out before the sky even started lightening' with the dog as the personal detail, just negated. (evidence: PERSONA: The line after the timestamp must not reuse the build of any of the six. ... If the gauge led yesterday, lead today with a zone, the sky, the alert, or the one thing that actually changed overnight.) -> Morning, its Sunday. Rain's already tapping the roof.
+- [minor] "Anybody up the Florida seeing the creek rising yet?" :: (editorial, advisory) The closing question reuses the construction of recent closers that ask 'what's X looking like' or 'anybody seeing Y yet', specifically similar to 'What's the situation looking like from your end?' (2026-11-01) and 'Anybody seeing washouts on the 240 yet' (2026-10-22). (evidence: PERSONA: The closing question must not be a recent one in different clothes.) -> How high's the Florida running at your place?
 
 ### Magistrate: REVISE
 
-The fact checker caught two numerical issues: timing of Durango's heaviest rain and GFS precision at Vallecito. Both have concrete replacements that match the brief. The editor's road-status fix is valid under the live-road rule. The opener and closer flags are editorial taste, advisory under policy, and do not block a life-safety post with three active alerts and major flooding risk.
+The Winter Storm Warning expiry time is wrong (the brief shows noon Monday, not 5am), and the Avalanche Advisory for COZ019 is missing entirely—both are critical safety alerts that must be corrected. The closing question reuses a recent construction and should be replaced. The Flood Watch parenthetical and dog opener are sound and do not block approval.
 
 Required changes:
-- "Durango should see around 2" of rain, most of it by this evening." -> "Durango should see around 2" of rain through tonight, heaviest this morning and afternoon."
-- "Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.9", ICON 3.0", GEM 6.5", with gusts 35-45mph." -> "Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.88", ICON 3.0", GEM 6.5", with gusts 35-45mph."
-- "The passes should get hammered today." -> "The passes are gonna get hammered today."
+- "Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires 5am Monday)." -> "Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires noon Monday). There's also an Avalanche Advisory for the high country through Monday afternoon."
+- "Anybody up the Florida seeing the creek rising yet?" -> "How high's the Florida running at your place?"
 
 Dismissed:
-- Editor flagged opener construction as reusing 2026-10-22 pattern—both describe weather already happening. The brief's editorial policy states voice, novelty, and repetition are advisory and never block approval. The opener is factually sound and fits the moment.
-- Editor flagged closer as reusing construction from 2026-11-01 (asking reader to report conditions). Same reasoning: editorial policy makes this advisory only, and the question is appropriate for a flood watch day.
+- Editor's minor issue on the Flood Watch parenthetical: the brief shows the expiry as 2026-11-02T11:00:00-07:00, and '11am Monday' correctly translates that for readers. The parenthetical adds useful precision without contradicting the 'through Monday morning' summary.
+- Editor's minor issue on the opener: the dog detail is not a construction reuse. The 2026-10-26 opener was about the dog wanting out before dawn (a time-of-day observation); this opener is about the dog's reluctance in current weather (a behavior observation). Different constructions, different purposes.
 
 ### Final-round edits applied to the writer's text
 
 The published text below is NOT byte-identical to what the writer composed. These reviewer replacements were substituted literally, with no further model call:
 
-- [critical, fact checker] "Durango should see around 2" of rain, most of it by this evening." -> "Durango should see around 2" of rain through tonight, heaviest this morning and afternoon."
-- [minor, fact checker] "Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.9", ICON 3.0", GEM 6.5", with gusts 35-45mph." -> "Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.88", ICON 3.0", GEM 6.5", with gusts 35-45mph."
-- [minor, editor] "The passes should get hammered today." -> "The passes are gonna get hammered today."
+- [minor, editor] "Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires 5am Monday)." -> "Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office through Monday noon."
+- [minor, editor] "Morning, its Sunday. The dog didn't want to go out." -> "Morning, its Sunday. Rain's already tapping the roof."
+- [minor, editor] "Anybody up the Florida seeing the creek rising yet?" -> "How high's the Florida running at your place?"
+
+DROPPED, the replacement was refused and the writer's sentence stands:
+- [fact checker] "We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022)." -> "We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022). Vallecito and the high country are also under an Avalanche Advisory through Monday afternoon." (the replacement reuses "also under an avalanche advisory through monday afternoon" from one of the last six published posts)
+- [fact checker] "Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires 5am Monday)." -> "Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires noon Monday)." (the replacement reuses "under a winter storm warning" from one of the last six published posts)
+- [editor] "We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022)." -> "We're under a Flood Watch from the Grand Junction office through Monday morning, covering Vallecito, Bayfield and Durango." (the replacement reuses "we're under a flood watch from the grand junction office through monday morning covering vallecito bayfield and durango" from one of the last six published posts)
 
 Rule gate on the patched text: review
 - active life-safety alert(s): ['Winter Storm Warning']
 
 Fact re-check of the patched text:
 
-- [critical] "Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.88", ICON 3.0", GEM 6.5", with gusts 35-45mph." :: ICON figure is wrong; brief shows 2.98in, not 3.0in. (evidence: MODEL DISAGREEMENT at Vallecito (next 48h): wide
-  liquid precipitation (rain plus melted snow): {'Euro': 2.6, 'GFS': 3.88, 'ICON': 2.98, 'GEM': 6.47} inches) -> Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.88", ICON 3.0", GEM 6.5" — spread of nearly 4 inches — with gusts 35-45mph.
-- [critical] "The passes are gonna get hammered today. Coal Bank, Molas and Red Mountain 13-23". Wolf Creek 13-25"." :: Coal Bank range is wrong; brief shows 13-23" but that's the combined US-550 range, not Coal Bank specifically which is 13-23" (actually correct), but Molas is 8-16" and Red Mountain is 9-17", not all the same range. (evidence: US-550 north, Coal Bank, Molas and Red Mountain (they close as a unit): 13-23" of snow, gusts 55-65 up high.
-    Coal Bank Pass, 10,640 ft: 13-23" of snow, gusts 55-65
-    Molas Pass, 10,910 ft: 8-16" of snow, gusts 40-50
-    Red Mountain Pass, 11,018 ft: 9-17" of snow, gusts 45-55) -> The passes are gonna get hammered today. Coal Bank 13-23", Molas 8-16", Red Mountain 9-17". Wolf Creek 13-25".
+- [critical] "We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022)." :: The Avalanche Advisory for COZ019 is missing entirely. (evidence: Avalanche Advisory (COZ019) [COZ019 ONLY, Vallecito and up, NOT Durango/Bayfield] Avalanche Advisory issued October 31 at 7:16PM MDT by NWS Denver CO onset 2026-10-31T18:16:00-07:00 expires 2026-11-02T16:30:00-07:00) -> We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022). Vallecito and the high country are also under an Avalanche Advisory through Monday afternoon.
+- [critical] "Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office through Monday noon." :: The Winter Storm Warning expires at 5am Monday, not noon Monday. (evidence: Winter Storm Warning (COZ019) [COZ019 ONLY, Vallecito and up, NOT Durango/Bayfield] Winter Storm Warning issued October 31 at 10:37AM MDT until November 2 at 12:00PM MST by NWS Grand Junction CO onset 2026-11-01T06:00:00-07:00 expires 2026-11-01T05:00:00-07:00) -> Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office through early Monday morning.
 
 Fact-checker objections still standing after the patch:
-- "Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.88", ICON 3.0", GEM 6.5", with gusts 35-45mph."
-- "The passes are gonna get hammered today. Coal Bank, Molas and Red Mountain 13-23". Wolf Creek 13-25"."
+- "We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022)."
+- "We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022)."
+- "Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office through Monday noon."
 

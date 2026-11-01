@@ -1,17 +1,19 @@
 # Sunday, 2026-11-01, life_safety
 
-Verdict: `review` | Snow line: 11000 | Alerts: ['Flood Watch', 'Avalanche Advisory', 'Winter Storm Warning']
+Verdict: `review` | Snow line: 10900 | Alerts: ['Flood Watch', 'Avalanche Advisory', 'Winter Storm Warning']
 
 ---
 
-11/01/26 6:00am: Morning, its Sunday. Rain's already starting to fill the birdbath outside.
+11/01/26 7:00am: Morning, its Sunday. The dog didn't want to go out.
 
-Grand Junction's got a Flood Watch up for Vallecito and the Florida drainage (COZ019) and for Durango and Bayfield (COZ022), running through Monday morning at 11am. They're also carrying a Winter Storm Warning for Vallecito and up (COZ019 only) through Monday noon. The threat is flash flooding, debris flows in steep terrain, and river flooding as saturated ground takes heavy rain across the San Juans today and tonight.
+We're under a Flood Watch through Monday morning (the Grand Junction office has it running to 11am Monday) for Vallecito and up the Florida (COZ019) and for Durango and Bayfield (COZ022). The concern is flash flooding and debris flows, Durango's looking at close to 1.75", Bayfield around 2", Vallecito 3.5", and the high country over 5" of liquid hitting already saturated ground, worst window today through tonight.
 
-Durango should see around 2" of rain, most of it by this evening. Bayfield close to 2" as well, with gusts 35-45mph this afternoon. Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.9", ICON 3.0", GEM 6.5", with gusts 35-45mph. Snow line stays above 11,000' until late tonight, then drops. The high country gets 12-18"+ with gusts 50-60mph up top.
+Vallecito and the Florida are also under a Winter Storm Warning from the Grand Junction office (onset 6am Sunday, expires 5am Monday). Snow line stays above 10,000 feet until late tonight, so the lake and the 240 stay rain. The high country's getting hammered with liquid, the models spread from close to 3" (Euro 2.96, GFS 3.5, ICON 2.98) to 6.5" (GEM), before it flips to snow late tonight.
 
-The passes should get hammered today. Coal Bank, Molas and Red Mountain 13-23". Wolf Creek 13-25". Current closures and chain law here: https://www.cotrip.org/
+Stay off small streams and out of drainages today. The Florida and Vallecito Creek should respond fast to this. If you're up a forest road, have a way out that doesn't cross water.
 
-Do not drive through flowing water. The official Flood Watch is here: https://www.weather.gov/gjt/
+The official Flood Watch is here: https://forecast.weather.gov/
 
-Stay inside today if you can. How high's the creek running where you are?
+The Winter Storm Warning: https://forecast.weather.gov/
+
+Anybody up the Florida seeing the creek rising yet?
