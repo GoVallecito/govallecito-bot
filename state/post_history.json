@@ -2596,6 +2596,21 @@
       "caption": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122140970259360003",
+      "posted_at": "2026-11-01T16:29:01.985533-07:00",
+      "slot": "emergency",
+      "hook_line": "La Plata County evacuation map.",
+      "had_image": false,
+      "image_topic": null,
+      "fire_stage": 0,
+      "post_type": "emergency_alert",
+      "alert_category": "evacuation",
+      "alert_id": "zone-pine-river-ranch-flooding-go-pnr-1",
+      "caption": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
