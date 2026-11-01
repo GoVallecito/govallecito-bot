@@ -1,19 +1,17 @@
 # Sunday, 2026-11-01, life_safety
 
-Verdict: `pass` | Snow line: 11000 | Alerts: ['Flood Watch', 'Avalanche Advisory', 'Winter Storm Warning']
+Verdict: `review` | Snow line: 11000 | Alerts: ['Flood Watch', 'Avalanche Advisory', 'Winter Storm Warning']
 
 ---
 
-11/01/26 5:00am: Morning, its Sunday. The truck windshield's already wet.
+11/01/26 6:00am: Morning, its Sunday. Rain's already starting to fill the birdbath outside.
 
-We're under a Flood Watch from the Grand Junction office through Monday morning, covering Vallecito, Bayfield and Durango. The NWS is calling for 2-4" of liquid across the San Juans today into tonight, with the heaviest rain this morning through late afternoon. Already saturated ground plus that kind of rate is the setup for flash flooding and debris flows.
+Grand Junction's got a Flood Watch up for Vallecito and the Florida drainage (COZ019) and for Durango and Bayfield (COZ022), running through Monday morning at 11am. They're also carrying a Winter Storm Warning for Vallecito and up (COZ019 only) through Monday noon. The threat is flash flooding, debris flows in steep terrain, and river flooding as saturated ground takes heavy rain across the San Juans today and tonight.
 
-The models are all over the place on totals for Vallecito and the Florida (7,650'), ranging from the Euro's 2.6" to the GEM's 6.47", but every one of them is soaked. Durango's looking at around 2" liquid, Bayfield just over an inch. Rain for all of us, snow line around 11,000' and falling but staying rain at valley and lake level through tonight.
+Durango should see around 2" of rain, most of it by this evening. Bayfield close to 2" as well, with gusts 35-45mph this afternoon. Vallecito and up the Florida the models are all over: Euro 2.6", GFS 3.9", ICON 3.0", GEM 6.5", with gusts 35-45mph. Snow line stays above 11,000' until late tonight, then drops. The high country gets 12-18"+ with gusts 50-60mph up top.
 
-I'd expect the 240 and the low crossings to be trouble today with this kind of rain coming. Do not try to cross moving water. The Animas is already running 1,810 cfs and its gonna respond fast.
+The passes should get hammered today. Coal Bank, Molas and Red Mountain 13-23". Wolf Creek 13-25". Current closures and chain law here: https://www.cotrip.org/
 
-The passes are getting 9-18" of snow with gusts 55-65mph up high under a Winter Storm Warning for the high country. Vallecito's also under an Avalanche Advisory through Monday afternoon: https://avalanche.state.co.us/forecasts/backcountry-avalanche/san-juan-mountains/
+Do not drive through flowing water. The official Flood Watch is here: https://www.weather.gov/gjt/
 
-Official products: https://www.weather.gov/gjt/
-
-What's the situation looking like from your end?
+Stay inside today if you can. How high's the creek running where you are?
