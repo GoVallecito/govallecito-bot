@@ -1,17 +1,17 @@
 # Self-test: live endpoint check
 
-Run: 2026-10-26T19:16:52+00:00
-Result: **14/16 sources reachable**
+Run: 2026-11-02T22:18:17+00:00
+Result: **15/16 sources reachable**
 
 ## The elevation thesis
 **PASS.** The bands return different forecasts, so the elevation parameter is being honoured and elevation-band forecasting works.
 
 | Band | Elevation requested (m) | Elevation used (m) | First-hour temp |
 |---|---|---|---|
-| Durango and the Animas Valley | 1981 | 1981.0 | 40.8 |
-| Bayfield and up the Pine | 2103 | 2103.0 | 39.1 |
-| Vallecito and the Florida | 2332 | 2332.0 | 38.0 |
-| The high Weminuche | 3200 | 3200.0 | 29.5 |
+| Durango and the Animas Valley | 1981 | 1981.0 | 46.7 |
+| Bayfield and up the Pine | 2103 | 2103.0 | 46.1 |
+| Vallecito and the Florida | 2332 | 2332.0 | 41.9 |
+| The high Weminuche | 3200 | 3200.0 | 30.5 |
 
 ## NWS zones
 | Point | Forecast zone | Fire zone | Grid |
@@ -25,7 +25,7 @@ Confirmed: Vallecito (COZ019) is in a different forecast zone than Durango (COZ0
 
 | Source | OK | Detail |
 |---|---|---|
-| CAIC zone for Vallecito | NO | only 1 polygon(s) published -- CAIC is out of season. Re-run mid-Nov to mid-Apr. Do NOT trust a point-in-polygon result against a single statewide shape. |
+| CAIC zone for Vallecito | yes |  |
 | CDOT road conditions | NO | CDOT_API_KEY not set -- free at data.cotrip.org |
 | CoCoRaHS reports | yes | AL: HTTP Error 500: Internal Server Error |
 | Colorado DWR reservoir | yes |  |
@@ -45,6 +45,5 @@ Confirmed: Vallecito (COZ019) is in a different forecast zone than Durango (COZ0
 ## Needs attention
 
 - **CDOT road conditions**: CDOT_API_KEY not set -- free at data.cotrip.org
-- **CAIC zone for Vallecito**: only 1 polygon(s) published -- CAIC is out of season. Re-run mid-Nov to mid-Apr. Do NOT trust a point-in-polygon result against a single statewide shape.
 
 A failure here is information, not a crash. CDOT without a key and CAIC out of season are both expected.
