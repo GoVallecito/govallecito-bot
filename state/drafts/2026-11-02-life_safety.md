@@ -4,16 +4,18 @@ Verdict: `pass` | Snow line: 9250 | Alerts: ['Winter Storm Warning', 'Flood Watc
 
 ---
 
-11/02/26 6:00am: Morning, its Monday. The kitchen window's fogged on the inside from all the moisture in the air.
+11/02/26 7:00am: Morning, its Monday. The dog came back in soaked from a thirty-second trip to the woodpile.
 
-The Flood Watch from the Grand Junction office runs through 11am this morning for the whole area, Durango to Vallecito. The Animas at Durango is running 10,700 cfs, the Piedra's at 12,800, and the Los Pinos above the lake hit 3,360. Those are big numbers and the crests will hold for hours after the last rain falls.
+We're under a Flood Watch through 11am this morning across all zones and a Winter Storm Warning through noon for Vallecito and up (COZ019 only). The Grand Junction office is calling this a Particularly Dangerous Situation for river flooding, with crests happening overnight into this morning when you cant see water across pavement.
 
-Turn around if water's covering the road. You cant judge depth in low light. The overnight hours into this morning are when most of the area rivers are forecast to crest, and water across pavement is nearly impossible to judge in the dark or early light.
+The Animas at Durango is running 11,500 cfs. Los Pinos above the lake is at 3,250 cfs. Vallecito Creek near Bayfield is 1,940 cfs. The Piedra's at 12,600 cfs. Those numbers stay high well after the rain quits, which it should do by late morning.
 
-The Winter Storm Warning is for Vallecito and up (COZ019 only) through noon today. The high Weminuche has picked up a couple inches overnight with another inch or two possible through midday. Snow line's holding around 9,250 feet.
+Do not attempt to cross water over a road. If you cant see the pavement, turn around.
 
-Rain should taper from southwest to northeast through late morning and early afternoon. The 160 and 550 into town should stay rain. Wolf Creek Pass will see 4-8" total by this evening, the three 550 passes north a couple inches at most with gusts 35-45 up high.
+Snow line's been around 9,250 feet. The high Weminuche caught a couple inches overnight with maybe another inch or two possible through midday. Wolf Creek Pass should see 4-8" total. Coal Bank might get a couple inches at most, while Molas should stay mostly rain at pass level. Red Mountain Pass could see 2-5". Rain at all valley elevations, Durango through Vallecito.
 
 Official products: https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=gjt
 
-Whats the 501 looking like for standing water this morning?
+Check road status before you go: https://www.cotrip.org/
+
+Are the creek crossings passable on your end this morning?

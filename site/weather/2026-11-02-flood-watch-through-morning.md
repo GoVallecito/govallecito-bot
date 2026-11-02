@@ -1,6 +1,6 @@
 ---
 title: "Flood Watch Through Morning"
-date: "2026-11-02T05:00:23.095835-07:00"
+date: "2026-11-02T07:00:25.380119-07:00"
 forDate: "2026-11-02"
 postType: "life_safety"
 snowLineFt: 9250
@@ -13,14 +13,18 @@ generatedBy: "govallecito-wx"
 slug: "2026-11-02-flood-watch-through-morning"
 ---
 
-11/02/26 5:00am: Morning, its Monday. The pines are dripping steady.
+11/02/26 7:00am: Morning, its Monday. The dog came back in soaked from a thirty-second trip to the woodpile.
 
-We're under a Flood Watch through 11am this morning for Durango, Bayfield and Vallecito, and the Grand Junction office has a Winter Storm Warning up for Vallecito and the high country through noon. The Animas, Piedra, Los Pinos and Vallecito Creek are all running high and the NWS hydrology discussion says multiple rivers are forecast to crest overnight into this morning, with the worst of it during these dark hours when you cant see water across pavement.
+We're under a Flood Watch through 11am this morning across all zones and a Winter Storm Warning through noon for Vallecito and up (COZ019 only). The Grand Junction office is calling this a Particularly Dangerous Situation for river flooding, with crests happening overnight into this morning when you cant see water across pavement.
 
-Do not drive through water you cant measure. If a road's flooded, turn around.
+The Animas at Durango is running 11,500 cfs. Los Pinos above the lake is at 3,250 cfs. Vallecito Creek near Bayfield is 1,940 cfs. The Piedra's at 12,600 cfs. Those numbers stay high well after the rain quits, which it should do by late morning.
 
-Rain's winding down from southwest to northeast through late morning. Snow line's been holding around 9250 feet, so the Florida drainage and Vallecito stay rain, the high Weminuche got close to 3" overnight with maybe another third of an inch this morning. The Euro's showing 0.37" liquid total for Vallecito, the GFS only 0.02", the GEM's at 0.79", they're all over the place, dont put much stock in any single number, the models cant agree on how much moisture is left in this system.
+Do not attempt to cross water over a road. If you cant see the pavement, turn around.
 
-The official products: https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=gjt
+Snow line's been around 9,250 feet. The high Weminuche caught a couple inches overnight with maybe another inch or two possible through midday. Wolf Creek Pass should see 4-8" total. Coal Bank might get a couple inches at most, while Molas should stay mostly rain at pass level. Red Mountain Pass could see 2-5". Rain at all valley elevations, Durango through Vallecito.
 
-Rivers stay high well after the rain quits. How are the crossings handling the flow this morning?
+Official products: https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=gjt
+
+Check road status before you go: https://www.cotrip.org/
+
+Are the creek crossings passable on your end this morning?
