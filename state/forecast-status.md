@@ -1,19 +1,21 @@
-# Forecast run: held for review
+# Forecast run: published to website (approved by review panel)
 
-When: 2026-11-01T08:03:51-07:00 (Mountain)
+When: 2026-11-02T05:03:10-07:00 (Mountain)
 Slot: `life_safety`
 heldDays: 0
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): Two critical timing errors on the alerts must be fixed: the Winter Storm Warning expires at 10pm tonight, not noon Monday, and the Flood Watch expires at 11am Monday, not just Monday morning. The closing question violates the NO READING TODAY rule by asking for gauge measurements. The road sentence needed the future/conditional framing the rule requires. All four fixes are direct substitutions with brief-supported replacements.
+approved by the magistrate in round 2
 active life-safety alert(s): ['Winter Storm Warning']
 ```
 
+**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
+
 ## What the data looked like
 
-- Snow line: 10600
+- Snow line: 9250
 - Alerts: ['Winter Storm Warning', 'Flood Watch', 'Avalanche Advisory']
 - Missing sources: none
 - Pass forecast: built
@@ -21,17 +23,15 @@ active life-safety alert(s): ['Winter Storm Warning']
 ## Draft
 
 ```
-11/01/26 8:00am: Morning, its Sunday. The dog didnt even want to go out.
+11/02/26 5:00am: Morning, its Monday. The pines are dripping steady.
 
-Winter Storm Warning for Vallecito and the Florida drainage (COZ019) through noon Monday. Durango and Bayfield are under a Flood Watch through Monday morning but not the winter warning. The snow line's sitting around 10,600 feet right now and dropping through the day.
+We're under a Flood Watch through 11am this morning for Durango, Bayfield and Vallecito, and the Grand Junction office has a Winter Storm Warning up for Vallecito and the high country through noon. The Animas, Piedra, Los Pinos and Vallecito Creek are all running high and the NWS hydrology discussion says multiple rivers are forecast to crest overnight into this morning, with the worst of it during these dark hours when you cant see water across pavement.
 
-Vallecito and the Florida drainage are looking at close to 4" of rain through Monday night, while Bayfield and up the Pine should see close to 1.75". The Euro shows close to 3", the GFS around 4", the GEM's cranking out 6.5" and I dont buy that at all. Take those with a big grain of salt (the models are all over the map on this one). Rain turns to snow above 10,500 feet this afternoon, then the line drops toward 9,000 feet overnight.
+Do not drive through water you cant measure. If a road's flooded, turn around.
 
-The high Weminuche is looking at 12-18"+ by Monday morning with gusts 40-50mph through the day, worst conditions tonight into early Monday. Wolf Creek Pass should see 15-28" with gusts 65-75mph. The 550 passes (Coal Bank, Molas, Red Mountain) are looking at 9-17" with gusts 45-55mph up high.
+Rain's winding down from southwest to northeast through late morning. Snow line's been holding around 9250 feet, so the Florida drainage and Vallecito stay rain, the high Weminuche got close to 3" overnight with maybe another third of an inch this morning. The Euro's showing 0.37" liquid total for Vallecito, the GFS only 0.02", the GEM's at 0.79", they're all over the place, dont put much stock in any single number, the models cant agree on how much moisture is left in this system.
 
-I'd expect the Florida Road and the high country roads to be rough today if you're thinking about heading out. The rain rate's the issue below the snow line, and the wind and snow are the issue above it.
+The official products: https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=gjt
 
-Official products and current road status: https://www.weather.gov/gjt/ and https://www.cotrip.org/
-
-How much have you caught in the gauge since midnight?
+Rivers stay high well after the rain quits. How are the crossings handling the flow this morning?
 ```
