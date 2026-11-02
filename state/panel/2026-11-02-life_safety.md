@@ -2,65 +2,26 @@
 
 Outcome: **APPROVED**, approved by the magistrate in round 2
 
-Title: Flood Watch Through Morning
+Title: Flood Watch Through Late Morning
 
 ## Round 1
 
 ### Draft
 
 ```
-11/02/26 5:00am: Morning, its Monday. The pines are dripping steady.
+11/02/26 6:00am: Morning, its Monday. The kitchen window's fogged on the inside from all the moisture in the air.
 
-We're under a Flood Watch through 11am this morning for Durango, Bayfield and Vallecito, and the Grand Junction office has a Winter Storm Warning up for Vallecito and the high country through noon. The Animas, Piedra, Los Pinos and Vallecito Creek are all running high and the NWS hydrology discussion says multiple rivers are forecast to crest overnight into this morning, with the worst of it during these dark hours when you cant see water across pavement.
+The Flood Watch from the Grand Junction office runs through 11am this morning for the whole area, Durango to Vallecito. The Animas at Durango is running 10,700 cfs, the Piedra's at 12,800, and the Los Pinos above the lake hit 3,360. Those are big numbers and rivers stay high well after the rain quits.
 
-Do not drive through water you cant measure. If a road's flooded, turn around.
+Do not cross water over a road if you cant see the pavement underneath. The overnight hours into this morning are when most of the area rivers are forecast to crest, and water across pavement is nearly impossible to judge in the dark or early light.
 
-Rain's winding down from southwest to northeast through late morning. Snow line's been holding around 9250 feet, so the Florida drainage and Vallecito stay rain, the high Weminuche got 2-3" overnight with maybe another inch this morning. The Euro's showing 0.37" liquid total for Vallecito, the GFS only 0.02", the GEM's at 0.79", they're all over the place, take any number with a big grain of salt (the models cant agree on how much moisture is left in this system).
+The Winter Storm Warning is for Vallecito and up (COZ019 only) through noon today. The high Weminuche has picked up a couple inches overnight with another inch or two possible through midday. Snow line's holding around 9,250 feet.
 
-The official products: https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=gjt
+Rain should taper from southwest to northeast through late morning and early afternoon. The 160 and 550 into town should stay rain. Wolf Creek Pass will see 4-8" total by this evening, the three 550 passes north a couple inches at most with gusts 35-45 up high.
 
-Rivers stay high well after the rain quits. What's the 240 looking like on your end?
-```
+Official products: https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=gjt
 
-### Rule gate: review
-
-- active life-safety alert(s): ['Winter Storm Warning']
-
-### Fact checker
-
-- [minor] "the high Weminuche got 2-3" overnight with maybe another inch this morning." :: (no matching brief line, downgraded) The brief shows 2.65in overnight (00:00-05:00) and 0.33in morning (06:00-11:00), totaling about 3 inches, not 2-3" overnight plus another inch. (evidence: The high Weminuche (10500 ft, zone COZ019): 2026-11-02T00:00 -> 2026-11-02T05:00: 27.5-30.8F, snow 2.65in, liquid 0.39in, gusts 25-35mph, pop 86% and 2026-11-02T06:00 -> 2026-11-02T11:00: 26.3-30.7F, snow 0.33in, liquid 0.05in, gusts 20-30mph, pop 48%) -> the high Weminuche got close to 3" overnight with maybe another third of an inch this morning.
-- [minor] "take any number with a big grain of salt (the models cant agree on how much moisture is left in this system)." :: Parenthetical explanation reads as bot-like; the forecaster would integrate this more naturally. (evidence: PERSONA) -> take any number with a big grain of salt, the models cant agree on how much moisture is left in this system.
-
-### Editor
-
-- [minor] "What's the 240 looking like on your end?" :: (editorial, advisory) Closing question reuses the construction of 2026-10-29's closer, just swapping 'holding up after all the recent moisture' for 'looking like'. (evidence: PERSONA: The closing question must not reuse the construction of any recent post, even with nouns swapped. 2026-10-29 closed: 'How's the 240 holding up after all the recent moisture or is it starting to show some wear?') -> How are the crossings handling the flow this morning?
-- [minor] "take any number with a big grain of salt (the models cant agree on how much moisture is left in this system)" :: The grain-of-salt phrasing 'take that/any with a big grain of salt' has appeared in both 2026-11-01 and 2026-10-29 posts; needs rotation. (evidence: PERSONA: Rotate the grain-of-salt phrasing. Three posts running that say 'take that with a big grain of salt' read as a template.) -> dont put much stock in any single number (the models cant agree on how much moisture is left in this system)
-
-### Magistrate: REVISE
-
-Three minor fixes required. The snow total split needs correction to match the brief's 2.65in + 0.33in breakdown. The grain-of-salt phrase has appeared in recent posts and needs rotation per editorial policy. The closing question reuses recent construction and must be replaced. All three reviewers agree on their fixes, the brief supports each replacement, and no automated flags require judgment beyond the standard life-safety alert review.
-
-Required changes:
-- "the high Weminuche got 2-3" overnight with maybe another inch this morning." -> "the high Weminuche got close to 3" overnight with maybe another third of an inch this morning."
-- "take any number with a big grain of salt (the models cant agree on how much moisture is left in this system)." -> "dont put much stock in any single number, the models cant agree on how much moisture is left in this system."
-- "What's the 240 looking like on your end?" -> "How are the crossings handling the flow this morning?"
-
-## Round 2
-
-### Draft
-
-```
-11/02/26 5:00am: Morning, its Monday. The pines are dripping steady.
-
-We're under a Flood Watch through 11am this morning for Durango, Bayfield and Vallecito, and the Grand Junction office has a Winter Storm Warning up for Vallecito and the high country through noon. The Animas, Piedra, Los Pinos and Vallecito Creek are all running high and the NWS hydrology discussion says multiple rivers are forecast to crest overnight into this morning, with the worst of it during these dark hours when you cant see water across pavement.
-
-Do not drive through water you cant measure. If a road's flooded, turn around.
-
-Rain's winding down from southwest to northeast through late morning. Snow line's been holding around 9250 feet, so the Florida drainage and Vallecito stay rain, the high Weminuche got close to 3" overnight with maybe another third of an inch this morning. The Euro's showing 0.37" liquid total for Vallecito, the GFS only 0.02", the GEM's at 0.79", they're all over the place, dont put much stock in any single number, the models cant agree on how much moisture is left in this system.
-
-The official products: https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=gjt
-
-Rivers stay high well after the rain quits. How are the crossings handling the flow this morning?
+Whats the 501 looking like for standing water this morning?
 ```
 
 ### Rule gate: review
@@ -73,16 +34,55 @@ clean, no issues
 
 ### Editor
 
-- [minor] "Morning, its Monday. The pines are dripping steady." :: (editorial, advisory) The opener reuses the construction of 2026-10-22: 'Morning, its [day]. The [thing] [is/was] [verb+ing] [descriptor].' (evidence: PERSONA: The line after the timestamp must not reuse the build of any of the six. 2026-10-22 opened: 'Morning, its Thursday. The sky's been spitting rain since before I got up.') -> Morning, its Monday. Water's running off the roof in sheets.
-- [minor] "dont put much stock in any single number" :: (editorial, advisory) Grain-of-salt phrasing must rotate; this is the same construction as recent posts that said 'take that with a big grain of salt.' (evidence: PERSONA: Rotate the grain-of-salt phrasing. Three posts running that say 'take that with a big grain of salt' read as a template.) -> the spread's too wide to call it with any confidence (the track of what's left in this system is still the whole question)
-- [minor] "How are the crossings handling the flow this morning?" :: (editorial, advisory) The closing question reuses the construction of 2026-10-29 and 2026-10-22, both of which asked about road conditions in present tense. (evidence: PERSONA: The closing question must not be a recent one in different clothes. 2026-10-29 closed: 'How's the 240 holding up after all the recent moisture or is it starting to show some wear?' 2026-10-22 closed: 'Anybody seeing washouts on the 240 yet or is it holding up?') -> What'd the rivers look like at first light from your end?
+- [minor] "Those are big numbers and rivers stay high well after the rain quits." :: (editorial, advisory) Exact repetition of a sentence from the 2026-11-02 recent post closing. (evidence: RECENT PUBLISHED POST 2026-11-02 closed: Rivers stay high well after the rain quits. How are the crossings handling the flow this morning?) -> Those are big numbers and the crests will hold for hours after the last rain falls.
+- [minor] "Do not cross water over a road if you cant see the pavement underneath." :: Repetition of the safety instruction construction from the 2026-11-02 recent post, just reworded. (evidence: RECENT PUBLISHED POST 2026-11-02: Do not drive through water you cant measure. If a road's flooded, turn around.) -> Turn around if water's covering the road. You cant judge depth in low light.
+
+### Magistrate: REVISE
+
+The draft is sound on all facts and safety messaging, but contains exact repetition of a sentence from yesterday's closer and near-repetition of yesterday's safety instruction construction. Both editor fixes are valid under the recent-post-construction rule and improve the post without altering any fact or measurement. The Winter Storm Warning flag is properly addressed in the draft. All numbers check against the brief.
+
+Required changes:
+- "Those are big numbers and rivers stay high well after the rain quits." -> "Those are big numbers and the crests will hold for hours after the last rain falls."
+- "Do not cross water over a road if you cant see the pavement underneath." -> "Turn around if water's covering the road. You cant judge depth in low light."
+
+## Round 2
+
+### Draft
+
+```
+11/02/26 6:00am: Morning, its Monday. The kitchen window's fogged on the inside from all the moisture in the air.
+
+The Flood Watch from the Grand Junction office runs through 11am this morning for the whole area, Durango to Vallecito. The Animas at Durango is running 10,700 cfs, the Piedra's at 12,800, and the Los Pinos above the lake hit 3,360. Those are big numbers and the crests will hold for hours after the last rain falls.
+
+Turn around if water's covering the road. You cant judge depth in low light. The overnight hours into this morning are when most of the area rivers are forecast to crest, and water across pavement is nearly impossible to judge in the dark or early light.
+
+The Winter Storm Warning is for Vallecito and up (COZ019 only) through noon today. The high Weminuche has picked up a couple inches overnight with another inch or two possible through midday. Snow line's holding around 9,250 feet.
+
+Rain should taper from southwest to northeast through late morning and early afternoon. The 160 and 550 into town should stay rain. Wolf Creek Pass will see 4-8" total by this evening, the three 550 passes north a couple inches at most with gusts 35-45 up high.
+
+Official products: https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=gjt
+
+Whats the 501 looking like for standing water this morning?
+```
+
+### Rule gate: review
+
+- active life-safety alert(s): ['Winter Storm Warning']
+
+### Fact checker
+
+clean, no issues
+
+### Editor
+
+- [minor] "The kitchen window's fogged on the inside from all the moisture in the air." :: (editorial, advisory) Personal detail contains an explanation/measurement (moisture in the air) when the brief says NO READING TODAY, requiring a detail with no measurement at all. (evidence: YOUR OWN GAUGE AND STAKE: NO READING TODAY. -> Nobody entered one, so you did not measure anything this morning. Your one personal detail must contain NO measurement today: the sky out the kitchen window, the drive, the dog, the woodpile, the truck, the yard.) -> The kitchen window's fogged solid on the inside.
+- [minor] "You cant judge depth in low light." :: Repeats the construction of the sentence immediately following it, both stating what you cannot do with water/roads in darkness. (evidence: PERSONA: Repetition is not confined to those three sentences. Read the draft against the RECENT PUBLISHED POST bodies you are given, sentence by sentence.) -> Depth is impossible to judge when you cant see the bottom.
 
 ### Magistrate: APPROVE
 
-The draft correctly handles a life-safety situation with three active alerts, properly scopes each alert to its zone, accurately reports the model disagreement by name without averaging, contains no road-status claims, and includes no measurement in the personal detail as required when NO READING TODAY. All facts check against the brief. The editor's three minor issues are advisory only and involve construction similarities that do not hold under close examination of the actual syntax.
+The draft correctly handles a life-safety situation with three active alerts. All facts check against the brief: river flows, snow totals, alert zones, timing, and pass forecasts are accurate. The stamp matches the brief's date and publication time. The road language properly uses conditional/future tense throughout. The personal detail contains no measurement figure, satisfying the NO READING TODAY requirement. Minor editorial concerns about phrasing do not rise to blocking issues.
 
 Dismissed:
-- Editor minor issue on opener construction: The 2026-10-22 opener was 'The sky's been spitting rain since before I got up' - a compound clause with temporal marker. This draft's 'The pines are dripping steady' is a simple subject-verb-adverb construction with no temporal element. These are different builds.
-- Editor minor issue on grain-of-salt phrasing: The phrase 'dont put much stock in any single number' is not the same construction as 'take that with a big grain of salt.' Different idiom, different syntax. The editor's evidence does not match the draft.
-- Editor minor issue on closing question: The draft asks 'How are the crossings handling the flow this morning?' about current conditions during an active flood event. The cited 2026-10-29 and 2026-10-22 questions asked about road wear and washouts - different subjects. Present-tense questions about different topics are not the same construction.
+- Editor minor issue on kitchen window: 'moisture in the air' is an observation about the weather, not a gauge/stake measurement. The rule forbids putting a number on precipitation ('the gauge caught 0.08'), not describing atmospheric conditions. The fogged window is the detail; the moisture is why it fogged. This is acceptable.
+- Editor minor issue on repetition: The two sentences serve different purposes—one is a direct warning about judging depth, the other explains timing of crests and visibility conditions. The construction similarity is minor and does not block approval under the relaxed editorial policy.
 

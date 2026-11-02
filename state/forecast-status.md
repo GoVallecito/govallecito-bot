@@ -1,6 +1,6 @@
 # Forecast run: published to website (approved by review panel)
 
-When: 2026-11-02T05:03:10-07:00 (Mountain)
+When: 2026-11-02T06:01:59-07:00 (Mountain)
 Slot: `life_safety`
 heldDays: 0
 
@@ -23,15 +23,17 @@ active life-safety alert(s): ['Winter Storm Warning']
 ## Draft
 
 ```
-11/02/26 5:00am: Morning, its Monday. The pines are dripping steady.
+11/02/26 6:00am: Morning, its Monday. The kitchen window's fogged on the inside from all the moisture in the air.
 
-We're under a Flood Watch through 11am this morning for Durango, Bayfield and Vallecito, and the Grand Junction office has a Winter Storm Warning up for Vallecito and the high country through noon. The Animas, Piedra, Los Pinos and Vallecito Creek are all running high and the NWS hydrology discussion says multiple rivers are forecast to crest overnight into this morning, with the worst of it during these dark hours when you cant see water across pavement.
+The Flood Watch from the Grand Junction office runs through 11am this morning for the whole area, Durango to Vallecito. The Animas at Durango is running 10,700 cfs, the Piedra's at 12,800, and the Los Pinos above the lake hit 3,360. Those are big numbers and the crests will hold for hours after the last rain falls.
 
-Do not drive through water you cant measure. If a road's flooded, turn around.
+Turn around if water's covering the road. You cant judge depth in low light. The overnight hours into this morning are when most of the area rivers are forecast to crest, and water across pavement is nearly impossible to judge in the dark or early light.
 
-Rain's winding down from southwest to northeast through late morning. Snow line's been holding around 9250 feet, so the Florida drainage and Vallecito stay rain, the high Weminuche got close to 3" overnight with maybe another third of an inch this morning. The Euro's showing 0.37" liquid total for Vallecito, the GFS only 0.02", the GEM's at 0.79", they're all over the place, dont put much stock in any single number, the models cant agree on how much moisture is left in this system.
+The Winter Storm Warning is for Vallecito and up (COZ019 only) through noon today. The high Weminuche has picked up a couple inches overnight with another inch or two possible through midday. Snow line's holding around 9,250 feet.
 
-The official products: https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=gjt
+Rain should taper from southwest to northeast through late morning and early afternoon. The 160 and 550 into town should stay rain. Wolf Creek Pass will see 4-8" total by this evening, the three 550 passes north a couple inches at most with gusts 35-45 up high.
 
-Rivers stay high well after the rain quits. How are the crossings handling the flow this morning?
+Official products: https://forecast.weather.gov/wwamap/wwatxtget.php?cwa=gjt
+
+Whats the 501 looking like for standing water this morning?
 ```
