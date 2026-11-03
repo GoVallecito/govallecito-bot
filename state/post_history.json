@@ -2842,6 +2842,21 @@
       "caption": null,
       "engagement_checked": false,
       "engagement": null
+    },
+    {
+      "post_id": "1138532512682553_122141362533360003",
+      "posted_at": "2026-11-03T16:53:31.415425-07:00",
+      "slot": "emergency",
+      "hook_line": "La Plata County update.",
+      "had_image": false,
+      "image_topic": null,
+      "fire_stage": 0,
+      "post_type": "emergency_alert",
+      "alert_category": "evacuation",
+      "alert_id": "lpc-d03906a94b1f",
+      "caption": null,
+      "engagement_checked": false,
+      "engagement": null
     }
   ]
 }
