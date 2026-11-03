@@ -2406,8 +2406,15 @@
       "alert_category": "flood",
       "alert_id": "lpc-acabe05eab50",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-03T17:28:07.914134+00:00"
     },
     {
       "post_id": "1138532512682553_122140913481360003",
@@ -2421,8 +2428,15 @@
       "alert_category": "disaster",
       "alert_id": "lpc-edf635f46c7d",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-03T17:28:08.301151+00:00"
     },
     {
       "post_id": "1138532512682553_122140920105360003",
