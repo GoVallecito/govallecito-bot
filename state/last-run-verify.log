@@ -1,10 +1,8 @@
-=== verify run @ 2026-11-03 14:11 MST ===
-observations: {'date': '2026-11-03', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
-  2026-11-02-13: hit_rate=1.0 line_error=Noneft
-  2026-11-02-14: hit_rate=0.5 line_error=Noneft
-  2026-11-02-15: hit_rate=0.5 line_error=Noneft
+=== verify run @ 2026-11-04 14:23 MST ===
+observations: {'date': '2026-11-04', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
+  2026-11-03-16: hit_rate=1.0 line_error=Noneft
 calibration: active=False offset=0.0ft (0/20 events)
-track record: {'verified_events': 16, 'mean_hit_rate': 0.88, 'snow_line_mean_abs_error_ft': None, 'worst_miss': ('bayfield', 0.2)}
+track record: {'verified_events': 17, 'mean_hit_rate': 0.88, 'snow_line_mean_abs_error_ft': None, 'worst_miss': ('bayfield', 0.2)}
 guardrails: REVIEW
-Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/155
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/157
 exit=0
