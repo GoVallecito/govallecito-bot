@@ -1,6 +1,6 @@
 # Forecast run: published to website (approved by review panel)
 
-When: 2026-11-03T05:03:53-07:00 (Mountain)
+When: 2026-11-04T04:37:53-07:00 (Mountain)
 Slot: `school_call`
 heldDays: 0
 
@@ -16,25 +16,33 @@ approved by the magistrate in round 3
 
 - Snow line: no precipitation forecast
 - Alerts: none
-- Missing sources: ['streamflow']
+- Missing sources: none
 - Pass forecast: built
 
 ## Draft
 
 ```
-11/03/26 5:47am: Morning, its Tuesday. The frost on the truck bed was thick enough to scrape this morning.
+11/04/26 4:35am: Morning, its Wednesday. Clear and cold enough that the breath hung in the air walking out to the truck.
 
-Before I get into the day ahead, I need to own yesterday. I called 0.0-0.1" for Bayfield and up the Pine and we got 0.3" when a band of showers set up over the valley Monday afternoon that I didnt have in the forecast.
+Dry run for the bus. The 501 should be fine, the 240 should be fine, and town routes should be clear through the morning window. Districts decide by 6:30 but this ones straightforward.
 
-Today's straightforward. Dry for the bus run across all elevations, and I'd expect the 501 and the 240 to stay dry through the morning. Durango and Bayfield should see partly cloudy skies with temps reaching the low 50s this afternoon. Up the Pine and around Vallecito, mid-to-upper 40s under the same setup. The high Weminuche stays below freezing all day but dry.
+Quick note on Saturday's call, I had Bayfield at 0.0-0.1in and it came in at 0.3in. A band set up just east of where I thought it would and clipped the Pine harder than the models were showing. My miss.
 
-Wednesday brings a weak system through. The GFS keeps us completely dry while the ICON shows up to 0.09" of liquid for Vallecito. The Euro and GEM split the difference with trace amounts. If we get anything Wednesday afternoon it'll be light showers in town and Bayfield, maybe a brief mix up the Pine, and a couple inches at most above 10,500'. Take that with a big grain of salt (the models cant agree on whether this thing has any moisture for us at all). Worst case for travel would be Wednesday evening into Thursday morning, but even then I'd expect the 501 and the 240 to handle fine and the passes to stay mostly wet rather than snow-packed.
+Durango and the Animas Valley (6,500') stay dry all day, temps climbing from the mid-30s into the low 50s by afternoon. Gusts 15-25 this afternoon but nothing that'll move anything around.
 
-Coal Bank could pick up a couple inches at most if this comes together, while Molas should stay mostly wet with rain at pass level. Red Mountain could pick up a couple inches at most. Wolf Creek should stay dry through Wednesday. Current closures and chain law: https://www.cotrip.org/
+Bayfield and up the Pine (6,900') same story. Should be dry pavement for the school run, dry through the day, a little breezy this afternoon with gusts 10-20. Low tonight back down into the low 30s.
 
-The SNOTEL at Vallecito is sitting at 1.8" of SWE, eighteen times the median for early November. Basin-wide the seven stations are running well above normal, ranging from about one-and-a-half times median at Upper San Juan to over four times at Red Mountain Pass. The reservoir's at 94% of full pool.
+Vallecito and the Florida (7,650') also dry. The models are showing trace amounts of moisture this afternoon, the GFS has us at zero, the ICON's got 0.05in, but even if something tries to develop it wont be enough to wet the roads. Take that with a big grain of salt (the spread's tiny and none of the guidance is confident). Gusts 10-20 this afternoon, temps mid-40s.
 
-Thursday clears out and we get a quiet stretch through the weekend.
+The high Weminuche (10,500'+) stays dry too. Gusts 20-30 this afternoon up high, temps in the low 30s.
 
-Did your end of the county see that Monday afternoon band or did it miss you too?
+The passes should stay dry for the morning commute and through the day. Coal Bank, Molas and Red Mountain should stay clear, Wolf Creek the same. Check COtrip for current conditions: https://www.cotrip.org/
+
+The SNOTEL at Vallecito's sitting at 2.0in SWE, 1000% of median, with 4in on the ground. The basin overall is running well above normal across seven stations, ranging from about one-and-a-half times median at Upper San Juan to ten times at Vallecito.
+
+The Animas at Durango's running 4,290 cfs, the reservoir's at 97% of full pool.
+
+Thursday looks like more of the same, dry, cool mornings, mild afternoons. No weather decisions for the rest of the week.
+
+Hows the inversion looking from your end this morning or is it mixing out already?
 ```
