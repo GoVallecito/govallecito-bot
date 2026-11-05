@@ -2912,8 +2912,15 @@
       "alert_category": "flood",
       "alert_id": "site-stream-below-1",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-05T17:48:34.749824+00:00"
     },
     {
       "post_id": "1138532512682553_122141177517360003",
@@ -2927,8 +2934,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-e8d6e26411e5",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-05T17:48:35.211232+00:00"
     },
     {
       "post_id": "1138532512682553_122141181027360003",
@@ -2942,8 +2956,15 @@
       "alert_category": "disaster",
       "alert_id": "lpc-077862a949ed",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-05T17:48:35.604468+00:00"
     },
     {
       "post_id": "1138532512682553_122141311023360003",
@@ -2957,8 +2978,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-8c274810211c",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-05T17:48:35.985044+00:00"
     },
     {
       "post_id": "1138532512682553_122141316939360003",
@@ -2972,8 +3000,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-5e361bacf805",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-05T17:48:36.394981+00:00"
     },
     {
       "post_id": "1138532512682553_122141361117360003",
