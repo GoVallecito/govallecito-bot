@@ -1,4 +1,4 @@
-=== storm watch @ 2026-11-04 19:17 MST ===
+=== storm watch @ 2026-11-05 03:49 MST ===
 decision: fire=False -- below threshold (0.0in liquid / 0.0in snow in the window)
-  window 2026-11-06T00:00 -> 2026-11-08T23:00, 0.0in liquid / 0.0in snow, peak 2026-11-06T00:00
+  window 2026-11-07T00:00 -> 2026-11-09T23:00, 0.0in liquid / 0.0in snow, peak 2026-11-07T00:00
 exit=0
