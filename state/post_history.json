@@ -3022,8 +3022,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-46f4a472468c",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-06T17:05:49.756243+00:00"
     },
     {
       "post_id": "1138532512682553_122141362533360003",
@@ -3037,8 +3044,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-d03906a94b1f",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-06T17:05:50.322788+00:00"
     },
     {
       "post_id": "1138532512682553_122141366067360003",
@@ -3052,8 +3066,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-0450efc51825",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-06T17:05:50.860270+00:00"
     },
     {
       "post_id": "1138532512682553_122141370537360003",
@@ -3067,8 +3088,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-82dcd569f2cd",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-06T17:05:51.404601+00:00"
     },
     {
       "post_id": "1138532512682553_122141370999360003",
@@ -3082,8 +3110,15 @@
       "alert_category": "evacuation",
       "alert_id": "zone-pine-river-ranch-flooding-clear-1793755355101",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-06T17:05:52.028858+00:00"
     },
     {
       "post_id": "1138532512682553_122141562285360003",
