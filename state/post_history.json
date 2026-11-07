@@ -3132,8 +3132,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-62563fe4b0e3",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-07T16:01:53.195046+00:00"
     },
     {
       "post_id": "1138532512682553_122141563317360003",
@@ -3147,8 +3154,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-8a32b074cfc2",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-07T16:01:53.590790+00:00"
     },
     {
       "post_id": "1138532512682553_122141564409360003",
@@ -3162,8 +3176,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-a9c1b4b9858e",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-07T16:01:53.997674+00:00"
     },
     {
       "post_id": "1138532512682553_122141784765360003",
