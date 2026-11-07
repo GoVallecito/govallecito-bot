@@ -1,13 +1,13 @@
 # Forecast run: published to website (approved by review panel)
 
-When: 2026-11-06T04:34:06-07:00 (Mountain)
+When: 2026-11-07T05:02:30-07:00 (Mountain)
 Slot: `school_call`
 heldDays: 0
 
 ## Detail
 
 ```
-approved by the magistrate in round 3
+approved by the magistrate in round 2
 ```
 
 **What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
@@ -22,23 +22,17 @@ approved by the magistrate in round 3
 ## Draft
 
 ```
-11/06/26 4:31am: Morning, its Friday. The sky was already pale gray when I walked out to the truck.
+11/07/26 5:45am: Morning, its Saturday. The woodpile's throwing long shadows in the early light.
 
-Dry weather for the bus run and the rest of the day. High clouds this morning with a weak shortwave moving through this afternoon, but the forcing's not there for anything more than maybe an isolated shower over the highest terrain. The Euro, GFS, ICON and GEM all agree: zero precipitation at all elevations through tonight.
+Straightforward day shaping up. Durango and the Animas Valley wake up mid-30s, climbing to the mid-50s this afternoon under mostly clear skies. Light winds, zero precipitation. Same story for Bayfield and up the Pine, low 30s this morning, low 50s by afternoon. Vallecito and the Florida start a touch colder, low 30s, warming to around 50 by midday with a bit more breeze up high in the afternoon, gusts 5-15mph in spots.
 
-Durango and the Animas Valley (6,500') should see high clouds through midday, then clearing by evening. Highs in the low 50s. Light winds, gusts 5-15mph through the morning.
+The high Weminuche sits mid-20s this morning, climbing to around 40 this afternoon. All four models (Euro, GFS, ICON, GEM) are in total agreement: dry through the weekend. The GJT office is mentioning a light shower possibility over the highest terrain this afternoon, but the models aren't showing anything and I don't see it happening.
 
-Bayfield and up the Pine (6,900') same story. High clouds, dry, clearing this evening. Highs around 50F. The 501 should stay dry for the morning run and through the day.
+The passes should stay dry through the day. Coal Bank, Molas and Red Mountain should stay dry through the day, same with Wolf Creek. That's the forecast, current closures and chain law at https://www.cotrip.org/
 
-Vallecito and the Florida (7,650') also dry under high clouds. That weak shortwave could kick up an isolated shower over the drainage this afternoon but I wouldnt count on seeing anything. Highs upper 40s. The 240 should stay dry for the bus and through the day.
+Sunday's a repeat. Same ridge, same dry air, temps running a few degrees above normal for early November. The Vallecito SNOTEL's sitting at 1.7" of SWE with 4" on the ground, and the basin overall is running well above median across the board, but we're not adding to it this weekend.
 
-The basin SNOTEL sits at 271% of median across seven stations, from just over median at Upper San Juan to four times median at Vallecito. The SNOTEL at Vallecito's at four times median with 1.6 inches of SWE and 3 inches on the ground as of yesterday. Solid start for early November.
+Good window for getting things buttoned up before the next system rolls through, whenever that is.
 
-The high Weminuche (10,000'+) stays dry too, though if we see anything it'd be a light flurry up there mid-afternoon. Temps in the mid-30s.
-
-Coal Bank, Molas and Red Mountain should stay dry through the day. Wolf Creek the same. Current road conditions and closures: https://www.cotrip.org/
-
-Weekend looks dry and a few degrees warmer under a ridge building in from the west. Next chance for anything meaningful is still well out there.
-
-Did you get any sun yesterday afternoon or did the clouds hold through?
+What are you getting done this weekend while the weather holds?
 ```
