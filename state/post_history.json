@@ -3198,8 +3198,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-dbe82029474b",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-08T16:28:45.033448+00:00"
     }
   ]
 }
