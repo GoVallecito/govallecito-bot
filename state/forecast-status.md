@@ -1,16 +1,16 @@
-# Forecast run: published to website (approved by review panel)
+# Forecast run: blocked
 
-When: 2026-11-07T05:02:30-07:00 (Mountain)
+When: 2026-11-08T05:02:52-07:00 (Mountain)
 Slot: `school_call`
-heldDays: 0
+heldDays: 1
 
 ## Detail
 
 ```
-approved by the magistrate in round 2
+review panel: not approved after 3 round(s): The automated gate flagged a snow-amount issue beyond day 3, but the draft contains no snow amounts at all—it's entirely dry. That flag is spurious. The editor caught three valid issues: a pivot construction that repeats 2026-11-07's pattern, a SNOTEL reading presented as current when it's from Friday, and a closer that asks about the weather window like yesterday's post. All three fixes are straightforward text substitutions that preserve the draft's voice and facts.
+draft states a bare percentage ('247%'); this voice never gives one, it names which models disagree instead
+a rewrite was attempted and was blocked too
 ```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
@@ -22,17 +22,21 @@ approved by the magistrate in round 2
 ## Draft
 
 ```
-11/07/26 5:45am: Morning, its Saturday. The woodpile's throwing long shadows in the early light.
+11/08/26 5:45am: Morning, its Sunday. That deep blue sky you only see after a hard freeze.
 
-Straightforward day shaping up. Durango and the Animas Valley wake up mid-30s, climbing to the mid-50s this afternoon under mostly clear skies. Light winds, zero precipitation. Same story for Bayfield and up the Pine, low 30s this morning, low 50s by afternoon. Vallecito and the Florida start a touch colder, low 30s, warming to around 50 by midday with a bit more breeze up high in the afternoon, gusts 5-15mph in spots.
+High pressure's locked in for the weekend and it's holding through Monday. Clear skies, light wind, and nothing coming over the ridge for days.
 
-The high Weminuche sits mid-20s this morning, climbing to around 40 this afternoon. All four models (Euro, GFS, ICON, GEM) are in total agreement: dry through the weekend. The GJT office is mentioning a light shower possibility over the highest terrain this afternoon, but the models aren't showing anything and I don't see it happening.
+Durango and the Animas Valley should see upper 50s this afternoon under full sun. Light breeze, gusts 5-15mph at most. Lows tonight drop back to the upper 30s.
 
-The passes should stay dry through the day. Coal Bank, Molas and Red Mountain should stay dry through the day, same with Wolf Creek. That's the forecast, current closures and chain law at https://www.cotrip.org/
+Bayfield and up the Pine run about the same, mid 50s by early afternoon with calm wind. The inversion might hang around in the valley bottoms through mid-morning but it'll mix out once the sun gets working.
 
-Sunday's a repeat. Same ridge, same dry air, temps running a few degrees above normal for early November. The Vallecito SNOTEL's sitting at 1.7" of SWE with 4" on the ground, and the basin overall is running well above median across the board, but we're not adding to it this weekend.
+Vallecito and up the Florida should hit low 50s this afternoon. High country stays dry too, the Weminuche topping out around 40 at 10,500 feet. If you're chasing late-season hunting or just getting out on the trails, the weather's not gonna be the problem.
 
-Good window for getting things buttoned up before the next system rolls through, whenever that is.
+The 550 north should stay dry over Coal Bank, Molas and Red Mountain all day, and Wolf Creek looks the same. Check COtrip for current conditions: https://www.cotrip.org/
 
-What are you getting done this weekend while the weather holds?
+The SNOTEL at Vallecito is sitting at 1.6 inches of SWE, over five times the median for early November. The basin as a whole is running close to two and a half times median, from just over median at Upper San Juan to over five times here at Vallecito. The Euro, GFS, ICON and GEM all agree on dry weather through Monday, so this stretch has legs.
+
+More of the same tomorrow, then the ridge starts to shift mid-week but it doesnt look like it'll bring us anything.
+
+Did you get out yesterday or are you making up for it today?
 ```
