@@ -1,16 +1,16 @@
-# Forecast run: blocked
+# Forecast run: published to website (approved by review panel)
 
-When: 2026-11-08T05:02:52-07:00 (Mountain)
+When: 2026-11-09T05:03:33-07:00 (Mountain)
 Slot: `school_call`
-heldDays: 1
+heldDays: 0
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): The automated gate flagged a snow-amount issue beyond day 3, but the draft contains no snow amounts at all—it's entirely dry. That flag is spurious. The editor caught three valid issues: a pivot construction that repeats 2026-11-07's pattern, a SNOTEL reading presented as current when it's from Friday, and a closer that asks about the weather window like yesterday's post. All three fixes are straightforward text substitutions that preserve the draft's voice and facts.
-draft states a bare percentage ('247%'); this voice never gives one, it names which models disagree instead
-a rewrite was attempted and was blocked too
+approved by the magistrate in round 3
 ```
+
+**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
@@ -22,21 +22,25 @@ a rewrite was attempted and was blocked too
 ## Draft
 
 ```
-11/08/26 5:45am: Morning, its Sunday. That deep blue sky you only see after a hard freeze.
+11/09/26 5:45am: Morning, its Monday. The kitchen window was black when I got up but the sky's already going pale now.
 
-High pressure's locked in for the weekend and it's holding through Monday. Clear skies, light wind, and nothing coming over the ridge for days.
+No weather for the bus run this morning. The 501 and the 240 should both be fine, and I'd expect dry pavement into town for the 6:30 call.
 
-Durango and the Animas Valley should see upper 50s this afternoon under full sun. Light breeze, gusts 5-15mph at most. Lows tonight drop back to the upper 30s.
+Durango and the Animas Valley will see mid-30s warming into the upper 50s by afternoon. Clear all day, light winds.
 
-Bayfield and up the Pine run about the same, mid 50s by early afternoon with calm wind. The inversion might hang around in the valley bottoms through mid-morning but it'll mix out once the sun gets working.
+Bayfield and up the Pine much the same, mid-30s this morning climbing to the mid-50s. Dry through tonight.
 
-Vallecito and up the Florida should hit low 50s this afternoon. High country stays dry too, the Weminuche topping out around 40 at 10,500 feet. If you're chasing late-season hunting or just getting out on the trails, the weather's not gonna be the problem.
+Vallecito and up the Florida start in the low to mid-30s, warming into the mid-50s this afternoon. No clouds, no wind to speak of.
 
-The 550 north should stay dry over Coal Bank, Molas and Red Mountain all day, and Wolf Creek looks the same. Check COtrip for current conditions: https://www.cotrip.org/
+The high Weminuche sits in the low 30s through the day, topping out in the mid-40s. Dry up there too.
 
-The SNOTEL at Vallecito is sitting at 1.6 inches of SWE, over five times the median for early November. The basin as a whole is running close to two and a half times median, from just over median at Upper San Juan to over five times here at Vallecito. The Euro, GFS, ICON and GEM all agree on dry weather through Monday, so this stretch has legs.
+The passes should stay dry all day. Coal Bank, Molas and Red Mountain should stay dry, Wolf Creek too. For current conditions and chain law: https://www.cotrip.org/
 
-More of the same tomorrow, then the ridge starts to shift mid-week but it doesnt look like it'll bring us anything.
+Tuesday looks like a repeat. The Euro, GFS, ICON and GEM all agree we stay dry through midweek, with a weak shortwave brushing the northern mountains Tuesday night that might kick off a few light flurries up high but nothing that'll make it down here. I wouldnt put much stock in that, its a weak system and the track could shift.
 
-Did you get out yesterday or are you making up for it today?
+The basin's sitting at 238% of median across the seven stations, with Vallecito well above median after that early snow we got. The reservoir's at 96% of full pool and the rivers are still running high for November, the Animas at 1710 cfs.
+
+Pattern stays quiet through the weekend, then models are hinting at something wetter dropping south off the coast Sunday into next week. Too early for amounts but worth watching.
+
+Hows the view looking from your end this morning, clear or still socked in?
 ```
