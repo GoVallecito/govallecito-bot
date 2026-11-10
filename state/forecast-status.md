@@ -1,6 +1,6 @@
 # Forecast run: published to website (approved by review panel)
 
-When: 2026-11-09T05:03:33-07:00 (Mountain)
+When: 2026-11-10T05:03:02-07:00 (Mountain)
 Slot: `school_call`
 heldDays: 0
 
@@ -22,25 +22,23 @@ approved by the magistrate in round 3
 ## Draft
 
 ```
-11/09/26 5:45am: Morning, its Monday. The kitchen window was black when I got up but the sky's already going pale now.
+11/10/26 5:45am: Morning, its Tuesday. The dog came back in with frost on her coat.
 
-No weather for the bus run this morning. The 501 and the 240 should both be fine, and I'd expect dry pavement into town for the 6:30 call.
+No precipitation today or tomorrow. Should be a dry run for the bus, dry afternoon in town, and the passes should stay dry. Districts still decide by 6:30 but the weather's not the question this morning.
 
-Durango and the Animas Valley will see mid-30s warming into the upper 50s by afternoon. Clear all day, light winds.
+Durango and the Animas Valley start mid-30s, climb to low 60s this afternoon under full sun. Gusts 5-15mph by midday, picking up to 10-20mph this evening. I'd expect the 160 into town to stay dry all day.
 
-Bayfield and up the Pine much the same, mid-30s this morning climbing to the mid-50s. Dry through tonight.
+Bayfield and up the Pine run a few degrees cooler, mid-30s at bus time warming into the upper 50s. Gusts stay light through the morning, 5-15mph this afternoon. The 501 and the drive down look straightforward.
 
-Vallecito and up the Florida start in the low to mid-30s, warming into the mid-50s this afternoon. No clouds, no wind to speak of.
+Vallecito and up the Florida same setup, mid-30s early climbing to low 50s. Light wind all day. I'd expect the 240 to be fine for the school run and the afternoon drive back.
 
-The high Weminuche sits in the low 30s through the day, topping out in the mid-40s. Dry up there too.
+High pressure holds through Wednesday with the same dry pattern. A weak system will pass to our north Tuesday afternoon, might kick off some clouds and a bit of breeze up in northwest Colorado, but its staying well clear of us. Otherwise sunny skies and light winds continue.
 
-The passes should stay dry all day. Coal Bank, Molas and Red Mountain should stay dry, Wolf Creek too. For current conditions and chain law: https://www.cotrip.org/
+The passes should stay dry through the week. Coal Bank, Molas and Red Mountain should see full sun and light wind today. Wolf Creek the same. For current conditions and any chain law: https://www.cotrip.org/
 
-Tuesday looks like a repeat. The Euro, GFS, ICON and GEM all agree we stay dry through midweek, with a weak shortwave brushing the northern mountains Tuesday night that might kick off a few light flurries up high but nothing that'll make it down here. I wouldnt put much stock in that, its a weak system and the track could shift.
+The Vallecito SNOTEL sits at 1.2 inches SWE and 4 inches depth, which is 300% of median for early November. The basin overall is running 236% of median across seven stations. Thats a strong start but we're still early in the season.
 
-The basin's sitting at 238% of median across the seven stations, with Vallecito well above median after that early snow we got. The reservoir's at 96% of full pool and the rivers are still running high for November, the Animas at 1710 cfs.
+Wednesday looks like a repeat of today, then the models start hinting at a trough off the West Coast by the weekend. Too early for amounts but worth watching if you've got weekend plans in the high country.
 
-Pattern stays quiet through the weekend, then models are hinting at something wetter dropping south off the coast Sunday into next week. Too early for amounts but worth watching.
-
-Hows the view looking from your end this morning, clear or still socked in?
+Did you catch the frost this morning or did your spot stay above freezing?
 ```
