@@ -1,4 +1,4 @@
-=== storm watch @ 2026-11-11 03:52 MST ===
-decision: fire=False -- already posted about the 2026-11-14 system and it has not materially escalated
-  window 2026-11-13T00:00 -> 2026-11-15T23:00, 0.46in liquid / 1.2in snow, peak 2026-11-14T14:00
+=== storm watch @ 2026-11-11 16:26 MST ===
+decision: fire=False -- below threshold (0.26in liquid / 0.3in snow in the window)
+  window 2026-11-13T00:00 -> 2026-11-15T23:00, 0.26in liquid / 0.3in snow, peak 2026-11-14T16:00
 exit=0
