@@ -1,16 +1,14 @@
-# Forecast run: published to website (approved by review panel)
+# Forecast run: held for review
 
-When: 2026-11-10T05:03:02-07:00 (Mountain)
+When: 2026-11-11T05:03:11-07:00 (Mountain)
 Slot: `school_call`
-heldDays: 0
+heldDays: 1
 
 ## Detail
 
 ```
-approved by the magistrate in round 3
+review panel: not approved after 3 round(s): Four critical and major fact issues require fixes before publication. The Durango high-temp range excludes the brief's actual forecast high of 60.9F. The road-condition statement violates the conditional-framing rule. The GJ discussion is mischaracterized as 'first real system' when it describes 'several low pressure systems' and 'the first shortwave'. The reference to 'those numbers' points to nothing specific in the text. All four have concrete replacements that satisfy the brief and the rules.
 ```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
@@ -22,23 +20,17 @@ approved by the magistrate in round 3
 ## Draft
 
 ```
-11/10/26 5:45am: Morning, its Tuesday. The dog came back in with frost on her coat.
+11/11/26 5:45am: Morning, its Wednesday. The frost on the windshield caught the porch light when I walked out.
 
-No precipitation today or tomorrow. Should be a dry run for the bus, dry afternoon in town, and the passes should stay dry. Districts still decide by 6:30 but the weather's not the question this morning.
+High pressure's locked in and we're getting another warm, dry day. Durango and the Animas Valley should hit the upper 50s to near 60 this afternoon under full sun, starting from the low 40s this morning. Light wind, nothing worth mentioning. Bayfield and up the Pine run the same script, mid 30s now climbing into the upper 50s by midday. Vallecito and the Florida start near 40 and top out in the mid 50s with calm air.
 
-Durango and the Animas Valley start mid-30s, climb to low 60s this afternoon under full sun. Gusts 5-15mph by midday, picking up to 10-20mph this evening. I'd expect the 160 into town to stay dry all day.
+The 160 and the 550 into town should stay dry all day, I'd expect straightforward driving. The 501 and the 240 should stay dry through the day. Coal Bank, Molas and Red Mountain should all stay dry through tomorrow. Wolf Creek the same. For current conditions and closures check https://www.cotrip.org/
 
-Bayfield and up the Pine run a few degrees cooler, mid-30s at bus time warming into the upper 50s. Gusts stay light through the morning, 5-15mph this afternoon. The 501 and the drive down look straightforward.
+The high Weminuche sits in the low 30s overnight and climbs into the low 40s this afternoon, still dry. The basin's sitting at 215% of median across the seven stations, which is a strong start for mid-November. Vallecito SNOTEL is holding 0.9 inches of SWE at 10,740 feet with 4 inches on the ground.
 
-Vallecito and up the Florida same setup, mid-30s early climbing to low 50s. Light wind all day. I'd expect the 240 to be fine for the school run and the afternoon drive back.
+Grand Junction's watching a long-wave trough that could bring the first real system this weekend into early next week. Snow levels look like they'll drop to 7,000-9,000 feet. The Euro and GFS are lining up on Saturday for the first push, but the timing and amounts are still loose this far out. Treat those numbers as a rough sketch for now (five days is a long ways off and the models havent nailed down the track yet).
 
-High pressure holds through Wednesday with the same dry pattern. A weak system will pass to our north Tuesday afternoon, might kick off some clouds and a bit of breeze up in northwest Colorado, but its staying well clear of us. Otherwise sunny skies and light winds continue.
+Today and tomorrow stay quiet. I'll have more on the weekend setup later this week.
 
-The passes should stay dry through the week. Coal Bank, Molas and Red Mountain should see full sun and light wind today. Wolf Creek the same. For current conditions and any chain law: https://www.cotrip.org/
-
-The Vallecito SNOTEL sits at 1.2 inches SWE and 4 inches depth, which is 300% of median for early November. The basin overall is running 236% of median across seven stations. Thats a strong start but we're still early in the season.
-
-Wednesday looks like a repeat of today, then the models start hinting at a trough off the West Coast by the weekend. Too early for amounts but worth watching if you've got weekend plans in the high country.
-
-Did you catch the frost this morning or did your spot stay above freezing?
+What's your plan for the nice weather window while it lasts?
 ```
