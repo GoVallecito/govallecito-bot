@@ -1,20 +1,18 @@
-# Forecast run: published to website (approved by review panel)
+# Forecast run: held for review
 
-When: 2026-11-12T05:03:19-07:00 (Mountain)
+When: 2026-11-13T05:03:27-07:00 (Mountain)
 Slot: `school_call`
-heldDays: 0
+heldDays: 1
 
 ## Detail
 
 ```
-approved in round 3 after applying 4 reviewer replacement(s) to the writer's text
+review panel: not approved after 3 round(s): Two critical numerical issues block approval. The Bayfield snowfall claim 'dusting to maybe an inch' does not contain 0.08", and the high Weminuche range 7-10" does not contain 8.24". Both fact-checker replacements are correct and necessary. The editor's concerns are advisory only and do not block publication.
 ```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
-- Snow line: no precipitation forecast
+- Snow line: 8300
 - Alerts: none
 - Missing sources: none
 - Pass forecast: built
@@ -22,19 +20,21 @@ approved in round 3 after applying 4 reviewer replacement(s) to the writer's tex
 ## Draft
 
 ```
-11/12/26 5:45am: Morning, its Thursday. The truck windshield had a thin layer of frost that scraped off easy.
+11/13/26 5:47am: Morning, its Friday. The sky out the kitchen window had that soft gray look coming in from the south.
 
-No weather for the bus run this morning. The 501 and the 240 should be fine for the bus run, and I'd expect the 160 into town to stay dry through the morning. Districts decide by 6:30 but nothing in the setup this morning puts any route in question.
+Districts decide by 6:30 and this morning's straightforward. The bus run should stay dry, with the first sprinkles not showing up until late tonight. The 501 and the 240 should both be fine for the morning routes.
 
-Durango and the Animas Valley stay dry through the day with highs near 60. Light winds, clear skies, and temps dropping back into the low 40s tonight.
+Durango and the Animas Valley (6,500') should see a quiet Friday with clouds building through the day. Rain moves in late tonight after 9pm or so, then picks up Saturday morning with the heaviest between 6am and 2pm. I'd expect close to half an inch by Saturday afternoon, with gusts 30-40mph during the afternoon hours.
 
-Bayfield and up the Pine get the same setup. Mid-50s this afternoon under full sun, calm winds, and a cold start Friday morning in the mid-30s.
+Bayfield and up the Pine (6,900') gets the same timeline. Late tonight for the first rain, then the main push Saturday morning. Looking at around 0.35-0.4" liquid with a dusting to maybe an inch of wet snow possible Saturday afternoon as temps drop. Gusts 30-40mph Saturday afternoon.
 
-Vallecito and up the Florida drainage run a few degrees cooler but its the same pattern. Clear, dry, and pleasant through the day with highs in the mid-50s. The SNOTEL at the lake is sitting at 0.8 inches of SWE, which is 67% of median for the date.
+Vallecito and the Florida (7,650') should see rain starting late tonight, then transitioning to snow Saturday morning. The snow line's around 8,300' early on and drops to about 8,000' by Saturday afternoon, so the lake level stays mostly rain. I'm looking at 1-2" of snow with about 0.5" liquid total. The models are all over the place here though. The GFS has 0.49" liquid while the GEM is cranking out 1.33", and snowfall ranges from the GEM saying none at all to the Euro showing nearly 2". I wouldn't bet the farm on those snow totals (the snow line's the whole question and it's still uncertain).
 
-Coal Bank, Molas and Red Mountain should stay dry through the day, same for Wolf Creek. Thats the forecast, current closures and chain law are at https://www.cotrip.org/
+The high Weminuche (10,500'+) should do well with this one. Snow starts late tonight and goes through Saturday afternoon, looking at 7-10" with gusts 25-35mph Saturday morning ramping to 30-40mph by afternoon.
 
-Friday looks like a repeat of today. The change comes this weekend. The Grand Junction discussion is pointing at a quick-moving wave tracking through Saturday with valley rain and mountain snow above 8,000-9,000 feet. The Euro is wetter than the GFS for the San Juans, and the ICON and GEM are somewhere in between, so theres still some spread in the models on how much moisture actually makes it this far south. I'll have a better handle on amounts and timing tomorrow morning once the high-res guidance comes in.
+The passes are getting enough that Saturday morning travel's the question. Coal Bank should see 8-15" by Saturday afternoon, Molas 4-7", Red Mountain 6-11". Wolf Creek's looking at 7-13" with gusts 35-45mph. Most of that falls Saturday morning into early afternoon. Current closures and chain law: https://www.cotrip.org/
 
-What's your read on the weekend setup, are you planning around it or waiting to see?
+The basin's sitting at 152% of median across the SNOTEL network. Red Mountain Pass is the standout right now with 6.8" of SWE.
+
+Are you seeing the clouds build in yet or is it still clear on your end?
 ```
