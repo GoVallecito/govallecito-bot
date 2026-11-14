@@ -1,4 +1,7 @@
-=== storm watch @ 2026-11-13 19:17 MST ===
-decision: fire=False -- below threshold (0.05in liquid / 0.0in snow in the window)
-  window 2026-11-15T00:00 -> 2026-11-17T23:00, 0.05in liquid / 0.0in snow, peak 2026-11-17T22:00
+=== storm watch @ 2026-11-14 03:19 MST ===
+decision: fire=True -- new system peaking 2026-11-17 clears the threshold
+  window 2026-11-16T00:00 -> 2026-11-18T23:00, 0.51in liquid / 0.9in snow, peak 2026-11-17T23:00
+guardrails: REVIEW
+  - first-30-days policy: review everything
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/168
 exit=0
