@@ -1,40 +1,43 @@
 # Forecast run: held for review
 
-When: 2026-11-13T05:03:27-07:00 (Mountain)
+When: 2026-11-14T05:03:19-07:00 (Mountain)
 Slot: `school_call`
-heldDays: 1
+heldDays: 2
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): Two critical numerical issues block approval. The Bayfield snowfall claim 'dusting to maybe an inch' does not contain 0.08", and the high Weminuche range 7-10" does not contain 8.24". Both fact-checker replacements are correct and necessary. The editor's concerns are advisory only and do not block publication.
+review panel: not approved after 3 round(s): The draft is sound and well-structured for a weekend advisory post. Three fixes required: Bayfield precip type and timing per the brief's rain designation, Vallecito range widened slightly for better model-disagreement hedge, and 'real' removed from Weminuche snow (unnecessary modifier). The fact checker misread several ranges as not containing the brief's figures when they clearly do.
+mentions avalanche conditions -- link CAIC, never interpret
 ```
 
 ## What the data looked like
 
-- Snow line: 8300
-- Alerts: none
+- Snow line: 8250
+- Alerts: ['Winter Weather Advisory']
 - Missing sources: none
 - Pass forecast: built
 
 ## Draft
 
 ```
-11/13/26 5:47am: Morning, its Friday. The sky out the kitchen window had that soft gray look coming in from the south.
+11/14/26 5:45am: Morning, its Saturday. The yard was still quiet when I walked out but the sky's already showing some pale gray in the east.
 
-Districts decide by 6:30 and this morning's straightforward. The bus run should stay dry, with the first sprinkles not showing up until late tonight. The 501 and the 240 should both be fine for the morning routes.
+The Winter Weather Advisory is up for Vallecito and the Florida (COZ019 only, not Durango or Bayfield) through 9pm tonight. The snow line's sitting around 8,250 feet and falling through the morning, which puts the question mark right at lake elevation and up the Florida Road.
 
-Durango and the Animas Valley (6,500') should see a quiet Friday with clouds building through the day. Rain moves in late tonight after 9pm or so, then picks up Saturday morning with the heaviest between 6am and 2pm. I'd expect close to half an inch by Saturday afternoon, with gusts 30-40mph during the afternoon hours.
+Durango and the Animas Valley (6,500') should see rain, heaviest 6am to noon with about a third of an inch. The 160 into town should get wet pavement with gusts 15-25mph through midday.
 
-Bayfield and up the Pine (6,900') gets the same timeline. Late tonight for the first rain, then the main push Saturday morning. Looking at around 0.35-0.4" liquid with a dusting to maybe an inch of wet snow possible Saturday afternoon as temps drop. Gusts 30-40mph Saturday afternoon.
+Bayfield and up the Pine (6,900') are right on the edge. Rain mixing with wet snow 6am to noon, close to a half inch of snow possible in spots above 7,000 feet. The 501 should get mostly wet pavement early with a slushy transition possible by mid-morning as temps drop into the mid 30s.
 
-Vallecito and the Florida (7,650') should see rain starting late tonight, then transitioning to snow Saturday morning. The snow line's around 8,300' early on and drops to about 8,000' by Saturday afternoon, so the lake level stays mostly rain. I'm looking at 1-2" of snow with about 0.5" liquid total. The models are all over the place here though. The GFS has 0.49" liquid while the GEM is cranking out 1.33", and snowfall ranges from the GEM saying none at all to the Euro showing nearly 2". I wouldn't bet the farm on those snow totals (the snow line's the whole question and it's still uncertain).
+Vallecito and the Florida (7,650') are where this gets real. An inch to an inch and a quarter of wet snow looks likely, heaviest 6am to noon with a bit more trickling in through the afternoon. The models are all over the place on this one (GFS has 1.21", Euro's at 3.47", GEM has zero snow but over an inch of liquid, ICON's around an inch) so take that with a big grain of salt, the snow line is the whole ballgame here and its still uncertain. The 240 and upper Florida Road should get accumulating snow through late morning with gusts 15-25mph.
 
-The high Weminuche (10,500'+) should do well with this one. Snow starts late tonight and goes through Saturday afternoon, looking at 7-10" with gusts 25-35mph Saturday morning ramping to 30-40mph by afternoon.
+The high Weminuche (10,500'+) is getting hammered. 5-6" of real snow, most of it 6am to noon.
 
-The passes are getting enough that Saturday morning travel's the question. Coal Bank should see 8-15" by Saturday afternoon, Molas 4-7", Red Mountain 6-11". Wolf Creek's looking at 7-13" with gusts 35-45mph. Most of that falls Saturday morning into early afternoon. Current closures and chain law: https://www.cotrip.org/
+The passes are in it too. Coal Bank looks like 6-11" up high, Molas 2-4", Red Mountain a couple inches at most. Wolf Creek 5-10". Check COtrip for current closures and chain law: https://www.cotrip.org/
 
-The basin's sitting at 152% of median across the SNOTEL network. Red Mountain Pass is the standout right now with 6.8" of SWE.
+Everything shuts off by early afternoon. Sunday's dry and cold, clearing out nice.
 
-Are you seeing the clouds build in yet or is it still clear on your end?
+The CAIC has the backcountry forecast here: https://avalanche.state.co.us/
+
+Did the precip reach you yet or is it still holding off at your elevation?
 ```
