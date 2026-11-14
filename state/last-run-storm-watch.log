@@ -1,7 +1,3 @@
-=== storm watch @ 2026-11-14 03:19 MST ===
-decision: fire=True -- new system peaking 2026-11-17 clears the threshold
-  window 2026-11-16T00:00 -> 2026-11-18T23:00, 0.51in liquid / 0.9in snow, peak 2026-11-17T23:00
-guardrails: REVIEW
-  - first-30-days policy: review everything
-Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/168
+=== storm watch @ 2026-11-14 14:24 MST ===
+ABORT -- preconditions not met: ['no forecast for durango', 'no forecast for bayfield', 'no forecast for vallecito']
 exit=0
