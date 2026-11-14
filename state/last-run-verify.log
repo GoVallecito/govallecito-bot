@@ -1,8 +1,4 @@
-=== verify run @ 2026-11-13 14:29 MST ===
-observations: {'date': '2026-11-13', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
-  2026-11-12-23: hit_rate=1.0 line_error=Noneft
-calibration: active=False offset=0.0ft (0/20 events)
-track record: {'verified_events': 24, 'mean_hit_rate': 0.92, 'snow_line_mean_abs_error_ft': None, 'worst_miss': ('bayfield', 0.2)}
-guardrails: BLOCK
-BLOCKED -- nothing published.
+=== verify run @ 2026-11-14 13:00 MST ===
+observations: {'date': '2026-11-14', 'sources_used': ['CoCoRaHS', 'SNOTEL'], 'missing': []}
+Nothing to verify -- no unverified forecast in window. Exiting.
 exit=0
