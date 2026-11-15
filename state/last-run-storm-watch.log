@@ -1,39 +1,4 @@
-=== storm watch @ 2026-11-15 03:47 MST ===
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-[http] 429, Retry-After 8s
-ABORT -- preconditions not met: ['no forecast for durango', 'no forecast for bayfield', 'no forecast for vallecito']
+=== storm watch @ 2026-11-15 14:43 MST ===
+decision: fire=False -- already posted about the 2026-11-17 system and it has not materially escalated
+  window 2026-11-17T00:00 -> 2026-11-19T23:00, 0.35in liquid / 0.3in snow, peak 2026-11-17T17:00
 exit=0
