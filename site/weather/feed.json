@@ -1,8 +1,36 @@
 {
-  "generatedAt": "2026-11-12T05:03:19-07:00",
-  "count": 32,
+  "generatedAt": "2026-11-15T04:32:32-07:00",
+  "count": 33,
   "truncated": false,
   "posts": [
+    {
+      "title": "Dry Sunday Frost to Fifties",
+      "date": "2026-11-15T04:31:00.679543-07:00",
+      "forDate": "2026-11-15",
+      "postType": "school_call",
+      "snowLineFt": null,
+      "snowLineTrend": null,
+      "bands": {},
+      "basinPercentOfMedian": 160,
+      "alerts": [],
+      "sources": [
+        "CAIC map-layer",
+        "CDOT",
+        "Colorado DWR (CDSS)",
+        "NRCS SNOTEL",
+        "NWS GJT AFD",
+        "NWS alerts",
+        "Open-Meteo bayfield",
+        "Open-Meteo durango",
+        "Open-Meteo vallecito",
+        "Open-Meteo weminuche",
+        "Pass forecast (Open-Meteo)",
+        "USGS NWIS"
+      ],
+      "generatedBy": "govallecito-wx",
+      "slug": "2026-11-15-dry-sunday-frost-to-fifties",
+      "body": "11/15/26 4:31am: Morning, its Sunday. The yard's still in shadow but the ridgeline across the valley is catching first light.\n\nDry day coming. Temps starting in the mid-30s across the board, climbing into the upper 40s in town and Bayfield, mid-40s up at the lake. Light winds, no precipitation in the forecast. Clear sky overnight left frost on anything that could hold it.\n\nDurango and the Animas Valley should see temps reach the low 50s by afternoon. The 160 into town should stay dry all day, nothing to work around.\n\nBayfield and up the Pine run the same script, mid-30s early climbing to near 50 by midday. The 501 should stay dry and straightforward.\n\nVallecito and up the Florida start at 34 and top out mid-40s. The 240 should stay dry, good travel window if you're headed out.\n\nThe passes get the same forecast, dry conditions all day with temps in the 30s up top. Coal Bank, Molas and Red Mountain should stay dry through the weekend. Wolf Creek the same. Check COTRiP for current road status: https://www.cotrip.org/\n\nAll four models agree on the dry setup today and tomorrow. The next system shows up Tuesday afternoon into Wednesday. Grand Junction's calling it a similar setup to what we just had, snow levels around 7-9k, 4-8\" possible in the southern mountains. I'll watch the trends on that one and have more tomorrow.\n\nBasin's sitting at 160% of median across the eight stations. Vallecito SNOTEL at 1.6 inches SWE, Red Mountain Pass at 7.3 inches, Upper San Juan at 1.5 inches. Spread's still wide but the high-elevation sites are banking it.\n\nDid the frost hit your place this morning or did you stay above freezing?"
+    },
     {
       "title": "Morning forecast for Vallecito, Bayfield and Durango",
       "date": "2026-11-12T05:00:24.369795-07:00",

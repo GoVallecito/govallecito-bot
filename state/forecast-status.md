@@ -1,43 +1,42 @@
-# Forecast run: held for review
+# Forecast run: published to website (approved by review panel)
 
-When: 2026-11-14T05:03:19-07:00 (Mountain)
+When: 2026-11-15T04:32:32-07:00 (Mountain)
 Slot: `school_call`
-heldDays: 2
+heldDays: 0
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): The draft is sound and well-structured for a weekend advisory post. Three fixes required: Bayfield precip type and timing per the brief's rain designation, Vallecito range widened slightly for better model-disagreement hedge, and 'real' removed from Weminuche snow (unnecessary modifier). The fact checker misread several ranges as not containing the brief's figures when they clearly do.
-mentions avalanche conditions -- link CAIC, never interpret
+approved by the magistrate in round 2
 ```
+
+**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
-- Snow line: 8250
-- Alerts: ['Winter Weather Advisory']
+- Snow line: no precipitation forecast
+- Alerts: none
 - Missing sources: none
 - Pass forecast: built
 
 ## Draft
 
 ```
-11/14/26 5:45am: Morning, its Saturday. The yard was still quiet when I walked out but the sky's already showing some pale gray in the east.
+11/15/26 4:31am: Morning, its Sunday. The yard's still in shadow but the ridgeline across the valley is catching first light.
 
-The Winter Weather Advisory is up for Vallecito and the Florida (COZ019 only, not Durango or Bayfield) through 9pm tonight. The snow line's sitting around 8,250 feet and falling through the morning, which puts the question mark right at lake elevation and up the Florida Road.
+Dry day coming. Temps starting in the mid-30s across the board, climbing into the upper 40s in town and Bayfield, mid-40s up at the lake. Light winds, no precipitation in the forecast. Clear sky overnight left frost on anything that could hold it.
 
-Durango and the Animas Valley (6,500') should see rain, heaviest 6am to noon with about a third of an inch. The 160 into town should get wet pavement with gusts 15-25mph through midday.
+Durango and the Animas Valley should see temps reach the low 50s by afternoon. The 160 into town should stay dry all day, nothing to work around.
 
-Bayfield and up the Pine (6,900') are right on the edge. Rain mixing with wet snow 6am to noon, close to a half inch of snow possible in spots above 7,000 feet. The 501 should get mostly wet pavement early with a slushy transition possible by mid-morning as temps drop into the mid 30s.
+Bayfield and up the Pine run the same script, mid-30s early climbing to near 50 by midday. The 501 should stay dry and straightforward.
 
-Vallecito and the Florida (7,650') are where this gets real. An inch to an inch and a quarter of wet snow looks likely, heaviest 6am to noon with a bit more trickling in through the afternoon. The models are all over the place on this one (GFS has 1.21", Euro's at 3.47", GEM has zero snow but over an inch of liquid, ICON's around an inch) so take that with a big grain of salt, the snow line is the whole ballgame here and its still uncertain. The 240 and upper Florida Road should get accumulating snow through late morning with gusts 15-25mph.
+Vallecito and up the Florida start at 34 and top out mid-40s. The 240 should stay dry, good travel window if you're headed out.
 
-The high Weminuche (10,500'+) is getting hammered. 5-6" of real snow, most of it 6am to noon.
+The passes get the same forecast, dry conditions all day with temps in the 30s up top. Coal Bank, Molas and Red Mountain should stay dry through the weekend. Wolf Creek the same. Check COTRiP for current road status: https://www.cotrip.org/
 
-The passes are in it too. Coal Bank looks like 6-11" up high, Molas 2-4", Red Mountain a couple inches at most. Wolf Creek 5-10". Check COtrip for current closures and chain law: https://www.cotrip.org/
+All four models agree on the dry setup today and tomorrow. The next system shows up Tuesday afternoon into Wednesday. Grand Junction's calling it a similar setup to what we just had, snow levels around 7-9k, 4-8" possible in the southern mountains. I'll watch the trends on that one and have more tomorrow.
 
-Everything shuts off by early afternoon. Sunday's dry and cold, clearing out nice.
+Basin's sitting at 160% of median across the eight stations. Vallecito SNOTEL at 1.6 inches SWE, Red Mountain Pass at 7.3 inches, Upper San Juan at 1.5 inches. Spread's still wide but the high-elevation sites are banking it.
 
-The CAIC has the backcountry forecast here: https://avalanche.state.co.us/
-
-Did the precip reach you yet or is it still holding off at your elevation?
+Did the frost hit your place this morning or did you stay above freezing?
 ```
