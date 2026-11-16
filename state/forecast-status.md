@@ -1,20 +1,20 @@
 # Forecast run: published to website (approved by review panel)
 
-When: 2026-11-15T04:32:32-07:00 (Mountain)
+When: 2026-11-16T05:03:37-07:00 (Mountain)
 Slot: `school_call`
 heldDays: 0
 
 ## Detail
 
 ```
-approved by the magistrate in round 2
+approved by the magistrate in round 3
 ```
 
 **What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
-- Snow line: no precipitation forecast
+- Snow line: 8850
 - Alerts: none
 - Missing sources: none
 - Pass forecast: built
@@ -22,21 +22,25 @@ approved by the magistrate in round 2
 ## Draft
 
 ```
-11/15/26 4:31am: Morning, its Sunday. The yard's still in shadow but the ridgeline across the valley is catching first light.
+11/16/26 5:45am: Morning, its Monday. The stars were sharp and bright when I walked out to the truck.
 
-Dry day coming. Temps starting in the mid-30s across the board, climbing into the upper 40s in town and Bayfield, mid-40s up at the lake. Light winds, no precipitation in the forecast. Clear sky overnight left frost on anything that could hold it.
+School routes should stay dry this morning. The 501, the 240, the drive into town should all be fine for the 6:30 call, but check https://www.cotrip.org/ for current conditions. Districts decide by then so check with them if you're on the fence about sending the kid out.
 
-Durango and the Animas Valley should see temps reach the low 50s by afternoon. The 160 into town should stay dry all day, nothing to work around.
+Durango and the Animas Valley (6,500') should stay clear through the day, warming into the low 50s. Tonight stays dry too.
 
-Bayfield and up the Pine run the same script, mid-30s early climbing to near 50 by midday. The 501 should stay dry and straightforward.
+Bayfield and up the Pine (6,900') gets the same setup, clear and mild. Low 50s this afternoon, upper 30s tonight.
 
-Vallecito and up the Florida start at 34 and top out mid-40s. The 240 should stay dry, good travel window if you're headed out.
+Vallecito and the Florida (7,650') run a few degrees cooler but the pattern holds. Clear today, clear tonight.
 
-The passes get the same forecast, dry conditions all day with temps in the 30s up top. Coal Bank, Molas and Red Mountain should stay dry through the weekend. Wolf Creek the same. Check COTRiP for current road status: https://www.cotrip.org/
+The change comes Tuesday afternoon and evening. A front pushes through with rain in the valleys and snow up high. The snow line looks like it'll start around 9,650' and drop to maybe 7,900' by late evening. That puts Durango and Bayfield in rain the whole time, Vallecito mostly rain with maybe a mix late. The high Weminuche (10,500'+) should pick up a few inches.
 
-All four models agree on the dry setup today and tomorrow. The next system shows up Tuesday afternoon into Wednesday. Grand Junction's calling it a similar setup to what we just had, snow levels around 7-9k, 4-8" possible in the southern mountains. I'll watch the trends on that one and have more tomorrow.
+Here's the problem: the models are all over the place on amounts. The GFS is showing 0.07" liquid at Vallecito. The GEM is cranking out 0.65". Euro and ICON are in between. That's a huge spread and it makes the snow call tough. Take any Tuesday evening number with a big grain of salt (the models disagree by close to 0.6" of liquid, which is the whole forecast).
 
-Basin's sitting at 160% of median across the eight stations. Vallecito SNOTEL at 1.6 inches SWE, Red Mountain Pass at 7.3 inches, Upper San Juan at 1.5 inches. Spread's still wide but the high-elevation sites are banking it.
+Timing looks like 4pm to 11pm Tuesday for the heaviest stuff. Wind picks up too, gusts 25-35 in the valleys, 45-55 on the passes. Coal Bank and Molas should stay mostly rain at pass level but I'd expect wet pavement and gusty wind to make for sketchy travel. Wolf Creek could see 3-6". Red Mountain a couple inches at most with gusts 45-55.
 
-Did the frost hit your place this morning or did you stay above freezing?
+That's the forecast. Current road status and chain law: https://www.cotrip.org/
+
+The basin's sitting at 160% of median across the SNOTELs, so we're in good shape heading into this.
+
+What's the wind looking like on your end this morning, calm or already picking up?
 ```
