@@ -3220,8 +3220,15 @@
       "alert_category": "evacuation",
       "alert_id": "lpc-6b270439433e",
       "caption": null,
-      "engagement_checked": false,
-      "engagement": null
+      "engagement_checked": true,
+      "engagement": {
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "total": 0,
+        "impressions": null
+      },
+      "engagement_checked_at": "2026-11-16T19:57:51.384079+00:00"
     }
   ]
 }
