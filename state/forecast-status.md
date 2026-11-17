@@ -1,6 +1,6 @@
 # Forecast run: aborted, data unavailable
 
-When: 2026-11-17T05:05:43-07:00 (Mountain)
+When: 2026-11-17T06:05:53-07:00 (Mountain)
 Slot: `school_call`
 heldDays: 0
 

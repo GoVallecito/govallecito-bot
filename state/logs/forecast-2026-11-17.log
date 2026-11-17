@@ -14,3 +14,14 @@ ABORT -- preconditions not met, posting nothing:
 Wrote state/forecast-status.md
 exit=0
 
+=== 2026-11-17T06:05:53-07:00 run 44088398615 ===
+NOTE: running at 06:00, inside the 4:00-9:00 window but later than the 4:00 target. Posting anyway, flagged late.
+=== Vallecito forecast: school_call @ 2026-11-17 06:00 MST ===
+snow-line calibration: offset=0.0ft active=False
+ABORT -- preconditions not met, posting nothing:
+  - no forecast for durango
+  - no forecast for bayfield
+  - no forecast for vallecito
+Wrote state/forecast-status.md
+exit=0
+
