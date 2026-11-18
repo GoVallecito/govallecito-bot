@@ -1,8 +1,4 @@
-=== storm watch @ 2026-11-17 20:39 MST ===
-decision: fire=True -- new system peaking 2026-11-20 clears the threshold
-  window 2026-11-19T00:00 -> 2026-11-21T23:00, 0.51in liquid / 2.0in snow, peak 2026-11-20T13:00
-guardrails: BLOCK
-  - draft states a present-tense road surface condition ('Blowing snow and wet pavement should make for rough travel 6pm to midnight.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
-  - first-30-days policy: review everything
-BLOCKED -- nothing published.
+=== storm watch @ 2026-11-18 04:35 MST ===
+decision: fire=False -- below threshold (0.34in liquid / 1.5in snow in the window)
+  window 2026-11-20T00:00 -> 2026-11-22T23:00, 0.34in liquid / 1.5in snow, peak 2026-11-20T18:00
 exit=0
