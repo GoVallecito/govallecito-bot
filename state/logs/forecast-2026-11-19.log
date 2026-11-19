@@ -3,3 +3,12 @@
 2026-11-19 01:36 MST is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
 exit=0
 
+=== 2026-11-19T05:02:35-07:00 run 44519807133 ===
+NOTE: running at 05:00, inside the 4:00-9:00 window but later than the 4:00 target. Posting anyway, flagged late.
+=== Vallecito forecast: school_call @ 2026-11-19 05:00 MST ===
+snow-line calibration: offset=0.0ft active=False
+ABORT -- preconditions not met, posting nothing:
+  - no forecast for durango
+Wrote state/forecast-status.md
+exit=0
+
