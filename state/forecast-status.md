@@ -1,23 +1,22 @@
 # Forecast run: blocked
 
-When: 2026-11-20T05:02:35-07:00 (Mountain)
+When: 2026-11-21T05:03:03-07:00 (Mountain)
 Slot: `school_call`
-heldDays: 4
+heldDays: 5
 
-> **STANDING FAILURE: 4 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
+> **STANDING FAILURE: 5 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): The fact checker correctly identified two road-status violations: the first states road conditions as present fact without CDOT data, and the second claims wet pavement when the brief shows snow at pass elevations. The editor's closing question flag is valid under the construction-reuse rule. All three fixes are supported by the brief and resolve the issues without adding unsupported content.
-draft states a present-tense road surface condition ('The passes get wet tonight but not much accumulation.') with no live CDOT data behind it -- forecast the roads and the passes, link CDOT for status
-draft states a bare percentage ('200%'); this voice never gives one, it names which models disagree instead
+review panel: not approved after 3 round(s): The fact checker correctly identified a forbidden snow line statement and a point-value snowfall figure where the brief shows 0.42 inches. The automated gate correctly flagged the bare percentage at 171%. The editor's model-disagreement construction concern is valid: both this draft and 2026-11-16 list models with their totals in parallel sentences. All five changes are required to satisfy the brief's rules and the automated gate.
+draft states a bare percentage ('25%'); this voice never gives one, it names which models disagree instead
 a rewrite was attempted and was blocked too
 ```
 
 ## What the data looked like
 
-- Snow line: 7500
+- Snow line: no precipitation forecast
 - Alerts: none
 - Missing sources: none
 - Pass forecast: built
@@ -25,17 +24,19 @@ a rewrite was attempted and was blocked too
 ## Draft
 
 ```
-11/20/26 5:47am: Morning, its Friday. The sky out the kitchen window is pale and clear, barely any color in it yet.
+11/21/26 5:52am: Morning, its Saturday. The sky's already pale over the ridgeline and the air's got that sharp cold edge to it.
 
-Bus run looks straightforward. The 501 and the 240 should be dry through the morning, and town's the same. Districts decide by 6:30 but I dont see anything that puts that call in question today.
+Dry day ahead but its not a clean one. The models are split on whether we get one last round of light snow this morning or whether the trough shuts off the moisture before it reaches us. The Euro's showing about 0.4 inches of snow for Vallecito and the Florida drainage, the ICON's got around a tenth of liquid, and the GFS and GEM say we're done.
 
-Durango and the Animas Valley (6,500') stay dry through the day, with temps in the low 40s. Gusts 15-25 this afternoon, otherwise not much happening. Bayfield and up the Pine (6,900') run the same, dry and quiet, maybe a sprinkle tonight but nothing that sticks.
+If we do catch something it'll be above 8,000 feet and done by late morning. Durango and Bayfield should stay dry. Vallecito and up the Florida could see light flurries through midday, with maybe an inch at the higher elevations if the Euro's right. The trough axis timing is still uncertain and that drives everything, so dont lock in plans around it.
 
-Vallecito and the Florida (7,650') are where it gets interesting, but not until tonight. The snow line sits right around 7,500 feet, which puts the lake and the upper drainage right on the edge. The GFS has almost nothing, 0.03 inches liquid. The Euro and GEM are wetter, 0.17 and 0.31 inches, and the ICON's in between. If the wetter models win out you could see a dusting to maybe an inch tonight, 7pm to midnight, but take that with a big grain of salt (the line's tight and a couple hundred feet makes the difference between rain and snow). The high Weminuche (10,500'+) picks up a couple inches, gusts 25-35.
+The passes should be fine for anyone heading north or east today. Coal Bank, Molas and Red Mountain might catch a dusting up top if the Euro verifies, Wolf Creek the same. Check cotrip.org for current conditions and chain law before you head out.
 
-I'd expect wet pavement on the passes tonight but not much accumulation. Coal Bank should stay mostly rain at pass level. Molas and Red Mountain pick up a couple inches at most, gusts 40-50 up high. Wolf Creek gets 3-6 inches. Thats the forecast, current closures and chain law are at cotrip.org.
+Wind picks up through midday, gusts 15-25mph across the Pine and the valley, then calms tonight. Highs low 40s in town, upper 30s at the lake. Clear and cold tonight, lows mid 20s in town, upper teens to low 20s up the Pine and at Vallecito.
 
-The basin's sitting at 180% of median across the SNOTEL network, and Vallecito's at twice the median. November's been good to us.
+Tomorrow brings the clear window if the yard work or the trail's on the list. Clear, calm, a few degrees warmer.
 
-What are you seeing up at the lake this morning, clear or already clouding up?
+The basin's sitting at 166% of median across the SNOTEL network. Red Mountain Pass is the high end at 8.3 inches SWE, Cascade is the low at 0.7 inches. Vallecito's at 171%.
+
+Are you getting anything this morning or has it stayed dry on your end?
 ```
