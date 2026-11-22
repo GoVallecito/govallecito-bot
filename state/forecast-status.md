@@ -1,22 +1,20 @@
-# Forecast run: blocked
+# Forecast run: held for review
 
-When: 2026-11-21T05:03:03-07:00 (Mountain)
+When: 2026-11-22T05:02:51-07:00 (Mountain)
 Slot: `school_call`
-heldDays: 5
+heldDays: 6
 
-> **STANDING FAILURE: 5 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
+> **STANDING FAILURE: 6 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): The fact checker correctly identified a forbidden snow line statement and a point-value snowfall figure where the brief shows 0.42 inches. The automated gate correctly flagged the bare percentage at 171%. The editor's model-disagreement construction concern is valid: both this draft and 2026-11-16 list models with their totals in parallel sentences. All five changes are required to satisfy the brief's rules and the automated gate.
-draft states a bare percentage ('25%'); this voice never gives one, it names which models disagree instead
-a rewrite was attempted and was blocked too
+review panel: not approved after 3 round(s): Three fact-check issues require fixes: the Bayfield model discussion misrepresents the brief's figures and invents ICON data not provided for that band, the Vallecito model discussion rounds 1.13 to 1.1 and mischaracterizes GEM's 0.41in as 'closer to half' of 1.13, and the grain-of-salt parenthetical is missing. The double-should construction is genuinely awkward and worth fixing. The US-160 statement is supported by the brief's Wolf Creek Pass forecast line.
 ```
 
 ## What the data looked like
 
-- Snow line: no precipitation forecast
+- Snow line: 6750
 - Alerts: none
 - Missing sources: none
 - Pass forecast: built
@@ -24,19 +22,23 @@ a rewrite was attempted and was blocked too
 ## Draft
 
 ```
-11/21/26 5:52am: Morning, its Saturday. The sky's already pale over the ridgeline and the air's got that sharp cold edge to it.
+11/22/26 5:45am: Morning, its Sunday. The truck's covered in a thin layer of frost that'll burn off once the sun hits it.
 
-Dry day ahead but its not a clean one. The models are split on whether we get one last round of light snow this morning or whether the trough shuts off the moisture before it reaches us. The Euro's showing about 0.4 inches of snow for Vallecito and the Florida drainage, the ICON's got around a tenth of liquid, and the GFS and GEM say we're done.
+Today's straightforward. Clear and cold this morning with temps in the low 20s up here, teens in the high country. We'll warm into the low 40s in Durango and upper 30s around Bayfield and the lake under sunny skies. Light winds, nothing to speak of.
 
-If we do catch something it'll be above 8,000 feet and done by late morning. Durango and Bayfield should stay dry. Vallecito and up the Florida could see light flurries through midday, with maybe an inch at the higher elevations if the Euro's right. The trough axis timing is still uncertain and that drives everything, so dont lock in plans around it.
+Tomorrow's when things get interesting. A quick-moving system crosses the state Monday and it'll bring light precip to the San Juans, mainly morning through late afternoon. The snow line looks like it'll sit right around 6,750 feet, which puts the call right on the knife edge for a lot of us.
 
-The passes should be fine for anyone heading north or east today. Coal Bank, Molas and Red Mountain might catch a dusting up top if the Euro verifies, Wolf Creek the same. Check cotrip.org for current conditions and chain law before you head out.
+Durango and the Animas Valley (6,500') should see mostly rain, but it could mix with or change to snow if temps drop faster than expected. I'd expect the 160 should stay rain at highway level.
 
-Wind picks up through midday, gusts 15-25mph across the Pine and the valley, then calms tonight. Highs low 40s in town, upper 30s at the lake. Clear and cold tonight, lows mid 20s in town, upper teens to low 20s up the Pine and at Vallecito.
+Bayfield and up the Pine (6,900') are right on the line. The GFS is showing around an inch of snow, the Euro and ICON are closer to half an inch. I'd expect a rain-snow mix that could leave a slushy coating by Monday afternoon. I wouldn't bet the farm on that, the line could shift a few hundred feet either way and flip the whole call.
 
-Tomorrow brings the clear window if the yard work or the trail's on the list. Clear, calm, a few degrees warmer.
+Vallecito and the Florida (7,650') should stay all snow. Models are split between half an inch and an inch-plus, with the GFS on the high end at 1.1" and the Euro and GEM closer to half that. I'd expect a light coating by Monday afternoon.
 
-The basin's sitting at 166% of median across the SNOTEL network. Red Mountain Pass is the high end at 8.3 inches SWE, Cascade is the low at 0.7 inches. Vallecito's at 171%.
+The high country picks up around an inch and a half at most, nothing significant.
 
-Are you getting anything this morning or has it stayed dry on your end?
+The system moves through fast. By Monday evening it's done and we're back to dry weather through at least midweek.
+
+Current road conditions: https://www.cotrip.org/
+
+What's on your list for today with the clear window we've got?
 ```
