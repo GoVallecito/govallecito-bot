@@ -1,4 +1,3 @@
-=== storm watch @ 2026-11-22 15:25 MST ===
-decision: fire=False -- below threshold (0.0in liquid / 0.0in snow in the window)
-  window 2026-11-24T00:00 -> 2026-11-26T23:00, 0.0in liquid / 0.0in snow, peak 2026-11-24T00:00
+=== storm watch @ 2026-11-22 19:34 MST ===
+ABORT -- preconditions not met: ['no forecast for durango', 'no forecast for bayfield']
 exit=0
