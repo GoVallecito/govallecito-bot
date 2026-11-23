@@ -8,3 +8,25 @@ exit=0
 2026-11-23 01:51 MST is outside every posting window (evening 19:00-22:00, school_call 4:00-9:00 local). Exiting.
 exit=0
 
+=== 2026-11-23T05:02:49-07:00 run 45170181122 ===
+NOTE: running at 05:00, inside the 4:00-9:00 window but later than the 4:00 target. Posting anyway, flagged late.
+=== Vallecito forecast: school_call @ 2026-11-23 05:00 MST ===
+snow-line calibration: offset=0.0ft active=False
+guardrails: REVIEW
+  - first-30-days policy: review everything
+review panel: fact checker + editor -> magistrate
+panel round 1/3: facts=issues editor=issues (critical/major=0) gate=pass -> magistrate REVISE
+panel round 2/3: facts=issues editor=issues (critical/major=2) gate=pass -> magistrate REVISE
+panel round 3/3: facts=issues editor=issues (critical/major=2) gate=pass -> magistrate REVISE
+panel round 3: final-round auto-patch applied 6 replacement(s), skipped 1, outstanding 0; gate=pass, unresolved fact issues=3
+panel transcript -> state/panel/2026-11-23-school_call.md
+Archived draft -> state/drafts/2026-11-23-school_call.md
+HELD FOR REVIEW -- draft saved to output/draft.txt
+staged for review -> site/weather/_pending/2026-11-23-snow-line-near-6250-ft.md
+  promote with: python scripts/wx/promote_draft.py 2026-11-23
+Review issue opened: https://github.com/GoVallecito/govallecito-bot/issues/178
+HELD STREAK: 7 consecutive days drafted and published nothing.
+[notify] held-streak issue already open (#88); not filing a second one
+Wrote state/forecast-status.md
+exit=0
+

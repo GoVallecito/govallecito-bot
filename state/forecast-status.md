@@ -1,20 +1,20 @@
 # Forecast run: held for review
 
-When: 2026-11-22T05:02:51-07:00 (Mountain)
+When: 2026-11-23T05:02:49-07:00 (Mountain)
 Slot: `school_call`
-heldDays: 6
+heldDays: 7
 
-> **STANDING FAILURE: 6 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
+> **STANDING FAILURE: 7 consecutive days held, nothing published.** This is a pipeline problem, not a run of bad drafts. Check the panel transcripts in `state/panel/` for the same objection repeating, and `site/weather/_pending/` for what is stacking up.
 
 ## Detail
 
 ```
-review panel: not approved after 3 round(s): Three fact-check issues require fixes: the Bayfield model discussion misrepresents the brief's figures and invents ICON data not provided for that band, the Vallecito model discussion rounds 1.13 to 1.1 and mischaracterizes GEM's 0.41in as 'closer to half' of 1.13, and the grain-of-salt parenthetical is missing. The double-should construction is genuinely awkward and worth fixing. The US-160 statement is supported by the brief's Wolf Creek Pass forecast line.
+review panel: not approved after 3 round(s): The fact checker correctly identified three issues: the precipitation timing language needed tightening to match the brief's windows, the morning commute phrase needed both conditional hedging and the full time window, and a missing apostrophe. The editor's road-condition flag on 'will see' is valid and combines with the fact checker's timing fix. The opener and closer are sufficiently distinct from recent posts despite surface similarity. All fixes preserve the draft's voice and contain only brief-supported information.
 ```
 
 ## What the data looked like
 
-- Snow line: 6750
+- Snow line: 6250
 - Alerts: none
 - Missing sources: none
 - Pass forecast: built
@@ -22,23 +22,19 @@ review panel: not approved after 3 round(s): Three fact-check issues require fix
 ## Draft
 
 ```
-11/22/26 5:45am: Morning, its Sunday. The truck's covered in a thin layer of frost that'll burn off once the sun hits it.
+11/23/26 5:45am: Morning, its Monday. The ridgeline across the valley was just a dark outline when I looked out a minute ago.
 
-Today's straightforward. Clear and cold this morning with temps in the low 20s up here, teens in the high country. We'll warm into the low 40s in Durango and upper 30s around Bayfield and the lake under sunny skies. Light winds, nothing to speak of.
+Quick moving system this morning with the question being snow line. Districts decide by 6:30 and the line's the whole ballgame for the bus run.
 
-Tomorrow's when things get interesting. A quick-moving system crosses the state Monday and it'll bring light precip to the San Juans, mainly morning through late afternoon. The snow line looks like it'll sit right around 6,750 feet, which puts the call right on the knife edge for a lot of us.
+Snow line looks to sit around 6,250 feet, rising through the morning. That puts Durango and the Animas Valley (6,500') right on the edge, could go either way. Looks like the valley floor will see rain with wet snow mixing in at times for the morning commute. Bayfield and up the Pine (6,900') should see snow, under an inch for most spots. Snow should start between 6am and 11am up the Pine. Vallecito and the Florida (7,650') pick up an inch or so, heavier up the drainage.
 
-Durango and the Animas Valley (6,500') should see mostly rain, but it could mix with or change to snow if temps drop faster than expected. I'd expect the 160 should stay rain at highway level.
+The ICON is drier at 0.06" liquid while the GEM is wetter at 0.32", so theres a pretty wide spread in what the models are showing. The Euro has 0.08" and the GFS 0.16". Take that spread into account when you're planning your morning (the snow line's still uncertain and a couple hundred feet makes all the difference between rain and accumulating snow).
 
-Bayfield and up the Pine (6,900') are right on the line. The GFS is showing around an inch of snow, the Euro and ICON are closer to half an inch. I'd expect a rain-snow mix that could leave a slushy coating by Monday afternoon. I wouldn't bet the farm on that, the line could shift a few hundred feet either way and flip the whole call.
+Window for this is 8am to 3pm, done by mid-afternoon. The passes get a couple inches at most, Coal Bank, Molas and Red Mountain should see 2-4" up high with the worst conditions late afternoon into evening as the trough axis crosses. Wolf Creek picks up similar amounts.
 
-Vallecito and the Florida (7,650') should stay all snow. Models are split between half an inch and an inch-plus, with the GFS on the high end at 1.1" and the Euro and GEM closer to half that. I'd expect a light coating by Monday afternoon.
+Current road status: https://www.cotrip.org/
 
-The high country picks up around an inch and a half at most, nothing significant.
+Tuesday's dry and cold with clearing skies.
 
-The system moves through fast. By Monday evening it's done and we're back to dry weather through at least midweek.
-
-Current road conditions: https://www.cotrip.org/
-
-What's on your list for today with the clear window we've got?
+What's it doing on your end right now, still clear or already clouding over?
 ```
