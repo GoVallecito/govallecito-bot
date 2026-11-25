@@ -1,13 +1,13 @@
 # Forecast run: published to website (approved by review panel)
 
-When: 2026-11-24T06:02:26-07:00 (Mountain)
+When: 2026-11-25T05:02:05-07:00 (Mountain)
 Slot: `school_call`
 heldDays: 0
 
 ## Detail
 
 ```
-approved in round 3 after applying 3 reviewer replacement(s) to the writer's text
+approved by the magistrate in round 2
 ```
 
 **What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
@@ -22,17 +22,21 @@ approved in round 3 after applying 3 reviewer replacement(s) to the writer's tex
 ## Draft
 
 ```
-11/24/26 6:00am: Morning, its Tuesday. The dog's breath was steaming when she came back in from the yard.
+11/25/26 5:45am: Morning, its Wednesday. The woodpile needs restacking before the next storm comes through.
 
-Clear and cold up here. The Vallecito SNOTEL is reporting 19F this morning and town woke up in the low 30s. High pressure's in control and that means a straightforward day ahead.
+Clear and cold across all zones this morning. Low to mid 20s up the Pine and around the lake, upper 20s in town. The sky's sharp and the inversion's not holding anybody down today.
 
-Durango and the Animas Valley should climb from the low 30s this morning into the low 40s this afternoon. Sunny and calm. Bayfield and up the Pine will run a few degrees cooler, upper 30s to low 40s by afternoon. Same deal at Vallecito and up the Florida, upper 30s under clear skies with light winds. The high Weminuche saw mid-teens overnight with some gusts 15-25 early, but that's backing off now.
+Durango and the Animas Valley should warm into the low 50s this afternoon under full sun. Light winds, dry air, no weather to speak of. If you're headed to town the drive should be straightforward.
 
-The passes should be dry through the day. Coal Bank, Molas and Red Mountain should stay dry, same with Wolf Creek. But I dont have live road status, so check COtrip before you head out: https://www.cotrip.org/
+Bayfield and up the Pine will run a few degrees cooler, upper 40s by mid-afternoon, but the same setup otherwise. Calm conditions through the evening, temps dropping back through the 30s after sunset.
 
-Wednesday's a repeat. Clear, calm, a few degrees warmer. Town might touch 50. The pattern stays quiet through Thanksgiving, then the NWS discussion is pointing at a system Friday into Saturday that could bring snow back to the mountains. Confidence is low on amounts and placement this far out, but its the first real weather in the extended and worth watching.
+Vallecito and the Florida are looking at upper 40s for highs with the same dry pattern. The lake's still holding some open water but the ice margin's growing every cold night we get. No precipitation in the forecast through Thursday so the freeze-up's going to keep advancing.
 
-The basin's sitting at 150% of median across eight stations, with Red Mountain Pass holding the most at just over double the median. Vallecito's at 139% of median. We're in good shape heading into the holiday.
+The high Weminuche stays in the 30s for daytime highs. Snow surfaces up there are staying cold and the SNOTEL at Vallecito is sitting at 2.6 inches of water equivalent, which is 144 percent of median for late November. Red Mountain Pass is at 198 percent of median, Wolf Creek Summit at 157 percent of median. The basin as a whole is running 148 percent of median across eight stations, so we're in solid shape heading into the holiday.
 
-Did the cold catch you this morning or did your spot stay mild?
+The passes should stay dry through today and tomorrow. Coal Bank, Molas and Red Mountain should see no weather, same for Wolf Creek. Check CDOT for current conditions: https://www.cotrip.org/
+
+Thanksgiving's looking dry too, then the pattern shifts Friday into the weekend. I'll have more on that timing tomorrow once the models tighten up.
+
+What's the ice looking like at your end of the lake, still open water or starting to lock up?
 ```
