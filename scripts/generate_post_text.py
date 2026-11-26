@@ -723,6 +723,20 @@ def build_post(conditions, slot, dt=None, image_dest_path=None, force_grounded_d
             "badge": INFO,
             "icon_color": WHITE,
         })
+    elif weather and weather.get("station_down"):
+        # The marina station is not reporting (2026-11-26). Say so; never print
+        # the airport, a mountain station or a model estimate as the lake.
+        sky = weather.get("short_forecast") or ""
+        caption_lines.append(("🌡️ The lake's weather station isn't reporting right now."
+                              + (f" {sky}." if sky else "")
+                              + " Latest at govallecito.com/conditions").replace("..", "."))
+        rows.append({
+            "icon": "thermo",
+            "label": "WEATHER",
+            "value": "Lake station not reporting",
+            "badge": INFO,
+            "icon_color": WHITE,
+        })
     else:
         # Same reasoning as the lake-level branch above: mirror the
         # caption's "data delayed" in the card row instead of silently

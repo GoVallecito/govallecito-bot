@@ -17,12 +17,13 @@ APIs. Confirmed live 2026-07-24 (see fetch_worker_snapshot()).
 
 FALLBACK, ON PURPOSE: depending on a single upstream (David's own Worker)
 for everything trades away the redundancy of three independent government
-data sources. To not make that trade blindly, fetch_weather(),
-fetch_streamflow(), and fetch_lake_level() each fall back to the original
-direct-API calls (NWS / USGS / Colorado DWR) if the Worker is unreachable OR
-its data for that section is stale/malformed. Fire restriction status is the
-one exception -- see fetch_fire_status()'s docstring for why that one fails
-to "data delayed" instead of a fallback.
+data sources. To not make that trade blindly, fetch_streamflow() and
+fetch_lake_level() each fall back to the original direct-API calls (USGS /
+Colorado DWR) if the Worker is unreachable OR its data for that section is
+stale/malformed. Two exceptions fail to "data delayed" instead: fire
+restriction status (see fetch_fire_status()'s docstring) and, since
+2026-11-26, weather -- its NWS fallback printed a forecast period's
+temperature as "°F now" (see fetch_weather()).
 
 Every function here is defensive: if a source is unreachable, times out, or
 returns something unrecognized, it returns None instead of raising. The post
@@ -159,23 +160,29 @@ def fetch_fishing_report():
 # ---- weather ----------------------------------------------------------
 
 def _weather_from_snapshot(snapshot):
+    """The marina station's own reading, or a "station down" marker.
+
+    2026-11-26 (weather-localization review): Connie reports what is TRUE AT
+    THE LAKE. When the marina station (Weather Underground KCOBAYFI100) is not
+    reporting, the Worker's number is a Durango-airport reading (about 1,000 ft
+    lower, 20 mi away), a 10,341 ft mountain station, or a model estimate, and
+    the card used to print any of them as "°F now" with no source. Now only a
+    fresh marina reading becomes a temperature; anything else is
+    {"current_f": None, "station_down": True} and the card says so.
+    """
     w = (snapshot or {}).get("weather") or {}
-    if w.get("status") != "ok" or w.get("stale"):
+    if not w:
         return None
-    current_f = w.get("tempF")
-    if current_f is None:
-        return None
-    # The Worker's own forecast.periods[0] carries an NWS-style period name
-    # ("Tonight", "Friday", ...) matching what the old direct-NWS path
-    # returned; not load-bearing downstream today (generate_post_text.py
-    # doesn't currently use period_name), but kept for parity/future use.
     period_name = "Now"
     try:
         period_name = (snapshot.get("forecast", {}).get("periods") or [{}])[0].get("name") or "Now"
     except Exception:
         pass
+    at_lake = (w.get("sourceType") == "pws" and not w.get("fallback")
+               and not w.get("stale") and w.get("tempF") is not None)
     return {
-        "current_f": current_f,
+        "current_f": w.get("tempF") if at_lake else None,
+        "station_down": not at_lake,
         "high_f": w.get("highF"),
         "low_f": w.get("lowF"),
         "short_forecast": w.get("desc") or "",
@@ -183,67 +190,22 @@ def _weather_from_snapshot(snapshot):
     }
 
 
-def _fetch_weather_from_nws():
-    """Original direct-NWS implementation -- now the fallback path, used
-    only if the Worker snapshot is unavailable or its weather section is
-    stale/malformed.
-
-    Confirmed against NWS's own documentation (not a live call from this
-    sandbox): the /points -> /gridpoints/.../forecast flow, and that a
-    descriptive User-Agent is required. Standard, long-stable public API --
-    low risk, and it's independent of David's own infrastructure, which is
-    the whole point of keeping it as a fallback.
-
-    Assumes it's called during daytime hours (true for our fixed 7am/2pm
-    schedule) so periods[0] is a daytime period.
-    """
-    headers = {"User-Agent": USER_AGENT, "Accept": "application/geo+json"}
-    try:
-        points = _get_json(f"https://api.weather.gov/points/{LAT},{LON}", headers)
-        forecast_url = points["properties"]["forecast"]
-        forecast = _get_json(forecast_url, headers)
-        periods = forecast["properties"]["periods"]
-        if not periods:
-            return None
-
-        today = periods[0]
-        high_f, low_f = None, None
-        for p in periods[:4]:
-            if p.get("isDaytime") and high_f is None:
-                high_f = p.get("temperature")
-            if not p.get("isDaytime") and low_f is None:
-                low_f = p.get("temperature")
-
-        current_f = today.get("temperature")
-        if current_f is None:
-            print("[fetch_weather] NWS returned a null/missing current temperature; treating as failed fetch")
-            return None
-
-        return {
-            "current_f": current_f,
-            "high_f": high_f,
-            "low_f": low_f,
-            "short_forecast": today.get("shortForecast", ""),
-            "period_name": today.get("name", ""),
-        }
-    except Exception as exc:
-        print(f"[fetch_weather] direct-NWS fallback failed: {exc}")
-        return None
-
-
 def fetch_weather(snapshot=None):
-    """Returns {"current_f", "high_f", "low_f", "short_forecast", "period_name"}
-    or None on failure. Prefers the shared Worker snapshot (pass one in from
-    fetch_all() to avoid a redundant fetch); falls back to direct NWS if the
-    snapshot is missing or unusable."""
+    """Returns {"current_f", "station_down", "high_f", "low_f",
+    "short_forecast", "period_name"} or None when the Worker snapshot is
+    unavailable.
+
+    There is deliberately NO direct-NWS fallback any more (2026-11-26): it
+    printed the NWS forecast PERIOD temperature (a forecast high or low) as
+    "°F now". With no snapshot the card says "data delayed", which is true."""
     if snapshot is None:
         snapshot = fetch_worker_snapshot()
     if snapshot:
         result = _weather_from_snapshot(snapshot)
         if result:
             return result
-        print("[fetch_weather] Worker snapshot present but weather section missing/stale; falling back to direct NWS")
-    return _fetch_weather_from_nws()
+        print("[fetch_weather] Worker snapshot has no weather section")
+    return None
 
 
 # ---- streamflow -------------------------------------------------------
