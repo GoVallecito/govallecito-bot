@@ -105,3 +105,43 @@ def test_record_post_writes_an_explicit_none_without_a_caption(isolated):
     PH.record_post("123_457", "2026-10-10T14:30:00-06:00", "afternoon", {"hook_line": "h"})
     entry = json.load(open(PH.HISTORY_PATH))["posts"][-1]
     assert "caption" in entry and entry["caption"] is None
+
+
+# ---- 2026-11-26: only the marina station's own reading is "°F now" ----------
+
+import fetch_conditions as _fc  # noqa: E402
+
+
+def _snap(**w):
+    base = {"status": "ok", "stale": False, "tempF": 50, "desc": "Clear", "highF": 46, "lowF": 31}
+    base.update(w)
+    return {"weather": base, "forecast": {"periods": [{"name": "This Afternoon"}]}}
+
+
+def test_marina_reading_is_the_temperature():
+    w = _fc._weather_from_snapshot(_snap(sourceType="pws", fallback=None, tempF=34))
+    assert w["current_f"] == 34 and w["station_down"] is False
+
+
+def test_airport_mountain_or_estimate_is_never_now():
+    for extra in ({"sourceType": "nws", "stationId": "KDRO"},
+                  {"sourceType": "nws", "stationId": "BBRC2"},
+                  {"sourceType": "model", "fallback": "model", "estimate": True, "status": "warn"},
+                  {"sourceType": "pws", "fallback": "lastgood", "stale": True, "status": "warn"}):
+        w = _fc._weather_from_snapshot(_snap(**extra))
+        assert w["current_f"] is None and w["station_down"] is True, extra
+
+
+def test_station_down_card_says_so_and_prints_no_number(isolated):
+    cond = {"weather": {"current_f": None, "station_down": True, "short_forecast": "Clear"},
+            "streamflow": None, "lake_level": None, "fire": None}
+    post = G.build_post(cond, "afternoon", dt=datetime(2026, 11, 26, 14, 30),
+                        image_dest_path=str(isolated / "i.jpg"))
+    row = _weather_row(post)
+    assert row["value"] == "Lake station not reporting"
+    assert "isn't reporting" in post["caption"] and "°F" not in post["caption"]
+
+
+def test_no_snapshot_means_data_delayed_not_a_forecast_number(monkeypatch):
+    monkeypatch.setattr(_fc, "fetch_worker_snapshot", lambda: None)
+    assert _fc.fetch_weather() is None
