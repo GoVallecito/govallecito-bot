@@ -1,17 +1,14 @@
-# Forecast run: published to website (approved by review panel)
+# Forecast run: held for review
 
-When: 2026-11-26T06:03:06-07:00 (Mountain)
+When: 2026-11-27T05:03:07-07:00 (Mountain)
 Slot: `school_call`
-heldDays: 0
+heldDays: 1
 
 ## Detail
 
 ```
-approved by the magistrate in round 3
-mentions avalanche conditions -- link CAIC, never interpret
+review panel: not approved after 3 round(s): The fact checker correctly identified two critical errors: Molas Pass is forecast wet in the brief but called dry in the draft, and the draft states present road conditions without CDOT data. Both fixes are precise and supported by the brief. The editor's pivot and closer concerns are advisory taste issues that do not block approval. With these two changes applied, the post accurately reflects the brief and satisfies all binding rules.
 ```
-
-**What to do:** Email stays off until WX_FIRST_30_DAYS is set to false. Facebook gets this post only if its slot is in WX_FB_AUTO_SLOTS, or via the facebook-post workflow. The panel transcript is in state/panel/.
 
 ## What the data looked like
 
@@ -23,23 +20,17 @@ mentions avalanche conditions -- link CAIC, never interpret
 ## Draft
 
 ```
-11/26/26 6:00am: Morning, its Thursday. The kitchen window's showing a clear sky with stars still visible to the west.
+11/27/26 5:45am: Morning, its Friday. The ridgeline to the east is catching some high clouds this morning.
 
-Dry and calm across the board today. If you're making the drive to family or heading out for a hike before the meal, I'd expect the 501 and the 240 to stay dry with calm winds all day. The 160 into town and out toward Pagosa should stay dry too.
+Today's dry and straightforward. Durango and the Animas Valley should see clear skies early, then partly cloudy by afternoon with temps climbing into the mid-50s. Light winds, gusts 5-15mph through the afternoon. Up the Pine and Bayfield track the same, topping out in the low 50s with calm conditions most of the day.
 
-Durango and the Animas Valley start in the low 30s, then climb into the low 50s this afternoon under full sun. Light winds, gusts 5-15mph by afternoon. Tomorrow runs the same script, just a touch warmer, mid to upper 50s in town.
+Vallecito and the Florida should stay dry all day, temps reaching the low 50s with light winds. The high Weminuche stays cold, upper 30s for highs, with gusts picking up to 10-20mph this afternoon.
 
-Bayfield and up the Pine follow the same pattern. Around 30 this morning, then low 50s this afternoon. Calm through the day, light wind picking up tonight. Tomorrow's a repeat, maybe nudging into the mid 50s.
+The 501 and the 240 look to stay dry with light winds, and the drive into town should be straightforward. Coal Bank and Molas should stay dry through today, gusts reaching 40-50mph at Coal Bank and 35-45mph at Molas by afternoon. Check https://www.cotrip.org/ for current road conditions.
 
-Vallecito and the Florida see around 30 to low 30s at first light, then upper 40s this afternoon. Calm conditions all day. Tomorrow looks identical, maybe a degree or two warmer.
+Saturday brings the wind. A strong northwest wave moves in Saturday morning and that'll bring wind. Gusts 25-35mph in town and up the Pine, 35-45mph at Vallecito, and 40-50mph up high. The Euro, GFS, ICON and GEM all agree this stays dry down low, but the wind's the story. Expect gusts strong enough to blow around loose stuff and make for a rough drive on exposed sections of the 160 and the 550. The passes will see the worst of it, gusts 35-50mph Saturday morning through afternoon.
 
-The passes should stay dry and calm through both days. Coal Bank, Molas and Red Mountain all run mid 30s to upper 30s this afternoon under clear skies. Wolf Creek does the same. Light winds up high, gusts 5-15mph today, 10-20mph tomorrow. For current conditions and any closures, check https://www.cotrip.org/
+The Vallecito SNOTEL's sitting at 2.6 inches of SWE, which is 108% of median for late November. The basin as a whole is at 140% of median across eight stations, so we're in good shape heading into December.
 
-The basin's sitting at 148% of median across the SNOTEL network. Red Mountain Pass is holding the most at just over double the median and Cascade #2 is the low end at 85 percent of median. The Euro, GFS, ICON and GEM all agree on dry conditions through Friday, so this quiet stretch holds.
-
-The high Weminuche stays cold, mid 20s to upper 30s both days, but dry and calm. Good weather if you're chasing late-season anything up there.
-
-CAIC has the avalanche forecast at https://avalanche.state.co.us/
-
-Are you traveling today or staying put?
+Are you planning anything outside Saturday or staying in out of the wind?
 ```
